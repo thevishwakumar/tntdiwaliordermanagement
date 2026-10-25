@@ -1,0 +1,100 @@
+/* ==========================================================================
+   TNT DIWALI ORDER MANAGEMENT SYSTEM — PRINT STYLESHEET
+   Optimized for physical receipts (A4, Letter, and POS thermal receipts)
+   ========================================================================== */
+
+@media print {
+  /* Hide non-printable elements */
+  .site-header,
+  .top-bar-announcement,
+  .site-footer,
+  .no-print,
+  .receipt-actions,
+  .mobile-nav-toggle,
+  .hero-section,
+  .demo-badge-banner,
+  button {
+    display: none !important;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 12pt;
+    margin: 0;
+    padding: 10mm;
+  }
+
+  .receipt-card {
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
+    padding: 15mm !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    page-break-inside: avoid;
+  }
+
+  .receipt-title {
+    color: #000000 !important;
+    font-size: 18pt !important;
+  }
+
+  .receipt-tagline, .receipt-contacts {
+    color: #444444 !important;
+  }
+
+  .receipt-status-badge {
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+    background: transparent !important;
+  }
+
+  .receipt-meta-grid {
+    background: #F4F4F4 !important;
+    border: 1px solid #CCCCCC !important;
+  }
+
+  .pickup-code-box {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    border: 2px dashed #000000 !important;
+    margin: 15px 0 !important;
+    padding: 15px !important;
+  }
+
+  .pickup-code-label {
+    color: #000000 !important;
+    font-weight: bold;
+  }
+
+  .pickup-code-value {
+    color: #000000 !important;
+    font-size: 26pt !important;
+    text-shadow: none !important;
+  }
+
+  .pickup-code-instruction {
+    color: #333333 !important;
+  }
+
+  .receipt-item-row {
+    border-bottom: 1px dashed #777777 !important;
+    padding: 4px 0 !important;
+  }
+
+  .receipt-total-row {
+    border-top: 2px solid #000000 !important;
+    color: #000000 !important;
+  }
+
+  .receipt-total-val {
+    color: #000000 !important;
+    font-size: 16pt !important;
+  }
+
+  .receipt-pickup-guidelines {
+    background: #F9F9F9 !important;
+    border: 1px solid #CCCCCC !important;
+    color: #000000 !important;
+  }
+}

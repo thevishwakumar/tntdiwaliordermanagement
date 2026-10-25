@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout &amp; Order Summary | Shree Taste N Taste Catering</title>
+  <meta name="description" content="Review your Diwali order, fill your pickup contact details, and proceed to secure online payment verification.">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/print.css" media="print">
+  <link rel="icon" href="assets/images/tnt-logo.jpg" type="image/jpeg">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <aside class="top-bar-announcement" aria-label="Announcement">
+    🪔 TNT Taste N Trust • Spreading Sweetness This Diwali • Store Pickup Only 🪔
+  </aside>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <nav class="nav-container" aria-label="Primary Navigation">
+      <a href="index.html" class="brand-wrapper">
+        <img src="assets/images/tnt-logo.jpg" alt="TNT Logo" class="brand-logo-img">
+        <div class="brand-text-block">
+          <span class="brand-name">TNT Catering</span>
+          <span class="brand-tagline">Shree Taste N Taste</span>
+        </div>
+      </a>
+
+      <button class="mobile-nav-toggle" id="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+        ☰
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="products.html" class="nav-link">Diwali Sweets &amp; Savouries</a></li>
+        <li><a href="order-status.html" class="nav-link">Track / Pickup Code</a></li>
+      </ul>
+
+      <div class="nav-cta-group">
+        <a href="checkout.html" class="cart-button-link active" aria-label="View Order">
+          <span>🛒 Your Order</span>
+          <span class="tnt-cart-badge hidden">0</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="section">
+    <div style="max-width: var(--max-width); margin: 0 auto; margin-bottom: 2rem;">
+      <h1 class="section-title">Order Review &amp; Customer Details</h1>
+      <p class="section-subtitle">
+        Please review your selected festive sweets and provide your verified contact details for counter pickup.
+      </p>
+    </div>
+
+    <!-- Feedback Notice Modal/Banner -->
+    <div style="max-width: var(--max-width); margin: 0 auto;">
+      <div id="checkout-feedback-modal" class="hidden"></div>
+      <div id="backend-readiness-notice"></div>
+    </div>
+
+    <!-- Empty Cart State -->
+    <div id="checkout-empty-state" class="hidden" style="max-width: 600px; margin: 3rem auto; text-align: center; background: #FFF; padding: 3rem 2rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+      <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">🛍️</span>
+      <h2 style="font-family: var(--font-heading); color: var(--color-maroon-900); margin-bottom: 0.5rem;">Your Diwali Order is Empty</h2>
+      <p style="color: var(--color-text-muted); margin-bottom: 2rem;">
+        You haven't selected any sweets or savouries yet. Explore our handcrafted festival menu!
+      </p>
+      <a href="products.html" class="btn btn-primary">
+        Browse Festive Sweets &amp; Savouries
+      </a>
+    </div>
+
+    <!-- Checkout Main Layout (Items Summary + Customer Form) -->
+    <div class="checkout-layout" id="checkout-form-section">
+      <!-- Left Column: Customer Details Form -->
+      <section class="checkout-card" aria-labelledby="customer-info-heading">
+        <h2 class="card-title" id="customer-info-heading">1. Customer Pickup Details</h2>
+        <p class="card-desc">
+          Your order reference and pickup verification code will be linked to this mobile number.
+        </p>
+
+        <form id="tnt-checkout-form" novalidate>
+          <!-- Full Name -->
+          <div class="form-group">
+            <label for="input-fullName" class="form-label">
+              Full Name <span class="required-star">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="input-fullName" 
+              name="fullName" 
+              class="form-input" 
+              placeholder="e.g. Ramesh Kumar" 
+              required
+              autocomplete="name"
+              minlength="2"
+              maxlength="100"
+            >
+            <span class="field-error hidden" id="error-fullName"></span>
+          </div>
+
+          <!-- Mobile Number -->
+          <div class="form-group">
+            <label for="input-mobile" class="form-label">
+              Mobile Number (10 digits) <span class="required-star">*</span>
+            </label>
+            <input 
+              type="tel" 
+              id="input-mobile" 
+              name="mobile" 
+              class="form-input" 
+              placeholder="e.g. 9442854444" 
+              required
+              autocomplete="tel"
+              pattern="^[6-9]\d{9}$"
+              maxlength="14"
+            >
+            <span class="form-helper">Required for order verification and receiving your Pickup Code.</span>
+            <span class="field-error hidden" id="error-mobile"></span>
+          </div>
+
+          <!-- Email Address -->
+          <div class="form-group">
+            <label for="input-email" class="form-label">
+              Email Address <span class="required-star">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="input-email" 
+              name="email" 
+              class="form-input" 
+              placeholder="e.g. ramesh@example.com" 
+              required
+              autocomplete="email"
+            >
+            <span class="form-helper">Required for official Razorpay payment invoice and receipt.</span>
+            <span class="field-error hidden" id="error-email"></span>
+          </div>
+
+          <!-- Fulfilment Notice (No delivery address inputs as this is pickup only) -->
+          <div class="alert-box alert-warning" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+            <span class="alert-icon">🏬</span>
+            <div>
+              <strong>Fulfilment: Customer Pickup From Shop Counter Only</strong>
+              <div style="font-size: 0.85rem; margin-top: 0.25rem;">
+                Home delivery is NOT available. Delivery address fields are intentionally omitted. You will collect this order in person from the Shree Taste N Taste Catering counter.
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer Notes (Optional) -->
+          <div class="form-group">
+            <label for="input-notes" class="form-label">
+              Special Packing / Pickup Notes (Optional)
+            </label>
+            <textarea 
+              id="input-notes" 
+              name="notes" 
+              class="form-textarea" 
+              rows="3" 
+              maxlength="300"
+              placeholder="e.g., Preferred collection time on Diwali morning or gift packing request"
+            ></textarea>
+            <span class="form-helper">Maximum 300 characters.</span>
+            <span class="field-error hidden" id="error-notes"></span>
+          </div>
+
+          <!-- Terms & Conditions Acceptance -->
+          <div class="form-group" style="margin-top: 1.5rem;">
+            <label class="checkbox-group">
+              <input type="checkbox" id="input-acceptTerms" name="acceptTerms" required>
+              <span class="checkbox-label">
+                I understand that this is strictly a <strong>customer store pickup order</strong>, that home delivery and Cash on Delivery are not available, and that orders are confirmed only after online payment verification via Razorpay.
+              </span>
+            </label>
+            <span class="field-error hidden" id="error-acceptTerms"></span>
+          </div>
+
+          <div style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary btn-block" id="btn-submit-order" style="padding: 1rem 1.5rem; font-size: 1.05rem;">
+              <span id="checkout-spinner" class="hidden">⏳ </span>
+              <span id="btn-submit-text">Proceed to Online Payment (Razorpay)</span>
+            </button>
+            <p style="text-align: center; font-size: 0.8rem; color: var(--color-text-light); margin-top: 0.75rem;">
+              🔒 256-bit Encrypted Payment Gateway • Authorized by Shree Taste N Taste Catering
+            </p>
+          </div>
+        </form>
+      </section>
+
+      <!-- Right Column: Order Items Summary & Totals -->
+      <section class="checkout-card" aria-labelledby="order-summary-heading">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+          <h2 class="card-title" id="order-summary-heading">2. Order Summary</h2>
+          <a href="products.html" style="font-size: 0.85rem; font-weight: 600; color: var(--color-maroon-700);">+ Add More Items</a>
+        </div>
+        <p class="card-desc">
+          Review items, adjust quantities, or remove items before proceeding.
+        </p>
+
+        <div id="checkout-items-container">
+          <!-- Populated by checkout.js -->
+        </div>
+
+        <div id="checkout-totals">
+          <!-- Populated by checkout.js -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h3>Shree Taste N Taste Catering</h3>
+        <p>
+          TNT (Taste N Trust) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to pure ingredients, culinary mastery, and customer trust.
+        </p>
+        <div class="footer-notice-box">
+          🏬 Fulfilment: Customer Pickup Only from Shop Counter. Home delivery and COD are not supported.
+        </div>
+      </div>
+
+      <div>
+        <h4 class="footer-title">Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Product Catalogue</a></li>
+          <li><a href="checkout.html">Shopping Cart &amp; Checkout</a></li>
+          <li><a href="order-status.html">Track Order &amp; Pickup Code</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-title">Contact Information</h4>
+        <ul class="footer-contacts-list">
+          <li>
+            <span>📞</span>
+            <span><strong>Primary:</strong> <a href="tel:9442854444" style="color: inherit;">9442854444</a></span>
+          </li>
+          <li>
+            <span>📞</span>
+            <span><strong>Secondary:</strong> <a href="tel:7200071040" style="color: inherit;">7200071040</a></span>
+          </li>
+          <li>
+            <span>🏷️</span>
+            <span><strong>Brand:</strong> TNT (Taste N Trust)</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 Shree Taste N Taste Catering (TNT). All rights reserved. • Customer Store Pickup Only</p>
+    </div>
+  </footer>
+
+  <script type="module" src="assets/js/checkout.js"></script>
+  <script type="module">
+    // Mobile nav toggle
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const navMenu = document.getElementById('nav-menu');
+    if (mobileBtn && navMenu) {
+      mobileBtn.addEventListener('click', () => {
+        const isOpen = navMenu.classList.toggle('open');
+        mobileBtn.setAttribute('aria-expanded', String(isOpen));
+      });
+    }
+  </script>
+</body>
+</html>

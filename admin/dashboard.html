@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operations &amp; Fulfilment Hub | Shree Taste N Taste Catering</title>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/print-documents.css">
+  <link rel="icon" href="../assets/images/tnt-logo.jpg" type="image/jpeg">
+  <style>
+    /* Admin App Layout */
+    .admin-app-layout {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #F8F9FA;
+    }
+    .admin-subnav {
+      background: #FFFFFF;
+      border-bottom: 1.5px solid var(--color-border);
+      position: sticky;
+      top: 66px;
+      z-index: 90;
+      box-shadow: var(--shadow-sm);
+    }
+    .admin-subnav-container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 1.25rem;
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+    }
+    .subnav-btn {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 0.85rem 1rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+      transition: all var(--transition-fast);
+    }
+    .subnav-btn:hover {
+      color: var(--color-maroon-800);
+    }
+    .subnav-btn.active {
+      color: var(--color-maroon-900);
+      border-bottom-color: var(--color-gold-500);
+    }
+    .admin-content-area {
+      max-width: var(--max-width);
+      margin: 1.75rem auto 3rem auto;
+      padding: 0 1.25rem;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Metric Cards Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .metric-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--color-border);
+    }
+    .metric-revenue::before { background: #1B5E20; }
+    .metric-paid::before { background: var(--color-maroon-700); }
+    .metric-prep::before { background: var(--color-gold-500); }
+    .metric-ready::before { background: #6A1B9A; }
+    .metric-picked::before { background: #37474F; }
+
+    .metric-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.35rem;
+    }
+    .metric-value {
+      font-family: var(--font-heading);
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--color-maroon-900);
+      line-height: 1.2;
+    }
+    .metric-sub {
+      font-size: 0.775rem;
+      color: var(--color-text-light);
+      margin-top: 0.25rem;
+    }
+
+    /* Filter Toolbar */
+    .filter-toolbar {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    /* Orders Data Table */
+    .table-container {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow-x: auto;
+      box-shadow: var(--shadow-sm);
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+    .admin-table th {
+      background: var(--color-bg-surface-alt);
+      color: var(--color-maroon-900);
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.85rem 1rem;
+      border-bottom: 2px solid var(--color-border);
+      white-space: nowrap;
+    }
+    .admin-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+    .admin-table tbody tr:hover {
+      background: rgba(207, 157, 56, 0.04);
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+    .status-AWAITING_PAYMENT { background: #FFF4E5; color: #995B00; border: 1px solid #FFE0B2; }
+    .status-PAID { background: #E8F5E9; color: #1B5E20; border: 1px solid #C8E6C9; }
+    .status-PREPARING { background: #E3F2FD; color: #0D47A1; border: 1px solid #BBDEFB; }
+    .status-READY_FOR_PICKUP { background: #F3E5F5; color: #4A148C; border: 1px solid #E1BEE7; }
+    .status-PICKED_UP { background: #ECEFF1; color: #37474F; border: 1px solid #CFD8DC; }
+    .status-CANCELLED { background: #FFEBEE; color: #B71C1C; border: 1px solid #FFCDD2; }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      border: 1.5px solid var(--color-gold-400);
+      max-width: 780px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      padding: 2rem;
+      position: relative;
+    }
+    .btn-modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: var(--color-bg-surface-alt);
+      border: none;
+      border-radius: var(--radius-pill);
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body class="admin-app-layout">
+
+  <!-- Admin Site Header -->
+  <header class="site-header">
+    <div class="nav-container">
+      <div class="brand-wrapper">
+        <img src="../assets/images/tnt-logo.jpg" alt="TNT Logo" class="brand-logo-img">
+        <div class="brand-text-block">
+          <span class="brand-name">TNT Catering</span>
+          <span class="brand-tagline">Diwali Operations &amp; Fulfilment Hub</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <span id="admin-user-display" style="font-size: 0.85rem; color: var(--color-gold-200); font-weight: 600;">
+          👤 admin@tntcatering.in [admin]
+        </span>
+        <button type="button" class="btn btn-outline" id="btn-admin-logout" style="border-color: var(--color-gold-400); color: var(--color-gold-300); padding: 0.35rem 0.85rem; font-size: 0.85rem;">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Admin Sub Navigation Tabs -->
+  <nav class="admin-subnav" aria-label="Admin Navigation Tabs">
+    <div class="admin-subnav-container">
+      <button type="button" class="subnav-btn active" data-tab="tab-overview" id="nav-tab-overview">
+        📊 Operations Overview
+      </button>
+      <button type="button" class="subnav-btn" data-tab="tab-orders" id="nav-tab-orders">
+        📦 Order Management
+      </button>
+      <button type="button" class="subnav-btn" data-tab="tab-packing" id="nav-tab-packing">
+        🍳 Kitchen Packing Queue
+      </button>
+      <button type="button" class="subnav-btn" data-tab="tab-pickup" id="nav-tab-pickup">
+        🛍️ Counter Pickup Station
+      </button>
+      <button type="button" class="subnav-btn" data-tab="tab-products" id="nav-tab-products">
+        🍬 Product &amp; Price Master
+      </button>
+      <button type="button" class="subnav-btn" data-tab="tab-audit" id="nav-tab-audit">
+        📜 Audit Trail &amp; Logs
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Work Area -->
+  <main class="admin-content-area">
+
+    <!-- TAB 1: OPERATIONS OVERVIEW -->
+    <section id="tab-overview" class="admin-tab-content">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-family: var(--font-heading); font-size: 1.85rem; color: var(--color-maroon-900);">
+            Live Operations Dashboard
+          </h1>
+          <p style="font-size: 0.875rem; color: var(--color-text-muted);">
+            Real-time verified sales, kitchen packing queue, and store counter handover metrics.
+          </p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-refresh-all" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+          ↻ Refresh Real-Time Data
+        </button>
+      </div>
+
+      <!-- Metrics Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card metric-revenue">
+          <div class="metric-title">Verified Revenue (INR)</div>
+          <div class="metric-value" id="metric-revenue">₹0</div>
+          <div class="metric-sub">Calculated strictly from verified payments</div>
+        </div>
+
+        <div class="metric-card metric-paid">
+          <div class="metric-title">Paid Orders (Confirmed)</div>
+          <div class="metric-value" id="metric-paid-count">0</div>
+          <div class="metric-sub">Eligible for kitchen packing</div>
+        </div>
+
+        <div class="metric-card metric-prep">
+          <div class="metric-title">Preparing in Kitchen</div>
+          <div class="metric-value" id="metric-prep-count">0</div>
+          <div class="metric-sub">Being freshly packed by halwais</div>
+        </div>
+
+        <div class="metric-card metric-ready">
+          <div class="metric-title">Ready for Pickup</div>
+          <div class="metric-value" id="metric-ready-count">0</div>
+          <div class="metric-sub">Staged at catering shop counter</div>
+        </div>
+
+        <div class="metric-card metric-picked">
+          <div class="metric-title">Picked Up &amp; Completed</div>
+          <div class="metric-value" id="metric-picked-count">0</div>
+          <div class="metric-sub">Handed over after code verification</div>
+        </div>
+      </div>
+
+      <!-- Secondary Metrics Row: Awaiting Payment, Cancelled, Low Stock -->
+      <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 1.5rem; margin-bottom: 2rem;" class="admin-cols-split">
+        <!-- Daily Orders Breakdown -->
+        <div style="background: #FFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-maroon-900); margin-bottom: 1rem;">
+            📅 Daily Order Performance (Verified Database Records)
+          </h3>
+          <div id="overview-daily-summary">
+            <p style="color: var(--color-text-muted); font-size: 0.875rem;">Loading daily summary...</p>
+          </div>
+        </div>
+
+        <!-- Inventory / Low Stock Alert Card -->
+        <div style="background: #FFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-maroon-900); margin-bottom: 1rem;">
+            ⚠️ Inventory &amp; Availability Alerts
+          </h3>
+          <div id="overview-stock-alerts">
+            <p style="color: var(--color-text-muted); font-size: 0.875rem;">Loading inventory status...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: ORDER MANAGEMENT -->
+    <section id="tab-orders" class="admin-tab-content hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--color-maroon-900);">
+            Order Registry
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted);">
+            Search, filter, batch print parcel labels, and manage customer orders.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" id="btn-export-csv" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+            📥 Export Orders (CSV)
+          </button>
+          <button type="button" class="btn btn-primary" id="btn-batch-print-labels" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+            🏷️ Batch Print Labels (<span id="batch-selected-count">0</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Toolbar -->
+      <div class="filter-toolbar">
+        <div class="filter-group">
+          <input 
+            type="search" 
+            id="order-search-input" 
+            class="form-input" 
+            placeholder="Search order #, customer, phone..." 
+            style="width: 250px; padding: 0.5rem 0.85rem; font-size: 0.85rem;"
+          >
+
+          <select id="filter-order-status" class="form-select" style="width: 170px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+            <option value="ALL">All Order Statuses</option>
+            <option value="PAID">PAID</option>
+            <option value="PREPARING">PREPARING</option>
+            <option value="READY_FOR_PICKUP">READY FOR PICKUP</option>
+            <option value="PICKED_UP">PICKED UP</option>
+            <option value="AWAITING_PAYMENT">AWAITING PAYMENT</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+
+          <select id="filter-payment-status" class="form-select" style="width: 160px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+            <option value="ALL">All Payments</option>
+            <option value="PAID">PAID (Verified)</option>
+            <option value="PENDING">PENDING</option>
+            <option value="FAILED">FAILED</option>
+          </select>
+
+          <select id="filter-product" class="form-select" style="width: 180px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+            <option value="ALL">All Products</option>
+            <option value="tnt-trad-sweets">Traditional Sweets</option>
+            <option value="tnt-ghee-sweets">Special Ghee Sweets</option>
+            <option value="tnt-karam-specials">Karam Specials</option>
+            <option value="tnt-dry-fruits">Dry Fruits Sweets</option>
+            <option value="tnt-mixed-combo">Diwali Family Combo</option>
+          </select>
+        </div>
+
+        <button type="button" class="btn btn-outline" id="btn-reset-filters" style="padding: 0.45rem 0.85rem; font-size: 0.8rem;">
+          Reset Filters
+        </button>
+      </div>
+
+      <!-- Orders Table -->
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width: 36px;"><input type="checkbox" id="select-all-orders" title="Select all for batch print"></th>
+              <th>Order Number</th>
+              <th>Date &amp; Time (IST)</th>
+              <th>Customer</th>
+              <th>Items &amp; Units</th>
+              <th>Authoritative Amount</th>
+              <th>Payment</th>
+              <th>Order Status</th>
+              <th>Fulfilment</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-orders-table-body">
+            <tr>
+              <td colspan="10" style="text-align: center; padding: 2.5rem; color: var(--color-text-muted);">
+                Loading orders from server...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: KITCHEN PACKING QUEUE -->
+    <section id="tab-packing" class="admin-tab-content hidden">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--color-maroon-900);">
+          Kitchen Packaging Station
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--color-text-muted);">
+          Verified paid orders ready for fresh preparation, packaging, and parcel labelling.
+          <strong>Unpaid orders never appear in this queue.</strong>
+        </p>
+      </div>
+
+      <div id="packing-queue-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.25rem;">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- TAB 4: COUNTER PICKUP STATION -->
+    <section id="tab-pickup" class="admin-tab-content hidden">
+      <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--color-maroon-900);">
+            Shop Counter Pickup &amp; Verification
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted);">
+            Manage orders ready for customer collection. Enter the customer's presented pickup code to authorize handover.
+          </p>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="btn-open-quick-verify" style="padding: 0.6rem 1.25rem;">
+          🔑 Enter Customer Pickup Code
+        </button>
+      </div>
+
+      <div id="pickup-queue-container">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- TAB 5: PRODUCT & PRICE MASTER -->
+    <section id="tab-products" class="admin-tab-content hidden">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--color-maroon-900);">
+          Product Master &amp; Price Authority
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--color-text-muted);">
+          Manage display prices in integer paise, descriptions, stock quantities, and menu availability.
+          Historical orders preserve snapshots and are never altered by price updates.
+        </p>
+      </div>
+
+      <div id="admin-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- TAB 6: AUDIT TRAIL & LOGS -->
+    <section id="tab-audit" class="admin-tab-content hidden">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--color-maroon-900);">
+          Tamper-Evident Order Event Audit Log
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--color-text-muted);">
+          Complete chronological record of all order creations, payment validations, kitchen transitions, and counter handovers.
+        </p>
+      </div>
+
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Timestamp (IST)</th>
+              <th>Order Ref</th>
+              <th>Event Type</th>
+              <th>From Status</th>
+              <th>To Status</th>
+              <th>Actor</th>
+              <th>Metadata / Notes</th>
+            </tr>
+          </thead>
+          <tbody id="admin-audit-table-body">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: ORDER DETAILS -->
+  <div id="modal-order-details" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <button type="button" class="btn-modal-close" id="btn-close-order-modal">✕</button>
+      <div id="order-details-content">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: COUNTER PICKUP CODE VERIFICATION -->
+  <div id="modal-pickup-verify" class="modal-backdrop hidden">
+    <div class="modal-card" style="max-width: 480px;">
+      <button type="button" class="btn-modal-close" id="btn-close-verify-modal">✕</button>
+      
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">🛍️</span>
+        <h3 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.4rem;">
+          Counter Pickup Verification
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--color-text-muted);">
+          Ask customer for their secret Pickup Code (e.g. <code>TNT-PK-XXXX</code>).
+        </p>
+      </div>
+
+      <form id="pickup-verify-form">
+        <input type="hidden" id="verify-order-id">
+
+        <div class="form-group">
+          <label for="verify-order-display" class="form-label">Order Reference</label>
+          <input type="text" id="verify-order-display" class="form-input font-mono" readonly style="background: #F4F4F4;">
+        </div>
+
+        <div class="form-group">
+          <label for="verify-code-input" class="form-label">
+            Presented Pickup Code <span class="required-star">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="verify-code-input" 
+            class="form-input font-mono" 
+            placeholder="TNT-PK-8921" 
+            required 
+            autocomplete="off"
+            style="font-size: 1.3rem; letter-spacing: 2px; text-transform: uppercase;"
+          >
+        </div>
+
+        <div id="verify-error-alert" class="alert-box alert-warning hidden" style="margin-top: 1rem;"></div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline" style="flex: 1;" onclick="document.getElementById('modal-pickup-verify').classList.add('hidden')">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" style="flex: 1.5;" id="btn-submit-verify">
+            Authorize Handover
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT PRODUCT PRICE & DETAILS -->
+  <div id="modal-edit-product" class="modal-backdrop hidden">
+    <div class="modal-card" style="max-width: 500px;">
+      <button type="button" class="btn-modal-close" onclick="document.getElementById('modal-edit-product').classList.add('hidden')">✕</button>
+      
+      <h3 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.35rem; margin-bottom: 0.25rem;">
+        Edit Product Master
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.25rem;">
+        Updates authoritative server price in integer paise.
+      </p>
+
+      <form id="edit-product-form">
+        <input type="hidden" id="edit-product-id">
+
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" id="edit-product-name" class="form-input" readonly style="background: #F4F4F4;">
+        </div>
+
+        <div class="form-group">
+          <label for="edit-product-price-paise" class="form-label">Price in Integer Paise (e.g. 50000 = ₹500)</label>
+          <input type="number" id="edit-product-price-paise" class="form-input" min="1000" max="500000" step="100" required>
+          <span class="form-helper" id="edit-price-helper">Equivalent in Rupees: ₹0</span>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-product-stock" class="form-label">Stock Quantity Available</label>
+          <input type="number" id="edit-product-stock" class="form-input" min="0" max="10000" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-product-desc" class="form-label">Description</label>
+          <textarea id="edit-product-desc" class="form-textarea" rows="2" maxlength="300"></textarea>
+        </div>
+
+        <div class="checkbox-group" style="margin-top: 1rem;">
+          <input type="checkbox" id="edit-product-active">
+          <label for="edit-product-active" class="checkbox-label">Product is Active on Festive Ordering Menu</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1.25rem;">
+          Save Authoritative Changes
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PRINT ONLY STAGE (Targeted by window.print()) -->
+  <div id="print-document-stage" class="print-only-container">
+    <!-- Clean parcel labels, packing slips, and receipts injected here upon print command -->
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="../assets/js/admin.js"></script>
+</body>
+</html>

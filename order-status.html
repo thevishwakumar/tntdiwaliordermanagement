@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order &amp; Pickup Code | Shree Taste N Taste Catering</title>
+  <meta name="description" content="Check your Diwali order confirmation, retrieve your unique store pickup code, and print customer receipts.">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/print.css" media="print">
+  <link rel="icon" href="assets/images/tnt-logo.jpg" type="image/jpeg">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <aside class="top-bar-announcement" aria-label="Announcement">
+    🪔 TNT Taste N Trust • Spreading Sweetness This Diwali • Shop Counter Pickup Only 🪔
+  </aside>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <nav class="nav-container" aria-label="Primary Navigation">
+      <a href="index.html" class="brand-wrapper">
+        <img src="assets/images/tnt-logo.jpg" alt="TNT Logo" class="brand-logo-img">
+        <div class="brand-text-block">
+          <span class="brand-name">TNT Catering</span>
+          <span class="brand-tagline">Shree Taste N Taste</span>
+        </div>
+      </a>
+
+      <button class="mobile-nav-toggle" id="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+        ☰
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="products.html" class="nav-link">Diwali Sweets &amp; Savouries</a></li>
+        <li><a href="order-status.html" class="nav-link active">Track / Pickup Code</a></li>
+      </ul>
+
+      <div class="nav-cta-group">
+        <a href="checkout.html" class="cart-button-link" aria-label="View Order">
+          <span>🛒 Your Order</span>
+          <span class="tnt-cart-badge hidden">0</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="section">
+    <div style="max-width: 760px; margin: 0 auto 2.5rem; text-align: center;">
+      <span class="section-tag">Order Verification</span>
+      <h1 class="section-title">Track Order &amp; Retrieve Pickup Code</h1>
+      <p class="section-subtitle">
+        Enter your Order Reference and registered Mobile Number to access your verified receipt and official store collection code.
+      </p>
+    </div>
+
+    <!-- Security & Privacy Guard Notice -->
+    <div style="max-width: 760px; margin: 0 auto 2rem;">
+      <div class="alert-box alert-info">
+        <span class="alert-icon">🔒</span>
+        <div class="alert-content">
+          <strong class="alert-title">Customer Privacy &amp; Anti-Enumeration Protection</strong>
+          <p class="alert-desc">
+            To protect customer confidentiality, orders can only be accessed by providing both the unique Order Reference and the corresponding registered 10-digit mobile number.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lookup Form Card -->
+    <section class="checkout-card" style="max-width: 760px; margin: 0 auto 3rem;" aria-labelledby="lookup-form-heading">
+      <h2 class="card-title" id="lookup-form-heading">Order Lookup Verification</h2>
+      <p class="card-desc">
+        Both fields are required to verify authorization.
+      </p>
+
+      <form id="tnt-lookup-form" novalidate>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" class="lookup-grid">
+          <div class="form-group">
+            <label for="input-lookup-ref" class="form-label">
+              Order Reference Code <span class="required-star">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="input-lookup-ref" 
+              name="orderRef" 
+              class="form-input font-mono" 
+              placeholder="e.g. TNT-DEMO-2026" 
+              required
+              autocomplete="off"
+            >
+            <span class="form-helper">Reference code sent upon checkout.</span>
+            <span class="field-error hidden" id="error-lookup-ref"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="input-lookup-mobile" class="form-label">
+              Registered Mobile Number <span class="required-star">*</span>
+            </label>
+            <input 
+              type="tel" 
+              id="input-lookup-mobile" 
+              name="mobile" 
+              class="form-input font-mono" 
+              placeholder="e.g. 9442854444" 
+              required
+              autocomplete="tel"
+              maxlength="14"
+            >
+            <span class="form-helper">10-digit mobile used during order.</span>
+            <span class="field-error hidden" id="error-lookup-mobile"></span>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary btn-block" id="btn-lookup-submit" style="padding: 0.85rem 1.5rem;">
+            Check Order Status
+          </button>
+        </div>
+      </form>
+
+      <!-- Stage 1 Interactive Test Helper Banner -->
+      <div style="background: var(--color-bg-surface-alt); border: 1px dashed var(--color-gold-400); border-radius: var(--radius-md); padding: 1rem; margin-top: 1.5rem; font-size: 0.85rem; color: var(--color-text-muted);">
+        <strong style="color: var(--color-maroon-800);">💡 Stage 1 Prototype Testing Tip:</strong>
+        <p style="margin-top: 0.25rem;">
+          To test verified receipt rendering and receipt printing before Stage 2 backend activation, click below to autofill sample credentials:
+        </p>
+        <button type="button" id="btn-fill-demo" class="btn btn-outline" style="margin-top: 0.5rem; padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+          Autofill Test Demo Reference (TNT-DEMO-2026 / 9442854444)
+        </button>
+      </div>
+    </section>
+
+    <!-- Error Callout Box -->
+    <div id="lookup-error-box" class="alert-box alert-warning hidden" style="max-width: 760px; margin: 0 auto 2rem;"></div>
+
+    <!-- Empty State Prompt -->
+    <div id="lookup-empty-placeholder" style="max-width: 500px; margin: 2rem auto; text-align: center; color: var(--color-text-muted);">
+      <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">🔍</span>
+      <p>Enter your details above to view your confirmed receipt and Pickup Code.</p>
+    </div>
+
+    <!-- Result Receipt Card (Populated by order-status.js) -->
+    <div id="lookup-result-card" class="hidden"></div>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h3>Shree Taste N Taste Catering</h3>
+        <p>
+          TNT (Taste N Trust) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to pure ingredients, culinary mastery, and customer trust.
+        </p>
+        <div class="footer-notice-box">
+          🏬 Fulfilment: Customer Pickup Only from Shop Counter. Home delivery and COD are not supported.
+        </div>
+      </div>
+
+      <div>
+        <h4 class="footer-title">Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Product Catalogue</a></li>
+          <li><a href="checkout.html">Shopping Cart &amp; Checkout</a></li>
+          <li><a href="order-status.html">Track Order &amp; Pickup Code</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-title">Contact Information</h4>
+        <ul class="footer-contacts-list">
+          <li>
+            <span>📞</span>
+            <span><strong>Primary:</strong> <a href="tel:9442854444" style="color: inherit;">9442854444</a></span>
+          </li>
+          <li>
+            <span>📞</span>
+            <span><strong>Secondary:</strong> <a href="tel:7200071040" style="color: inherit;">7200071040</a></span>
+          </li>
+          <li>
+            <span>🏷️</span>
+            <span><strong>Brand:</strong> TNT (Taste N Trust)</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 Shree Taste N Taste Catering (TNT). All rights reserved. • Customer Store Pickup Only</p>
+    </div>
+  </footer>
+
+  <script type="module" src="assets/js/order-status.js"></script>
+  <script type="module">
+    // Mobile nav toggle
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const navMenu = document.getElementById('nav-menu');
+    if (mobileBtn && navMenu) {
+      mobileBtn.addEventListener('click', () => {
+        const isOpen = navMenu.classList.toggle('open');
+        mobileBtn.setAttribute('aria-expanded', String(isOpen));
+      });
+    }
+
+    // Demo fill button
+    const demoBtn = document.getElementById('btn-fill-demo');
+    if (demoBtn) {
+      demoBtn.addEventListener('click', () => {
+        const refInput = document.getElementById('input-lookup-ref');
+        const mobInput = document.getElementById('input-lookup-mobile');
+        if (refInput) refInput.value = 'TNT-DEMO-2026';
+        if (mobInput) mobInput.value = '9442854444';
+        document.getElementById('tnt-lookup-form')?.dispatchEvent(new Event('submit'));
+      });
+    }
+  </script>
+</body>
+</html>

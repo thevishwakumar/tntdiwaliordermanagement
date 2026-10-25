@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diwali Sweets &amp; Savouries Catalogue | Shree Taste N Taste Catering</title>
+  <meta name="description" content="Browse authentic Diwali traditional sweets, special ghee sweets, karam savouries, dry fruit delicacies, and festive family combos from TNT Catering.">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/print.css" media="print">
+  <link rel="icon" href="assets/images/tnt-logo.jpg" type="image/jpeg">
+  <style>
+    .toast-notification {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--color-maroon-900);
+      color: #FFFDF9;
+      border: 1.5px solid var(--color-gold-400);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.4rem;
+      box-shadow: var(--shadow-lg);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      max-width: 90vw;
+    }
+    .toast-icon {
+      color: var(--color-gold-300);
+      font-size: 1.25rem;
+    }
+    .sticky-checkout-banner {
+      position: sticky;
+      bottom: 0;
+      background: rgba(62, 8, 14, 0.95);
+      backdrop-filter: blur(8px);
+      border-top: 2px solid var(--color-gold-400);
+      padding: 0.85rem 1.25rem;
+      z-index: 90;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.25);
+    }
+    .sticky-checkout-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: #FFFFFF;
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: #FFFFFF;
+      border: 1.5px solid var(--color-border);
+      padding: 0.5rem 1.1rem;
+      border-radius: var(--radius-pill);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      color: var(--color-text-main);
+      transition: all var(--transition-fast);
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--color-maroon-700);
+      color: var(--color-gold-200);
+      border-color: var(--color-maroon-700);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <aside class="top-bar-announcement" aria-label="Announcement">
+    🪔 TNT Taste N Trust • Spreading Sweetness This Diwali • Shop Counter Pickup Only 🪔
+  </aside>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <nav class="nav-container" aria-label="Primary Navigation">
+      <a href="index.html" class="brand-wrapper">
+        <img src="assets/images/tnt-logo.jpg" alt="TNT Logo" class="brand-logo-img">
+        <div class="brand-text-block">
+          <span class="brand-name">TNT Catering</span>
+          <span class="brand-tagline">Shree Taste N Taste</span>
+        </div>
+      </a>
+
+      <button class="mobile-nav-toggle" id="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+        ☰
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="products.html" class="nav-link active">Diwali Sweets &amp; Savouries</a></li>
+        <li><a href="order-status.html" class="nav-link">Track / Pickup Code</a></li>
+      </ul>
+
+      <div class="nav-cta-group">
+        <a href="checkout.html" class="cart-button-link" aria-label="View Order">
+          <span>🛒 Your Order</span>
+          <span class="tnt-cart-badge hidden">0</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Catalogue Header Section -->
+    <section class="section" style="padding-bottom: 1.5rem;">
+      <div class="section-header">
+        <span class="section-tag">Authentic Diwali Menu</span>
+        <h1 class="section-title">Festive Sweets &amp; Savouries</h1>
+        <p class="section-subtitle">
+          Handcrafted in pure traditions by Shree Taste N Taste Catering. Priced by kilogram and combo.
+        </p>
+      </div>
+
+      <!-- Quick Category Filter -->
+      <div class="filter-tabs" role="tablist" aria-label="Product Categories">
+        <button type="button" class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All Delicacies (5)</button>
+        <button type="button" class="filter-btn" data-filter="sweets" role="tab" aria-selected="false">Traditional &amp; Ghee Sweets</button>
+        <button type="button" class="filter-btn" data-filter="savouries" role="tab" aria-selected="false">Karam Savouries</button>
+        <button type="button" class="filter-btn" data-filter="dry-fruits" role="tab" aria-selected="false">Dry Fruits Sweets</button>
+        <button type="button" class="filter-btn" data-filter="combo" role="tab" aria-selected="false">Family Combos</button>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="catalogue-grid" aria-live="polite">
+        <!-- Injected via JavaScript module -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Sticky Bottom Checkout Bar (Active when items are in cart) -->
+  <aside class="sticky-checkout-banner hidden" id="sticky-cart-bar" aria-label="Cart Overview Bar">
+    <div class="sticky-checkout-inner">
+      <div>
+        <span id="sticky-item-count" style="font-weight: 700; color: var(--color-gold-300);">0 items</span> in your Diwali order
+        <span style="margin: 0 0.5rem; opacity: 0.5;">|</span>
+        <span>Estimated Total: <strong id="sticky-cart-total" style="font-size: 1.15rem; color: #FFF;">₹0</strong></span>
+      </div>
+      <a href="checkout.html" class="btn btn-secondary" style="padding: 0.5rem 1.25rem;">
+        Proceed to Checkout →
+      </a>
+    </div>
+  </aside>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-box" class="toast-notification hidden" role="status" aria-live="polite"></div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h3>Shree Taste N Taste Catering</h3>
+        <p>
+          TNT (Taste N Trust) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to pure ingredients, culinary mastery, and customer trust.
+        </p>
+        <div class="footer-notice-box">
+          🏬 Fulfilment: Customer Pickup Only from Shop Counter. Home delivery and COD are not supported.
+        </div>
+      </div>
+
+      <div>
+        <h4 class="footer-title">Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Product Catalogue</a></li>
+          <li><a href="checkout.html">Shopping Cart &amp; Checkout</a></li>
+          <li><a href="order-status.html">Track Order &amp; Pickup Code</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-title">Contact Information</h4>
+        <ul class="footer-contacts-list">
+          <li>
+            <span>📞</span>
+            <span><strong>Primary:</strong> <a href="tel:9442854444" style="color: inherit;">9442854444</a></span>
+          </li>
+          <li>
+            <span>📞</span>
+            <span><strong>Secondary:</strong> <a href="tel:7200071040" style="color: inherit;">7200071040</a></span>
+          </li>
+          <li>
+            <span>🏷️</span>
+            <span><strong>Brand:</strong> TNT (Taste N Trust)</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 Shree Taste N Taste Catering (TNT). All rights reserved. • Customer Store Pickup Only</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { PRODUCTS } from './assets/js/products.js';
+    import { formatINR } from './assets/js/config.js';
+    import { CartManager } from './assets/js/cart.js';
+
+    // Mobile nav toggle
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const navMenu = document.getElementById('nav-menu');
+    if (mobileBtn && navMenu) {
+      mobileBtn.addEventListener('click', () => {
+        const isOpen = navMenu.classList.toggle('open');
+        mobileBtn.setAttribute('aria-expanded', String(isOpen));
+      });
+    }
+
+    // Initialize cart badge
+    CartManager.initCartBadge();
+
+    // Render Catalogue
+    const catalogueGrid = document.getElementById('catalogue-grid');
+    let activeFilter = 'all';
+
+    function renderProducts() {
+      if (!catalogueGrid) return;
+
+      const filtered = activeFilter === 'all' 
+        ? PRODUCTS 
+        : PRODUCTS.filter(p => p.category === activeFilter);
+
+      let html = '';
+      filtered.forEach(item => {
+        const includedItemsList = item.includedItems && item.includedItems.length > 0
+          ? `
+            <div class="product-items-included">
+              <span class="items-included-label">Assortment Includes:</span>
+              <ul class="included-list">
+                ${item.includedItems.map(i => `<li>${i}</li>`).join('')}
+              </ul>
+            </div>
+          ` : '';
+
+        html += `
+          <article class="product-card" id="card-${item.id}">
+            <div class="product-media">
+              <img src="${item.image}" alt="${item.name}" class="product-img" loading="lazy">
+              <span class="product-badge">${item.badge}</span>
+            </div>
+
+            <div class="product-content">
+              <div class="product-header">
+                <h2 class="product-title">${item.name}</h2>
+                <p class="product-tamil">${item.tamilName}</p>
+              </div>
+
+              <div class="product-pricing">
+                <span class="product-price">${formatINR(item.price)}</span>
+                <span class="product-unit">per ${item.unit}</span>
+              </div>
+
+              <p class="product-desc">${item.description}</p>
+
+              ${includedItemsList}
+
+              <div class="product-actions">
+                <div class="product-qty-selector" role="group" aria-label="Quantity for ${item.name}">
+                  <button type="button" class="qty-btn" aria-label="Decrease quantity" data-action="dec" data-id="${item.id}">-</button>
+                  <input type="number" id="qty-input-${item.id}" class="qty-input" value="1" min="1" max="50" step="1" aria-label="Quantity in ${item.unit}">
+                  <button type="button" class="qty-btn" aria-label="Increase quantity" data-action="inc" data-id="${item.id}">+</button>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-add-order" data-id="${item.id}" style="flex: 1;">
+                  Add to Order
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      });
+
+      catalogueGrid.innerHTML = html;
+      attachProductCardListeners();
+    }
+
+    function attachProductCardListeners() {
+      // Quantity Buttons
+      document.querySelectorAll('.qty-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const action = e.currentTarget.dataset.action;
+          const id = e.currentTarget.dataset.id;
+          const input = document.getElementById(`qty-input-${id}`);
+          if (input) {
+            let val = parseInt(input.value, 10) || 1;
+            if (action === 'inc' && val < 50) val += 1;
+            if (action === 'dec' && val > 1) val -= 1;
+            input.value = val;
+          }
+        });
+      });
+
+      // Add to Order buttons
+      document.querySelectorAll('.btn-add-order').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.currentTarget.dataset.id;
+          const input = document.getElementById(`qty-input-${id}`);
+          const qty = parseInt(input?.value, 10) || 1;
+
+          const res = CartManager.addItem(id, qty);
+          showToast(res.message);
+        });
+      });
+    }
+
+    // Category Filter Listener
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        e.currentTarget.classList.add('active');
+        e.currentTarget.setAttribute('aria-selected', 'true');
+        activeFilter = e.currentTarget.dataset.filter;
+        renderProducts();
+      });
+    });
+
+    // Toast function
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast-box');
+      if (!toast) return;
+
+      toast.innerHTML = `<span class="toast-icon">✓</span> <span>${msg}</span>`;
+      toast.classList.remove('hidden');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    // Update sticky cart banner
+    function syncStickyBar() {
+      const bar = document.getElementById('sticky-cart-bar');
+      const countEl = document.getElementById('sticky-item-count');
+      const totalEl = document.getElementById('sticky-cart-total');
+      if (!bar) return;
+
+      const { itemCount, subtotal } = CartManager.getTotals();
+      if (itemCount > 0) {
+        bar.classList.remove('hidden');
+        if (countEl) countEl.textContent = `${itemCount} ${itemCount === 1 ? 'item' : 'items'}`;
+        if (totalEl) totalEl.textContent = formatINR(subtotal);
+      } else {
+        bar.classList.add('hidden');
+      }
+    }
+
+    window.addEventListener('tnt:cart-updated', syncStickyBar);
+
+    // Initial render
+    renderProducts();
+    syncStickyBar();
+  </script>
+</body>
+</html>

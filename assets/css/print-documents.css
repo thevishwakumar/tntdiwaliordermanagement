@@ -1,0 +1,356 @@
+/* ==============================================================================
+   TNT DIWALI ORDER MANAGEMENT SYSTEM — PRINT DOCUMENTS STYLESHEET
+   Supports: 1-Page Box Sticker Labels, Kitchen Packing Slips, and Customer Receipts
+   Optimized for: Thermal printers (4x6"), A4, and A5 sticker sheets (Strictly 1 Page)
+   ============================================================================== */
+
+@media screen {
+  .print-only-container {
+    display: none;
+  }
+}
+
+/* ==============================================================================
+   PARCEL BOX STICKER LABEL COMPONENT (Screen & Print Shared Styles)
+   Designed specifically to be stuck onto sweet boxes / parcels
+   ============================================================================== */
+.parcel-label-card {
+  background: #FFFFFF;
+  border: 2.5px solid #000000;
+  border-radius: 8px;
+  padding: 12px 16px;
+  max-width: 650px;
+  margin: 0 auto 15px auto;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: #000000;
+  box-sizing: border-box;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+.parcel-label-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #000000;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.parcel-brand-logo {
+  height: 44px;
+  width: 44px;
+  object-fit: contain;
+  border-radius: 4px;
+  margin-right: 10px;
+  border: 1px solid #000000;
+}
+
+.parcel-brand-info {
+  display: flex;
+  align-items: center;
+}
+
+.parcel-brand-name {
+  font-size: 1.15rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.15;
+}
+
+.parcel-brand-sub {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #333333;
+}
+
+.parcel-header-badges {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-end;
+}
+
+.parcel-sticker-tag {
+  background: #C41E3A;
+  color: #FFFFFF;
+  font-weight: 900;
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.parcel-pickup-banner {
+  background: #000000;
+  color: #FFFFFF;
+  font-weight: 900;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: inline-block;
+}
+
+.parcel-order-number-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #F4F4F4;
+  border: 1.5px solid #000000;
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.parcel-order-num-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #444444;
+}
+
+.parcel-order-num-val {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #000000;
+  line-height: 1.1;
+}
+
+.parcel-customer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.9fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.parcel-info-block {
+  border: 1px solid #B0B0B0;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: #FAFAFA;
+}
+
+.parcel-info-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #555555;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.parcel-customer-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #000000;
+  line-height: 1.2;
+}
+
+.parcel-customer-mobile {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #000000;
+}
+
+.parcel-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.parcel-items-table th, .parcel-items-table td {
+  border: 1px solid #000000;
+  padding: 5px 8px;
+  font-size: 0.82rem;
+  text-align: left;
+}
+
+.parcel-items-table th {
+  background: #EAEAEA;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.parcel-footer-grid {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  gap: 10px;
+  align-items: center;
+  border-top: 1.5px solid #000000;
+  padding-top: 8px;
+}
+
+.parcel-paid-badge {
+  display: inline-block;
+  border: 1.5px solid #000000;
+  background: #E8F5E9;
+  color: #1B5E20;
+  padding: 2px 6px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.parcel-qr-wrapper {
+  text-align: center;
+}
+
+.parcel-qr-caption {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #333333;
+  margin-top: 2px;
+}
+
+/* ==============================================================================
+   PACKING SLIP COMPONENT
+   ============================================================================== */
+.packing-slip-card {
+  background: #FFFFFF;
+  border: 2px solid #000000;
+  padding: 16px 20px;
+  max-width: 700px;
+  margin: 0 auto 15px auto;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: #000000;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+.packing-slip-header {
+  border-bottom: 2px solid #000000;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.slip-title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.slip-checklist-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dashed #777777;
+  font-size: 0.9rem;
+}
+
+.slip-checkbox-box {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #000000;
+  margin-right: 10px;
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.slip-sign-row {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  border-top: 1px solid #000000;
+  padding-top: 10px;
+  font-size: 0.8rem;
+}
+
+/* ==============================================================================
+   PRINT-ONLY RULES (@media print)
+   Strictly Enforce 1-Page Box Sticker Output without Blank 2nd Page Spillovers
+   ============================================================================== */
+@page {
+  size: auto;
+  margin: 6mm 8mm;
+}
+
+@media print {
+  /* Hide all dashboard chrome and page contents */
+  body > *:not(#print-document-stage),
+  .site-header,
+  .admin-subnav,
+  .admin-content-area,
+  .modal-backdrop,
+  .modal-overlay,
+  .site-footer,
+  .btn,
+  button,
+  input,
+  select,
+  .no-print {
+    display: none !important;
+  }
+
+  html, body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    font-size: 10pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-only-container {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Single box sticker strictly fits on 1 page */
+  .parcel-label-card {
+    border: 2.5px solid #000000 !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 10mm 12mm !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    max-height: 96vh !important;
+  }
+
+  .packing-slip-card {
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    margin: 0 auto 10mm auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Page break between batch printed labels */
+  .page-break-after {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  /* Thermal label sticker size mode (4x6 inches / 100mm x 150mm) */
+  body.print-thermal-mode .parcel-label-card {
+    width: 96mm !important;
+    height: 142mm !important;
+    max-height: 142mm !important;
+    padding: 5mm !important;
+    border: 2px solid #000000 !important;
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+}
