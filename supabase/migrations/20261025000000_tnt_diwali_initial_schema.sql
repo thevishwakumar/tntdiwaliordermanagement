@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- TNT DIWALI ORDER MANAGEMENT SYSTEM — DATABASE SCHEMA & RLS MIGRATION
--- Brand: Shree Taste N Taste Catering (TNT - Taste N Trust)
+-- Brand: Shree Taste N Taste Catering (TNT - Taste N Taste)
 -- Target: Supabase PostgreSQL (Production Grade)
 -- ==============================================================================
 
