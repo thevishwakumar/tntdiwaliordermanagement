@@ -445,4 +445,29 @@ test('LIVE PRODUCTION E2E SUITE', async (t) => {
     assert.strictEqual(goodWebhookData.success, true);
     console.log(`  ✔ Razorpay Webhook Defense & Idempotency Verified.`);
   });
+
+  // -------------------------------------------------------------------------
+  // TEST 11: Razorpay QR-First Configuration & Customer Receipt Verification
+  // -------------------------------------------------------------------------
+  await t.test('Test 11: QR-First Checkout Architecture & Single Customer Receipt', async () => {
+    // 1. Verify checkout.js contains the official Razorpay QR-First blocks & polling
+    const checkoutJsContent = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'checkout.js'), 'utf8');
+    assert.ok(checkoutJsContent.includes('flows: ["qr"]'), 'Razorpay config must declare flows: ["qr"] for dynamic UPI QR code');
+    assert.ok(checkoutJsContent.includes('"block.qr_code", "block.upi_apps", "block.cards", "block.other"'), 'Razorpay sequence must have block.qr_code as primary default');
+    assert.ok(checkoutJsContent.includes('startPaymentStatusPolling'), 'Must have real-time background status polling for mobile QR completion');
+    assert.ok(checkoutJsContent.includes('Other Payment Methods'), 'Must offer secondary Other Payment Methods option');
+
+    // 2. Verify order-status.js strictly shows only customer receipt (no 2-page or kitchen checklist)
+    const orderStatusJsContent = fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'order-status.js'), 'utf8');
+    assert.ok(!orderStatusJsContent.includes('Kitchen Packaging &amp; Item Verification Checklist'), 'Customer receipt must NOT show kitchen packaging checklist');
+    assert.ok(!orderStatusJsContent.includes('Shop Counter Handover &amp; Verification Certificate'), 'Customer receipt must NOT show staff counter handover certificate');
+    assert.ok(!orderStatusJsContent.includes('Page 1 of 2'), 'Must NOT mention 2-page receipt');
+    assert.ok(!orderStatusJsContent.includes('Page 2 of 2'), 'Must NOT mention 2-page receipt');
+    assert.ok(orderStatusJsContent.includes('Official Customer Receipt'), 'Must show Official Customer Receipt');
+    assert.ok(orderStatusJsContent.includes('CUSTOMER RECEIPT / வாடிக்கையாளர் ரசீது'), 'Must include bilingual Tamil/English customer receipt pill');
+
+    console.log(`  ✔ QR-First Razorpay Configuration Verified.`);
+    console.log(`  ✔ Single Customer Receipt Verified (Zero internal kitchen/2-page mentions).`);
+  });
 });
+

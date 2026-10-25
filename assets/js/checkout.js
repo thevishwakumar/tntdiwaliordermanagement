@@ -1,14 +1,24 @@
 /**
  * TNT Diwali Order Management System
- * Checkout Experience Controller
+ * QR-First Checkout Experience Controller
+ * 
+ * Features:
+ * 1. Default & Primary: Razorpay dynamic UPI QR Code ("Scan & Pay").
+ * 2. Accessible Alternative Methods: UPI Apps (GPay, PhonePe, Paytm), Debit/Credit Cards, Netbanking.
+ * 3. Real-time background status polling to detect mobile QR scan completion automatically.
+ * 4. Authoritative server pricing & cryptographic HMAC-SHA256 signature verification.
+ * 5. Customer pickup only (no home delivery, no Cash on Delivery).
  */
 
 import { CartManager } from './cart.js';
-import { APP_CONFIG, formatINR, formatQuantityUnit, isBackendLive } from './config.js';
+import { APP_CONFIG, formatINR, formatQuantityUnit } from './config.js';
 import { validateCheckoutForm } from './validation.js';
 import { OrderAPI } from './api.js';
 
 let isSubmitting = false;
+let activePaymentSession = null;
+let statusPollingInterval = null;
+let sessionCountdownInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initCheckout();
@@ -142,9 +152,6 @@ function attachItemControlListeners() {
 }
 
 /**
- * Display Stage 2 status message regarding backend readiness
- */
-/**
  * Dynamically load Razorpay Checkout SDK
  */
 function loadRazorpaySdk() {
@@ -157,7 +164,7 @@ function loadRazorpaySdk() {
 }
 
 /**
- * Display Stage 3 status message regarding live payment readiness
+ * Display secure online payment notice
  */
 function renderBackendStatusNotice() {
   const noticeContainer = document.getElementById('backend-readiness-notice');
@@ -272,111 +279,25 @@ function setupFormListeners() {
         return;
       }
 
-      // Ensure Razorpay SDK is loaded
-      if (!window.Razorpay) {
-        await new Promise((resolve) => {
-          if (window.Razorpay) return resolve(true);
-          const s = document.createElement('script');
-          s.src = 'https://checkout.razorpay.com/v1/checkout.js';
-          s.onload = () => resolve(true);
-          s.onerror = () => resolve(false);
-          document.head.appendChild(s);
-          setTimeout(() => resolve(Boolean(window.Razorpay)), 3000);
-        });
-      }
-
-      if (!window.Razorpay) {
-        showCheckoutFeedback('error', 'Unable to load Razorpay payment window. Please check your internet connection or ad-blocker.');
-        setSubmittingState(false);
-        return;
-      }
-
-      const options = {
-        key: rzpKeyId,
-        amount: response.totalPaise,
-        currency: 'INR',
-        name: APP_CONFIG.business.name,
-        description: `Diwali Sweets Pre-Order: ${response.publicOrderNumber}`,
-        image: 'assets/images/tnt-logo.jpg',
-        order_id: rzpOrderId,
-        prefill: {
-          name: validation.cleanData.fullName,
-          contact: validation.cleanData.mobile,
-          email: validation.cleanData.email
-        },
-        theme: {
-          color: '#78101C'
-        },
-        config: {
-          display: {
-            blocks: {
-              upi: {
-                name: "Pay using UPI / QR Code (GPay, PhonePe, Paytm)",
-                instruments: [
-                  {
-                    method: "upi"
-                  }
-                ]
-              },
-              other: {
-                name: "Cards, Netbanking & Wallets",
-                instruments: [
-                  {
-                    method: "card"
-                  },
-                  {
-                    method: "netbanking"
-                  },
-                  {
-                    method: "wallet"
-                  }
-                ]
-              }
-            },
-            sequence: ["block.upi", "block.other"],
-            preferences: {
-              show_default_blocks: true
-            }
-          }
-        },
-        handler: async function (paymentResponse) {
-          setSubmittingState(true);
-          showCheckoutFeedback('info', 'Verifying payment signature with secure server...');
-
-          const verificationPayload = {
-            orderId: response.orderId,
-            razorpayPaymentId: paymentResponse.razorpay_payment_id,
-            razorpayOrderId: paymentResponse.razorpay_order_id,
-            razorpaySignature: paymentResponse.razorpay_signature
-          };
-
-          const verifyResult = await OrderAPI.verifyPayment(verificationPayload);
-
-          if (verifyResult.verified) {
-            CartManager.clearCart();
-            window.location.href = `order-status.html?ref=${encodeURIComponent(response.publicOrderNumber)}&mobile=${encodeURIComponent(validation.cleanData.mobile)}&verified=1`;
-          } else {
-            showCheckoutFeedback('error', verifyResult.message || 'Payment signature could not be verified.');
-            setSubmittingState(false);
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            setSubmittingState(false);
-            showCheckoutFeedback('info', 'Payment window was closed. Your order is pending payment. Click Proceed to Online Payment to retry.');
-          }
-        }
+      // Initialize active payment session
+      activePaymentSession = {
+        orderId: response.orderId,
+        publicOrderNumber: response.publicOrderNumber,
+        totalPaise: response.totalPaise,
+        totalAmount: response.totalAmount || (response.totalPaise / 100),
+        customerMobile: validation.cleanData.mobile,
+        customerName: validation.cleanData.fullName,
+        customerEmail: validation.cleanData.email,
+        razorpayOrderId: rzpOrderId,
+        razorpayKeyId: rzpKeyId,
+        expiresAt: Date.now() + 10 * 60 * 1000 // 10-minute session validity
       };
 
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (failResp) {
-        console.error('Payment failed:', failResp);
-        showCheckoutFeedback('error', `Payment failed: ${failResp.error?.description || 'Transaction unsuccessful'}`);
-        setSubmittingState(false);
-      });
+      // Show Scan & Pay QR-First Session Modal
+      showQrPaymentModal(activePaymentSession);
 
-      rzp.open();
-      return;
+      // Immediately launch Razorpay QR Checkout by default
+      openRazorpayCheckout('qr');
 
     } catch (err) {
       console.error('Checkout error:', err);
@@ -384,6 +305,356 @@ function setupFormListeners() {
       setSubmittingState(false);
     }
   });
+}
+
+/**
+ * Display the QR-First "Scan & Pay" Session Modal Overlay
+ */
+function showQrPaymentModal(session) {
+  // Remove existing modal if any
+  const existing = document.getElementById('qr-payment-modal');
+  if (existing) existing.remove();
+
+  const formattedAmount = formatINR(session.totalAmount);
+
+  const modalHtml = `
+    <div id="qr-payment-modal" class="qr-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="qr-heading">
+      <div class="qr-modal-card">
+        <!-- Header -->
+        <div class="qr-modal-header">
+          <h3 class="qr-modal-title" id="qr-heading">
+            <span>📱</span> Scan &amp; Pay (UPI QR)
+          </h3>
+          <button type="button" class="qr-modal-close-btn" id="btn-qr-modal-close" aria-label="Close Payment Modal" title="Close">✕</button>
+        </div>
+
+        <!-- Body -->
+        <div class="qr-modal-body">
+          <!-- Amount Payable Display -->
+          <div class="qr-amount-display">
+            <div class="qr-amount-label">Exact Amount Payable</div>
+            <div class="qr-amount-value" id="qr-modal-amount">${formattedAmount}</div>
+            <div style="margin-top: 0.35rem;">
+              <span class="qr-ref-pill">Order Ref: <strong>${escapeHTML(session.publicOrderNumber)}</strong></span>
+            </div>
+          </div>
+
+          <!-- QR Instruction Banner -->
+          <div class="qr-scan-badge-banner">
+            <span>⚡</span>
+            <span>Scan using Google Pay, PhonePe, Paytm, BHIM, or any UPI App</span>
+          </div>
+
+          <!-- Live Payment Status -->
+          <div class="qr-status-pulse" id="qr-status-container">
+            <div class="qr-pulse-dot"></div>
+            <span id="qr-status-text">Awaiting payment confirmation...</span>
+          </div>
+
+          <!-- Primary Actions (QR Default, Other Methods Below) -->
+          <div class="qr-modal-actions">
+            <!-- 1. Primary QR Button -->
+            <button type="button" class="qr-btn-primary" id="btn-open-qr-flow">
+              <span>📱</span>
+              <span>Open Scan &amp; Pay (UPI QR Code)</span>
+            </button>
+
+            <!-- 2. Alternative Payment Methods -->
+            <button type="button" class="qr-btn-secondary" id="btn-open-other-methods">
+              <span>💳</span>
+              <span>Other Payment Methods (UPI Apps, Cards, Netbanking)</span>
+            </button>
+
+            <!-- 3. Safe Cancel Option -->
+            <button type="button" class="btn-cancel-checkout" id="btn-cancel-session" style="background: transparent; border: none; color: var(--color-text-muted); font-size: 0.82rem; cursor: pointer; text-decoration: underline; margin-top: 0.25rem;">
+              Cancel Payment &amp; Edit Order
+            </button>
+          </div>
+
+          <!-- Expiry Timer Countdown -->
+          <div class="qr-timer-text" id="qr-timer-countdown">
+            ⏳ Payment session active • Valid for 10:00 minutes
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Attach event handlers
+  document.getElementById('btn-open-qr-flow')?.addEventListener('click', () => {
+    openRazorpayCheckout('qr');
+  });
+
+  document.getElementById('btn-open-other-methods')?.addEventListener('click', () => {
+    openRazorpayCheckout('other');
+  });
+
+  document.getElementById('btn-qr-modal-close')?.addEventListener('click', () => {
+    handlePaymentWindowPaused();
+  });
+
+  document.getElementById('btn-cancel-session')?.addEventListener('click', () => {
+    cancelPaymentSession();
+  });
+
+  // Start background status polling & session countdown
+  startPaymentStatusPolling(session.publicOrderNumber, session.customerMobile);
+  startSessionTimer(session.expiresAt);
+}
+
+/**
+ * Open Razorpay Standard Checkout with custom display blocks
+ * @param {'qr' | 'other'} flow - 'qr' displays QR Code first; 'other' displays UPI apps & cards first.
+ */
+async function openRazorpayCheckout(flow = 'qr') {
+  if (!activePaymentSession) return;
+
+  // Ensure Razorpay SDK is loaded
+  if (!window.Razorpay) {
+    await new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+      const s = document.createElement('script');
+      s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      s.onload = () => resolve(true);
+      s.onerror = () => resolve(false);
+      document.head.appendChild(s);
+      setTimeout(() => resolve(Boolean(window.Razorpay)), 3000);
+    });
+  }
+
+  if (!window.Razorpay) {
+    showCheckoutFeedback('error', 'Unable to load payment gateway. Please check your internet connection or ad-blocker.');
+    return;
+  }
+
+  const session = activePaymentSession;
+
+  // Block definitions conforming to Razorpay Custom Checkout guidelines
+  const blocks = {
+    qr_code: {
+      name: "Scan & Pay (UPI QR Code)",
+      instruments: [
+        {
+          method: "upi",
+          flows: ["qr"]
+        }
+      ]
+    },
+    upi_apps: {
+      name: "UPI Apps (Google Pay, PhonePe, Paytm)",
+      instruments: [
+        {
+          method: "upi",
+          flows: ["intent", "collect"]
+        }
+      ]
+    },
+    cards: {
+      name: "Debit & Credit Cards",
+      instruments: [
+        {
+          method: "card"
+        }
+      ]
+    },
+    other: {
+      name: "Other Payment Methods (Netbanking & Wallets)",
+      instruments: [
+        {
+          method: "netbanking"
+        },
+        {
+          method: "wallet"
+        }
+      ]
+    }
+  };
+
+  // Sequence: Default is QR Code first; 'other' shows alternative methods first
+  const sequence = (flow === 'other')
+    ? ["block.upi_apps", "block.cards", "block.other", "block.qr_code"]
+    : ["block.qr_code", "block.upi_apps", "block.cards", "block.other"];
+
+  const options = {
+    key: session.razorpayKeyId,
+    amount: session.totalPaise,
+    currency: 'INR',
+    name: APP_CONFIG.business.name,
+    description: `Diwali Pre-Order: ${session.publicOrderNumber}`,
+    image: 'assets/images/tnt-logo.jpg',
+    order_id: session.razorpayOrderId,
+    prefill: {
+      name: session.customerName,
+      contact: session.customerMobile,
+      email: session.customerEmail
+    },
+    theme: {
+      color: '#78101C'
+    },
+    config: {
+      display: {
+        blocks: blocks,
+        sequence: sequence,
+        preferences: {
+          show_default_blocks: false
+        }
+      }
+    },
+    handler: async function (paymentResponse) {
+      updatePaymentStatusText('Verifying digital signature with secure backend...');
+
+      const verificationPayload = {
+        orderId: session.orderId,
+        razorpayPaymentId: paymentResponse.razorpay_payment_id,
+        razorpayOrderId: paymentResponse.razorpay_order_id,
+        razorpaySignature: paymentResponse.razorpay_signature
+      };
+
+      try {
+        const verifyResult = await OrderAPI.verifyPayment(verificationPayload);
+
+        if (verifyResult.verified) {
+          cleanUpTimersAndModal();
+          CartManager.clearCart();
+          window.location.href = `order-status.html?ref=${encodeURIComponent(session.publicOrderNumber)}&mobile=${encodeURIComponent(session.customerMobile)}&verified=1`;
+        } else {
+          updatePaymentStatusText('Signature verification failed: ' + (verifyResult.message || 'Invalid signature'));
+          showCheckoutFeedback('error', verifyResult.message || 'Payment signature could not be verified.');
+        }
+      } catch (verErr) {
+        console.error('Verification error:', verErr);
+        updatePaymentStatusText('Verification error. Checking order status...');
+      }
+    },
+    modal: {
+      ondismiss: function () {
+        handlePaymentWindowPaused();
+      }
+    }
+  };
+
+  try {
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function (failResp) {
+      console.warn('Razorpay payment attempt failed:', failResp);
+      updatePaymentStatusText(`Payment failed: ${failResp.error?.description || 'Transaction unsuccessful'}. You can retry anytime.`);
+    });
+    rzp.open();
+  } catch (err) {
+    console.error('Failed to open Razorpay checkout:', err);
+    updatePaymentStatusText('Failed to initialize payment window. Please click "Open Scan & Pay" to retry.');
+  }
+}
+
+/**
+ * Handle user closing the Razorpay overlay (without cancelling order)
+ */
+function handlePaymentWindowPaused() {
+  updatePaymentStatusText('Payment window paused. Click "Open Scan & Pay" to resume or choose "Other Payment Methods".');
+}
+
+/**
+ * Safely cancel payment session and restore checkout form
+ */
+function cancelPaymentSession() {
+  cleanUpTimersAndModal();
+  activePaymentSession = null;
+  setSubmittingState(false);
+  showCheckoutFeedback('info', 'Payment session cancelled. You can adjust your items or details and retry anytime.');
+}
+
+/**
+ * Start real-time background status polling
+ * Detects payments made via mobile QR scan or webhooks automatically
+ */
+function startPaymentStatusPolling(orderRef, mobile) {
+  if (statusPollingInterval) clearInterval(statusPollingInterval);
+
+  statusPollingInterval = setInterval(async () => {
+    if (!activePaymentSession) {
+      clearInterval(statusPollingInterval);
+      return;
+    }
+
+    try {
+      const res = await OrderAPI.lookupOrder(orderRef, mobile);
+      if (res.success && res.order && res.order.paymentStatus === 'PAID_VERIFIED') {
+        // Payment verified! Redirect immediately
+        clearInterval(statusPollingInterval);
+        cleanUpTimersAndModal();
+        CartManager.clearCart();
+        window.location.href = `order-status.html?ref=${encodeURIComponent(orderRef)}&mobile=${encodeURIComponent(mobile)}&verified=1`;
+      }
+    } catch (e) {
+      // Silently ignore polling hiccups
+    }
+  }, 2500);
+}
+
+/**
+ * Start 10-minute session countdown timer
+ */
+function startSessionTimer(expiresAt) {
+  if (sessionCountdownInterval) clearInterval(sessionCountdownInterval);
+
+  const countdownEl = document.getElementById('qr-timer-countdown');
+
+  sessionCountdownInterval = setInterval(() => {
+    const remainingMs = expiresAt - Date.now();
+    if (remainingMs <= 0) {
+      clearInterval(sessionCountdownInterval);
+      if (statusPollingInterval) clearInterval(statusPollingInterval);
+
+      if (countdownEl) {
+        countdownEl.innerHTML = `<span style="color: #C62828; font-weight: 700;">⚠️ Payment session has expired.</span>`;
+      }
+      updatePaymentStatusText('Payment session expired. Please start a fresh attempt.');
+
+      // Update primary button to retry
+      const btnPrimary = document.getElementById('btn-open-qr-flow');
+      if (btnPrimary) {
+        btnPrimary.innerHTML = `<span>🔄</span><span>Create Fresh Payment Attempt</span>`;
+        btnPrimary.onclick = () => {
+          cleanUpTimersAndModal();
+          activePaymentSession = null;
+          setSubmittingState(false);
+          document.getElementById('btn-submit-order')?.click();
+        };
+      }
+      return;
+    }
+
+    const totalSeconds = Math.floor(remainingMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    if (countdownEl) {
+      countdownEl.textContent = `⏳ Payment session active • Valid for ${formattedTime} minutes`;
+    }
+  }, 1000);
+}
+
+function updatePaymentStatusText(text) {
+  const statusEl = document.getElementById('qr-status-text');
+  if (statusEl) {
+    statusEl.textContent = text;
+  }
+}
+
+function cleanUpTimersAndModal() {
+  if (statusPollingInterval) {
+    clearInterval(statusPollingInterval);
+    statusPollingInterval = null;
+  }
+  if (sessionCountdownInterval) {
+    clearInterval(sessionCountdownInterval);
+    sessionCountdownInterval = null;
+  }
+  const modal = document.getElementById('qr-payment-modal');
+  if (modal) modal.remove();
 }
 
 function displayValidationErrors(errors) {
@@ -432,11 +703,11 @@ function setSubmittingState(submitting) {
     if (submitting) {
       submitBtn.classList.add('btn-loading');
       if (spinner) spinner.classList.remove('hidden');
-      if (btnText) btnText.textContent = 'Validating Order...';
+      if (btnText) btnText.textContent = 'Generating Razorpay QR...';
     } else {
       submitBtn.classList.remove('btn-loading');
       if (spinner) spinner.classList.add('hidden');
-      if (btnText) btnText.textContent = 'Proceed to Online Payment (Razorpay)';
+      if (btnText) btnText.textContent = '📱 Proceed to Scan & Pay (UPI QR Code)';
     }
   }
 }

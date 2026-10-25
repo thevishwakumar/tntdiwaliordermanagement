@@ -190,10 +190,42 @@
           </div>
 
           <div style="margin-top: 2rem;">
+            <!-- QR-First Payment Method Selector Preview -->
+            <div class="checkout-payment-preview-card" style="background: var(--color-bg-surface-alt); border: 1.5px solid var(--color-gold-400); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                  <span style="font-size: 1.6rem;">📱</span>
+                  <div>
+                    <strong style="color: var(--color-maroon-900); font-size: 1rem;">Default: Scan &amp; Pay (UPI QR Code)</strong>
+                    <div style="font-size: 0.8rem; color: var(--color-text-muted);">Instant dynamic QR scan using Google Pay, PhonePe, Paytm, or BHIM</div>
+                  </div>
+                </div>
+                <span class="status-badge" style="background: #E8F5E9; color: #1B5E20; font-weight: 800; font-size: 0.75rem;">PRIMARY</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center; font-size: 0.8rem; background: #FFFFFF; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                <div>
+                  <div style="font-size: 1.2rem;">📱</div>
+                  <div style="font-weight: 700; color: var(--color-maroon-900);">1. Razorpay QR</div>
+                  <div style="color: var(--color-text-muted); font-size: 0.72rem;">Default &amp; Primary</div>
+                </div>
+                <div>
+                  <div style="font-size: 1.2rem;">⚡</div>
+                  <div style="font-weight: 700; color: var(--color-maroon-900);">2. UPI Apps</div>
+                  <div style="color: var(--color-text-muted); font-size: 0.72rem;">GPay, PhonePe, Paytm</div>
+                </div>
+                <div>
+                  <div style="font-size: 1.2rem;">💳</div>
+                  <div style="font-weight: 700; color: var(--color-maroon-900);">3. Cards &amp; Netbanking</div>
+                  <div style="color: var(--color-text-muted); font-size: 0.72rem;">Debit, Credit Cards</div>
+                </div>
+              </div>
+            </div>
+
             <button type="submit" class="btn btn-primary btn-block" id="btn-submit-order"
-              style="padding: 1rem 1.5rem; font-size: 1.05rem;">
+              style="padding: 1.1rem 1.5rem; font-size: 1.1rem;">
               <span id="checkout-spinner" class="hidden">⏳ </span>
-              <span id="btn-submit-text">Proceed to Online Payment (Razorpay)</span>
+              <span id="btn-submit-text">📱 Proceed to Scan &amp; Pay (UPI QR Code)</span>
             </button>
             <p style="text-align: center; font-size: 0.8rem; color: var(--color-text-light); margin-top: 0.75rem;">
               🔒 256-bit Encrypted Payment Gateway • Authorized by Shree Taste N Taste Catering
