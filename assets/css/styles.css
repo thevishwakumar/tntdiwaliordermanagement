@@ -1096,18 +1096,6 @@ button, input, select, textarea {
   margin: 0 auto;
 }
 
-.demo-badge-banner {
-  background: var(--color-warning-bg);
-  border: 1px solid var(--color-gold-400);
-  color: var(--color-warning);
-  font-weight: 700;
-  font-size: 0.8rem;
-  text-align: center;
-  padding: 0.4rem 0.75rem;
-  border-radius: var(--radius-sm);
-  margin-bottom: 1.5rem;
-  letter-spacing: 0.5px;
-}
 
 .receipt-header {
   display: flex;

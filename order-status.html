@@ -120,15 +120,17 @@
         </div>
       </form>
 
-      <!-- Stage 1 Interactive Test Helper Banner -->
-      <div style="background: var(--color-bg-surface-alt); border: 1px dashed var(--color-gold-400); border-radius: var(--radius-md); padding: 1rem; margin-top: 1.5rem; font-size: 0.85rem; color: var(--color-text-muted);">
-        <strong style="color: var(--color-maroon-800);">💡 Stage 1 Prototype Testing Tip:</strong>
-        <p style="margin-top: 0.25rem;">
-          To test verified receipt rendering and receipt printing before Stage 2 backend activation, click below to autofill sample credentials:
-        </p>
-        <button type="button" id="btn-fill-demo" class="btn btn-outline" style="margin-top: 0.5rem; padding: 0.35rem 0.75rem; font-size: 0.8rem;">
-          Autofill Test Demo Reference (TNT-DEMO-2026 / 9442854444)
-        </button>
+      <!-- Shop Counter Location Card -->
+      <div style="background: var(--color-bg-surface-alt); border: 1px solid var(--color-gold-400); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-top: 1.5rem; font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <strong style="color: var(--color-maroon-900);">📍 Official Pickup Counter Location:</strong>
+          <p style="margin-top: 0.2rem; color: var(--color-text-muted);">
+            Shree Taste N Taste Catering • Shop Counter Collection Only
+          </p>
+        </div>
+        <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="padding: 0.4rem 0.85rem; font-size: 0.82rem; font-weight: 600; text-decoration: none;">
+          📍 Open in Google Maps
+        </a>
       </div>
     </section>
 
@@ -183,6 +185,10 @@
             <span>🏷️</span>
             <span><strong>Brand:</strong> TNT (Taste N Trust)</span>
           </li>
+          <li>
+            <span>📍</span>
+            <span><strong>Pickup Counter:</strong> <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Shree Taste N Taste Catering (Google Maps)</a></span>
+          </li>
         </ul>
       </div>
     </div>
@@ -201,18 +207,6 @@
       mobileBtn.addEventListener('click', () => {
         const isOpen = navMenu.classList.toggle('open');
         mobileBtn.setAttribute('aria-expanded', String(isOpen));
-      });
-    }
-
-    // Demo fill button
-    const demoBtn = document.getElementById('btn-fill-demo');
-    if (demoBtn) {
-      demoBtn.addEventListener('click', () => {
-        const refInput = document.getElementById('input-lookup-ref');
-        const mobInput = document.getElementById('input-lookup-mobile');
-        if (refInput) refInput.value = 'TNT-DEMO-2026';
-        if (mobInput) mobInput.value = '9442854444';
-        document.getElementById('tnt-lookup-form')?.dispatchEvent(new Event('submit'));
       });
     }
   </script>

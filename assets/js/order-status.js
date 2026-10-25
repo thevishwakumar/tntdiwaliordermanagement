@@ -116,7 +116,7 @@ async function executeLookup(ref, mobile) {
 
     // Success - Render verified order receipt
     if (emptyState) emptyState.classList.add('hidden');
-    renderOrderDetails(res.order, res.isDemo);
+    renderOrderDetails(res.order);
 
   } catch (err) {
     console.error('Lookup failed:', err);
@@ -135,9 +135,8 @@ async function executeLookup(ref, mobile) {
 /**
  * Render order receipt card
  * @param {object} order 
- * @param {boolean} isDemo 
  */
-function renderOrderDetails(order, isDemo = false) {
+function renderOrderDetails(order) {
   const container = document.getElementById('lookup-result-card');
   if (!container) return;
 
@@ -182,12 +181,6 @@ function renderOrderDetails(order, isDemo = false) {
 
   container.innerHTML = `
     <div class="receipt-card" id="printable-receipt">
-      ${isDemo ? `
-        <div class="demo-badge-banner">
-          DEMONSTRATION SAMPLE RECEIPT — Stage 1 UI & Print Layout Test
-        </div>
-      ` : ''}
-
       <div class="receipt-header">
         <div class="receipt-brand">
           <h2 class="receipt-title">${escapeHTML(APP_CONFIG.business.name)}</h2>
@@ -240,7 +233,7 @@ function renderOrderDetails(order, isDemo = false) {
       <div class="receipt-pickup-guidelines">
         <h4>Counter Collection Guidelines:</h4>
         <ul>
-          <li><strong>Location:</strong> ${escapeHTML(APP_CONFIG.business.pickupLocationNote)}</li>
+          <li><strong>Location:</strong> ${escapeHTML(APP_CONFIG.business.pickupLocationNote)} — <a href="${APP_CONFIG.business.mapsUrl || 'https://maps.app.goo.gl/X5LNqZjVxdGQFu398'}" target="_blank" rel="noopener noreferrer" style="color: #78101C; text-decoration: underline; font-weight: 700;">📍 Open in Google Maps</a></li>
           <li><strong>Verification:</strong> Present the pickup code on your mobile or a printed copy of this receipt.</li>
           <li><strong>Contact:</strong> ${escapeHTML(APP_CONFIG.business.primaryPhone)} / ${escapeHTML(APP_CONFIG.business.secondaryPhone)} for queries.</li>
           <li><strong>Note:</strong> ${escapeHTML(APP_CONFIG.business.operatingNotice)}</li>

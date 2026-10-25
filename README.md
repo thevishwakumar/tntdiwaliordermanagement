@@ -105,11 +105,10 @@ Right-click on `index.html` and click **"Open with Live Server"**.
 
 ### Secure Order Lookup & Receipt Printing
 - Navigate to `order-status.html`.
-- To test the verified receipt layout, counter instructions, and print output in Stage 1 without live backend data:
-  - Enter Order Reference: `TNT-DEMO-2026`
-  - Enter Registered Mobile: `9442854444` (or click the **Autofill Test Demo** button)
-  - Click **Check Order Status**.
-  - Notice the **Verified Pickup Code** (`TNT-PK-8921`), verified payment status, itemized table, and the **"Print Customer Receipt"** action that applies `print.css`.
+- Enter your confirmed Order Reference (e.g. `TNT-261025-A8F29C`) and registered 10-digit mobile number.
+- Click **Check Order Status**.
+- The system securely fetches the confirmed order from the backend and displays the **Verified Pickup Code**, scheduled pickup date and slot, store location Google Maps link, itemized delicacies breakdown, and the **"Print Customer Receipt"** action.
+- Shop Pickup Address: Shree Taste N Taste Catering (Google Maps: https://maps.app.goo.gl/X5LNqZjVxdGQFu398).
 
 ---
 

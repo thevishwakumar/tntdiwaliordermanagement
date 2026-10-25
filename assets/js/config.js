@@ -20,6 +20,8 @@ export const APP_CONFIG = {
     email: 'contact@tntcatering.in', // Configurable contact placeholder
     fulfilmentType: 'Customer Pickup Only',
     pickupLocationNote: 'Direct Pickup from Shree Taste N Taste Catering counter',
+    pickupAddress: 'Shree Taste N Taste Catering, Shop Counter',
+    mapsUrl: 'https://maps.app.goo.gl/X5LNqZjVxdGQFu398',
     pickupRequirement: 'Customer must present their verified Pickup Code and Order Reference upon collection.',
     operatingNotice: 'Strictly customer pickup. Home delivery and Cash on Delivery (COD) are not available.'
   },
@@ -38,8 +40,7 @@ export const APP_CONFIG = {
 
   // Environment & Backend Configuration
   backend: {
-    // Stage 1 indicator: Frontend & Client Validation Ready
-    stage: 'stage_1_frontend_ready',
+    stage: 'production_ready',
     supabaseUrl: (typeof window !== 'undefined' && window.__ENV && window.__ENV.SUPABASE_URL) || '',
     supabaseAnonKey: (typeof window !== 'undefined' && window.__ENV && window.__ENV.SUPABASE_ANON_KEY) || '',
     razorpayKeyId: (typeof window !== 'undefined' && window.__ENV && window.__ENV.RAZORPAY_KEY_ID) || '',

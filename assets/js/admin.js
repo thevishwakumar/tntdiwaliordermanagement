@@ -1223,7 +1223,7 @@ function generateParcelLabelHtml(order) {
       <div class="parcel-footer-grid">
         <div>
           <div style="font-size: 0.75rem; line-height: 1.4; color: #333;">
-            • <strong>Collection Counter:</strong> Shree Taste N Taste Catering, Shop Counter<br>
+            • <strong>Collection Counter:</strong> Shree Taste N Taste Catering (<a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" style="color: #78101C; text-decoration: underline; font-weight: 700;">📍 Google Maps Link</a>)<br>
             • <strong>Enquiries:</strong> 9442854444 / 7200071040<br>
             • <em>Packed fresh in hygienic food-grade containers.</em>
           </div>
@@ -1275,7 +1275,7 @@ function generatePackingSlipHtml(order) {
       <div class="packing-slip-header" style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 12px;">
         <div>
           <div class="slip-title" style="font-size: 1.4rem; font-weight: 900; text-transform: uppercase;">TNT INTERNAL PACKING SLIP</div>
-          <div style="font-size: 0.85rem; color: #333;">Shree Taste N Taste Catering • Diwali Operations Hub</div>
+          <div style="font-size: 0.85rem; color: #333;">Shree Taste N Taste Catering • Diwali Operations Hub • <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" style="color: #000; text-decoration: underline; font-weight: 700;">📍 Shop Location: Google Maps</a></div>
           <div style="font-size: 0.75rem; color: #666;">Slip #: SLIP-${escapeHTML(order.public_order_number)} &bull; Printed: ${printTimestamp}</div>
         </div>
         <div style="text-align: right;">
@@ -1491,7 +1491,7 @@ function generateCustomerReceiptHtml(order) {
 
       <!-- Customer Instructions Footer -->
       <div style="font-size: 0.75rem; color: #555; line-height: 1.5; border-top: 1px solid #DDD; padding-top: 10px;">
-        • <strong>Customer Store Pickup Only:</strong> Collection at Shree Taste N Taste Catering, shop counter.<br>
+        • <strong>Customer Store Pickup Only:</strong> Collection at Shree Taste N Taste Catering shop counter (<a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" style="color: #78101C; text-decoration: underline; font-weight: 700;">📍 View Location on Google Maps</a>).<br>
         • <strong>Collection Date:</strong> Please arrive on your scheduled date: <strong>${escapeHTML(order.pickup_date || 'Today')}</strong> during <strong>${escapeHTML(order.pickup_time || 'Morning')}</strong>.<br>
         • <strong>Support:</strong> For scheduling changes or inquiries, call 9442854444 / 7200071040.<br>
         • <em>Thank you for celebrating Diwali with Shree Taste N Taste Catering!</em>
