@@ -307,6 +307,38 @@ function setupFormListeners() {
         theme: {
           color: '#78101C'
         },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: "Pay using UPI / QR Code (GPay, PhonePe, Paytm)",
+                instruments: [
+                  {
+                    method: "upi"
+                  }
+                ]
+              },
+              other: {
+                name: "Cards, Netbanking & Wallets",
+                instruments: [
+                  {
+                    method: "card"
+                  },
+                  {
+                    method: "netbanking"
+                  },
+                  {
+                    method: "wallet"
+                  }
+                ]
+              }
+            },
+            sequence: ["block.upi", "block.other"],
+            preferences: {
+              show_default_blocks: true
+            }
+          }
+        },
         handler: async function (paymentResponse) {
           setSubmittingState(true);
           showCheckoutFeedback('info', 'Verifying payment signature with secure server...');
