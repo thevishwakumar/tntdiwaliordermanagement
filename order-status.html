@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Track Order &amp; Pickup Code | Shree Taste N Taste Catering</title>
-  <meta name="description" content="Check your Diwali order confirmation, retrieve your unique store pickup code, and print customer receipts.">
+  <meta name="description"
+    content="Check your Diwali order confirmation, retrieve your unique store pickup code, and print customer receipts.">
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/print.css" media="print">
   <link rel="icon" href="assets/images/tnt-logo.jpg" type="image/jpeg">
 </head>
+
 <body>
 
   <!-- Top Announcement Bar -->
   <aside class="top-bar-announcement" aria-label="Announcement">
-    🪔 TNT Taste N Trust • Spreading Sweetness This Diwali • Shop Counter Pickup Only 🪔
+    🪔 TNT Taste N Taste • Spreading Sweetness This Diwali • Shop Counter Pickup Only 🪔
   </aside>
 
   <!-- Site Header -->
@@ -35,6 +38,7 @@
         <li><a href="index.html" class="nav-link">Home</a></li>
         <li><a href="products.html" class="nav-link">Diwali Sweets &amp; Savouries</a></li>
         <li><a href="order-status.html" class="nav-link active">Track / Pickup Code</a></li>
+        <li><a href="admin/dashboard.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600;">🔐 Admin Sign In</a></li>
       </ul>
 
       <div class="nav-cta-group">
@@ -51,7 +55,8 @@
       <span class="section-tag">Order Verification</span>
       <h1 class="section-title">Track Order &amp; Retrieve Pickup Code</h1>
       <p class="section-subtitle">
-        Enter your Order Reference and registered Mobile Number to access your verified receipt and official store collection code.
+        Enter your Order Reference and registered Mobile Number to access your verified receipt and official store
+        collection code.
       </p>
     </div>
 
@@ -62,7 +67,8 @@
         <div class="alert-content">
           <strong class="alert-title">Customer Privacy &amp; Anti-Enumeration Protection</strong>
           <p class="alert-desc">
-            To protect customer confidentiality, orders can only be accessed by providing both the unique Order Reference and the corresponding registered 10-digit mobile number.
+            To protect customer confidentiality, orders can only be accessed by providing both the unique Order
+            Reference and the corresponding registered 10-digit mobile number.
           </p>
         </div>
       </div>
@@ -81,15 +87,8 @@
             <label for="input-lookup-ref" class="form-label">
               Order Reference Code <span class="required-star">*</span>
             </label>
-            <input 
-              type="text" 
-              id="input-lookup-ref" 
-              name="orderRef" 
-              class="form-input font-mono" 
-              placeholder="e.g. TNT-261025-A8F29C" 
-              required
-              autocomplete="off"
-            >
+            <input type="text" id="input-lookup-ref" name="orderRef" class="form-input font-mono"
+              placeholder="e.g. TNT-261025-A8F29C" required autocomplete="off">
             <span class="form-helper">Reference code sent upon checkout.</span>
             <span class="field-error hidden" id="error-lookup-ref"></span>
           </div>
@@ -98,47 +97,45 @@
             <label for="input-lookup-mobile" class="form-label">
               Registered Mobile Number <span class="required-star">*</span>
             </label>
-            <input 
-              type="tel" 
-              id="input-lookup-mobile" 
-              name="mobile" 
-              class="form-input font-mono" 
-              placeholder="e.g. 9442854444" 
-              required
-              autocomplete="tel"
-              maxlength="14"
-            >
+            <input type="tel" id="input-lookup-mobile" name="mobile" class="form-input font-mono"
+              placeholder="e.g. 9442854444" required autocomplete="tel" maxlength="14">
             <span class="form-helper">10-digit mobile used during order.</span>
             <span class="field-error hidden" id="error-lookup-mobile"></span>
           </div>
         </div>
 
         <div style="margin-top: 1.25rem;">
-          <button type="submit" class="btn btn-primary btn-block" id="btn-lookup-submit" style="padding: 0.85rem 1.5rem;">
+          <button type="submit" class="btn btn-primary btn-block" id="btn-lookup-submit"
+            style="padding: 0.85rem 1.5rem;">
             Check Order Status
           </button>
         </div>
       </form>
 
       <!-- Shop Counter Location Card -->
-      <div style="background: var(--color-bg-surface-alt); border: 1px solid var(--color-gold-400); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-top: 1.5rem; font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+      <div
+        style="background: var(--color-bg-surface-alt); border: 1px solid var(--color-gold-400); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-top: 1.5rem; font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
         <div>
           <strong style="color: var(--color-maroon-900);">📍 Official Pickup Counter Location:</strong>
           <p style="margin-top: 0.2rem; color: var(--color-text-muted);">
             Shree Taste N Taste Catering • Shop Counter Collection Only
           </p>
         </div>
-        <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="padding: 0.4rem 0.85rem; font-size: 0.82rem; font-weight: 600; text-decoration: none;">
+        <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer"
+          class="btn btn-outline"
+          style="padding: 0.4rem 0.85rem; font-size: 0.82rem; font-weight: 600; text-decoration: none;">
           📍 Open in Google Maps
         </a>
       </div>
     </section>
 
     <!-- Error Callout Box -->
-    <div id="lookup-error-box" class="alert-box alert-warning hidden" style="max-width: 760px; margin: 0 auto 2rem;"></div>
+    <div id="lookup-error-box" class="alert-box alert-warning hidden" style="max-width: 760px; margin: 0 auto 2rem;">
+    </div>
 
     <!-- Empty State Prompt -->
-    <div id="lookup-empty-placeholder" style="max-width: 500px; margin: 2rem auto; text-align: center; color: var(--color-text-muted);">
+    <div id="lookup-empty-placeholder"
+      style="max-width: 500px; margin: 2rem auto; text-align: center; color: var(--color-text-muted);">
       <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">🔍</span>
       <p>Enter your details above to view your confirmed receipt and Pickup Code.</p>
     </div>
@@ -153,7 +150,8 @@
       <div class="footer-brand">
         <h3>Shree Taste N Taste Catering</h3>
         <p>
-          TNT (Taste N Trust) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to pure ingredients, culinary mastery, and customer trust.
+          TNT (Taste N Taste) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to
+          pure ingredients, culinary mastery, and customer Taste.
         </p>
         <div class="footer-notice-box">
           🏬 Fulfilment: Customer Pickup Only from Shop Counter. Home delivery and COD are not supported.
@@ -183,11 +181,13 @@
           </li>
           <li>
             <span>🏷️</span>
-            <span><strong>Brand:</strong> TNT (Taste N Trust)</span>
+            <span><strong>Brand:</strong> TNT (Taste N Taste)</span>
           </li>
           <li>
             <span>📍</span>
-            <span><strong>Pickup Counter:</strong> <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Shree Taste N Taste Catering (Google Maps)</a></span>
+            <span><strong>Pickup Counter:</strong> <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank"
+                rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Shree Taste N Taste
+                Catering (Google Maps)</a></span>
           </li>
         </ul>
       </div>
@@ -211,4 +211,5 @@
     }
   </script>
 </body>
+
 </html>

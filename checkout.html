@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout &amp; Order Summary | Shree Taste N Taste Catering</title>
-  <meta name="description" content="Review your Diwali order, fill your pickup contact details, and proceed to secure online payment verification.">
+  <meta name="description"
+    content="Review your Diwali order, fill your pickup contact details, and proceed to secure online payment verification.">
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/print.css" media="print">
   <link rel="icon" href="assets/images/tnt-logo.jpg" type="image/jpeg">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
+
 <body>
 
   <!-- Top Announcement Bar -->
   <aside class="top-bar-announcement" aria-label="Announcement">
-    🪔 TNT Taste N Trust • Spreading Sweetness This Diwali • Store Pickup Only 🪔
+    🪔 TNT Taste N Taste • Spreading Sweetness This Diwali • Store Pickup Only 🪔
   </aside>
 
   <!-- Site Header -->
@@ -36,6 +39,7 @@
         <li><a href="index.html" class="nav-link">Home</a></li>
         <li><a href="products.html" class="nav-link">Diwali Sweets &amp; Savouries</a></li>
         <li><a href="order-status.html" class="nav-link">Track / Pickup Code</a></li>
+        <li><a href="admin/dashboard.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600;">🔐 Admin Sign In</a></li>
       </ul>
 
       <div class="nav-cta-group">
@@ -62,9 +66,11 @@
     </div>
 
     <!-- Empty Cart State -->
-    <div id="checkout-empty-state" class="hidden" style="max-width: 600px; margin: 3rem auto; text-align: center; background: #FFF; padding: 3rem 2rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+    <div id="checkout-empty-state" class="hidden"
+      style="max-width: 600px; margin: 3rem auto; text-align: center; background: #FFF; padding: 3rem 2rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
       <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">🛍️</span>
-      <h2 style="font-family: var(--font-heading); color: var(--color-maroon-900); margin-bottom: 0.5rem;">Your Diwali Order is Empty</h2>
+      <h2 style="font-family: var(--font-heading); color: var(--color-maroon-900); margin-bottom: 0.5rem;">Your Diwali
+        Order is Empty</h2>
       <p style="color: var(--color-text-muted); margin-bottom: 2rem;">
         You haven't selected any sweets or savouries yet. Explore our handcrafted festival menu!
       </p>
@@ -88,17 +94,8 @@
             <label for="input-fullName" class="form-label">
               Full Name <span class="required-star">*</span>
             </label>
-            <input 
-              type="text" 
-              id="input-fullName" 
-              name="fullName" 
-              class="form-input" 
-              placeholder="e.g. Ramesh Kumar" 
-              required
-              autocomplete="name"
-              minlength="2"
-              maxlength="100"
-            >
+            <input type="text" id="input-fullName" name="fullName" class="form-input" placeholder="e.g. Ramesh Kumar"
+              required autocomplete="name" minlength="2" maxlength="100">
             <span class="field-error hidden" id="error-fullName"></span>
           </div>
 
@@ -107,17 +104,8 @@
             <label for="input-mobile" class="form-label">
               Mobile Number (10 digits) <span class="required-star">*</span>
             </label>
-            <input 
-              type="tel" 
-              id="input-mobile" 
-              name="mobile" 
-              class="form-input" 
-              placeholder="e.g. 9442854444" 
-              required
-              autocomplete="tel"
-              pattern="^[6-9]\d{9}$"
-              maxlength="14"
-            >
+            <input type="tel" id="input-mobile" name="mobile" class="form-input" placeholder="e.g. 9442854444" required
+              autocomplete="tel" pattern="^[6-9]\d{9}$" maxlength="14">
             <span class="form-helper">Required for order verification and receiving your Pickup Code.</span>
             <span class="field-error hidden" id="error-mobile"></span>
           </div>
@@ -127,32 +115,20 @@
             <label for="input-email" class="form-label">
               Email Address <span class="required-star">*</span>
             </label>
-            <input 
-              type="email" 
-              id="input-email" 
-              name="email" 
-              class="form-input" 
-              placeholder="e.g. ramesh@example.com" 
-              required
-              autocomplete="email"
-            >
+            <input type="email" id="input-email" name="email" class="form-input" placeholder="e.g. ramesh@example.com"
+              required autocomplete="email">
             <span class="form-helper">Required for official Razorpay payment invoice and receipt.</span>
             <span class="field-error hidden" id="error-email"></span>
           </div>
 
           <!-- Scheduled Pickup Date & Time -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;" class="checkout-pickup-schedule-grid">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;"
+            class="checkout-pickup-schedule-grid">
             <div class="form-group">
               <label for="input-pickupDate" class="form-label">
                 Scheduled Pickup Date <span class="required-star">*</span>
               </label>
-              <input 
-                type="date" 
-                id="input-pickupDate" 
-                name="pickupDate" 
-                class="form-input" 
-                required
-              >
+              <input type="date" id="input-pickupDate" name="pickupDate" class="form-input" required>
               <span class="form-helper">Advance orders supported! Select your collection date.</span>
               <span class="field-error hidden" id="error-pickupDate"></span>
             </div>
@@ -177,9 +153,11 @@
             <div>
               <strong>Fulfilment: Customer Pickup From Shop Counter Only</strong>
               <div style="font-size: 0.85rem; margin-top: 0.25rem;">
-                Home delivery is NOT available. Delivery address fields are intentionally omitted. You will collect this order in person from the Shree Taste N Taste Catering counter:
+                Home delivery is NOT available. Delivery address fields are intentionally omitted. You will collect this
+                order in person from the Shree Taste N Taste Catering counter:
                 <div style="margin-top: 0.4rem;">
-                  <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer" style="color: var(--color-maroon-900); font-weight: 700; text-decoration: underline;">
+                  <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer"
+                    style="color: var(--color-maroon-900); font-weight: 700; text-decoration: underline;">
                     📍 Shree Taste N Taste Catering — View Location on Google Maps
                   </a>
                 </div>
@@ -192,14 +170,8 @@
             <label for="input-notes" class="form-label">
               Special Packing / Pickup Notes (Optional)
             </label>
-            <textarea 
-              id="input-notes" 
-              name="notes" 
-              class="form-textarea" 
-              rows="3" 
-              maxlength="300"
-              placeholder="e.g., Preferred collection time on Diwali morning or gift packing request"
-            ></textarea>
+            <textarea id="input-notes" name="notes" class="form-textarea" rows="3" maxlength="300"
+              placeholder="e.g., Preferred collection time on Diwali morning or gift packing request"></textarea>
             <span class="form-helper">Maximum 300 characters.</span>
             <span class="field-error hidden" id="error-notes"></span>
           </div>
@@ -209,14 +181,17 @@
             <label class="checkbox-group">
               <input type="checkbox" id="input-acceptTerms" name="acceptTerms" required>
               <span class="checkbox-label">
-                I understand that this is strictly a <strong>customer store pickup order</strong>, that home delivery and Cash on Delivery are not available, and that orders are confirmed only after online payment verification via Razorpay.
+                I understand that this is strictly a <strong>customer store pickup order</strong>, that home delivery
+                and Cash on Delivery are not available, and that orders are confirmed only after online payment
+                verification via Razorpay.
               </span>
             </label>
             <span class="field-error hidden" id="error-acceptTerms"></span>
           </div>
 
           <div style="margin-top: 2rem;">
-            <button type="submit" class="btn btn-primary btn-block" id="btn-submit-order" style="padding: 1rem 1.5rem; font-size: 1.05rem;">
+            <button type="submit" class="btn btn-primary btn-block" id="btn-submit-order"
+              style="padding: 1rem 1.5rem; font-size: 1.05rem;">
               <span id="checkout-spinner" class="hidden">⏳ </span>
               <span id="btn-submit-text">Proceed to Online Payment (Razorpay)</span>
             </button>
@@ -231,7 +206,8 @@
       <section class="checkout-card" aria-labelledby="order-summary-heading">
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
           <h2 class="card-title" id="order-summary-heading">2. Order Summary</h2>
-          <a href="products.html" style="font-size: 0.85rem; font-weight: 600; color: var(--color-maroon-700);">+ Add More Items</a>
+          <a href="products.html" style="font-size: 0.85rem; font-weight: 600; color: var(--color-maroon-700);">+ Add
+            More Items</a>
         </div>
         <p class="card-desc">
           Review items, adjust quantities, or remove items before proceeding.
@@ -254,7 +230,8 @@
       <div class="footer-brand">
         <h3>Shree Taste N Taste Catering</h3>
         <p>
-          TNT (Taste N Trust) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to pure ingredients, culinary mastery, and customer trust.
+          TNT (Taste N Taste) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to
+          pure ingredients, culinary mastery, and customer Taste.
         </p>
         <div class="footer-notice-box">
           🏬 Fulfilment: Customer Pickup Only from Shop Counter. Home delivery and COD are not supported.
@@ -284,11 +261,13 @@
           </li>
           <li>
             <span>🏷️</span>
-            <span><strong>Brand:</strong> TNT (Taste N Trust)</span>
+            <span><strong>Brand:</strong> TNT (Taste N Taste)</span>
           </li>
           <li>
             <span>📍</span>
-            <span><strong>Pickup Counter:</strong> <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Shree Taste N Taste Catering (Google Maps)</a></span>
+            <span><strong>Pickup Counter:</strong> <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank"
+                rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Shree Taste N Taste
+                Catering (Google Maps)</a></span>
           </li>
         </ul>
       </div>
@@ -312,4 +291,5 @@
     }
   </script>
 </body>
+
 </html>

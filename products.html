@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Diwali Sweets &amp; Savouries Catalogue | Shree Taste N Taste Catering</title>
-  <meta name="description" content="Browse authentic Diwali traditional sweets, special ghee sweets, karam savouries, dry fruit delicacies, and festive family combos from TNT Catering.">
+  <meta name="description"
+    content="Browse authentic Diwali traditional sweets, special ghee sweets, karam savouries, dry fruit delicacies, and festive family combos from TNT Catering.">
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/print.css" media="print">
   <link rel="icon" href="assets/images/tnt-logo.jpg" type="image/jpeg">
@@ -26,10 +28,12 @@
       transition: transform 0.3s ease, opacity 0.3s ease;
       max-width: 90vw;
     }
+
     .toast-icon {
       color: var(--color-gold-300);
       font-size: 1.25rem;
     }
+
     .sticky-checkout-banner {
       position: sticky;
       bottom: 0;
@@ -38,8 +42,9 @@
       border-top: 2px solid var(--color-gold-400);
       padding: 0.85rem 1.25rem;
       z-index: 90;
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.25);
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
     }
+
     .sticky-checkout-inner {
       max-width: var(--max-width);
       margin: 0 auto;
@@ -49,6 +54,7 @@
       gap: 1rem;
       color: #FFFFFF;
     }
+
     .filter-tabs {
       display: flex;
       gap: 0.5rem;
@@ -56,6 +62,7 @@
       margin-bottom: 2.5rem;
       flex-wrap: wrap;
     }
+
     .filter-btn {
       background: #FFFFFF;
       border: 1.5px solid var(--color-border);
@@ -67,18 +74,21 @@
       color: var(--color-text-main);
       transition: all var(--transition-fast);
     }
-    .filter-btn:hover, .filter-btn.active {
+
+    .filter-btn:hover,
+    .filter-btn.active {
       background: var(--color-maroon-700);
       color: var(--color-gold-200);
       border-color: var(--color-maroon-700);
     }
   </style>
 </head>
+
 <body>
 
   <!-- Top Announcement Bar -->
   <aside class="top-bar-announcement" aria-label="Announcement">
-    🪔 TNT Taste N Trust • Spreading Sweetness This Diwali • Shop Counter Pickup Only 🪔
+    🪔 TNT Taste N Taste • Spreading Sweetness This Diwali • Shop Counter Pickup Only 🪔
   </aside>
 
   <!-- Site Header -->
@@ -100,6 +110,7 @@
         <li><a href="index.html" class="nav-link">Home</a></li>
         <li><a href="products.html" class="nav-link active">Diwali Sweets &amp; Savouries</a></li>
         <li><a href="order-status.html" class="nav-link">Track / Pickup Code</a></li>
+        <li><a href="admin/dashboard.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600;">🔐 Admin Sign In</a></li>
       </ul>
 
       <div class="nav-cta-group">
@@ -124,11 +135,16 @@
 
       <!-- Quick Category Filter -->
       <div class="filter-tabs" role="tablist" aria-label="Product Categories">
-        <button type="button" class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All Delicacies (5)</button>
-        <button type="button" class="filter-btn" data-filter="sweets" role="tab" aria-selected="false">Traditional &amp; Ghee Sweets</button>
-        <button type="button" class="filter-btn" data-filter="savouries" role="tab" aria-selected="false">Karam Savouries</button>
-        <button type="button" class="filter-btn" data-filter="dry-fruits" role="tab" aria-selected="false">Dry Fruits Sweets</button>
-        <button type="button" class="filter-btn" data-filter="combo" role="tab" aria-selected="false">Family Combos</button>
+        <button type="button" class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All Delicacies
+          (5)</button>
+        <button type="button" class="filter-btn" data-filter="sweets" role="tab" aria-selected="false">Traditional &amp;
+          Ghee Sweets</button>
+        <button type="button" class="filter-btn" data-filter="savouries" role="tab" aria-selected="false">Karam
+          Savouries</button>
+        <button type="button" class="filter-btn" data-filter="dry-fruits" role="tab" aria-selected="false">Dry Fruits
+          Sweets</button>
+        <button type="button" class="filter-btn" data-filter="combo" role="tab" aria-selected="false">Family
+          Combos</button>
       </div>
 
       <!-- Products Grid -->
@@ -142,9 +158,11 @@
   <aside class="sticky-checkout-banner hidden" id="sticky-cart-bar" aria-label="Cart Overview Bar">
     <div class="sticky-checkout-inner">
       <div>
-        <span id="sticky-item-count" style="font-weight: 700; color: var(--color-gold-300);">0 items</span> in your Diwali order
+        <span id="sticky-item-count" style="font-weight: 700; color: var(--color-gold-300);">0 items</span> in your
+        Diwali order
         <span style="margin: 0 0.5rem; opacity: 0.5;">|</span>
-        <span>Estimated Total: <strong id="sticky-cart-total" style="font-size: 1.15rem; color: #FFF;">₹0</strong></span>
+        <span>Estimated Total: <strong id="sticky-cart-total"
+            style="font-size: 1.15rem; color: #FFF;">₹0</strong></span>
       </div>
       <a href="checkout.html" class="btn btn-secondary" style="padding: 0.5rem 1.25rem;">
         Proceed to Checkout →
@@ -161,7 +179,8 @@
       <div class="footer-brand">
         <h3>Shree Taste N Taste Catering</h3>
         <p>
-          TNT (Taste N Trust) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to pure ingredients, culinary mastery, and customer trust.
+          TNT (Taste N Taste) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to
+          pure ingredients, culinary mastery, and customer Taste.
         </p>
         <div class="footer-notice-box">
           🏬 Fulfilment: Customer Pickup Only from Shop Counter. Home delivery and COD are not supported.
@@ -191,11 +210,13 @@
           </li>
           <li>
             <span>🏷️</span>
-            <span><strong>Brand:</strong> TNT (Taste N Trust)</span>
+            <span><strong>Brand:</strong> TNT (Taste N Taste)</span>
           </li>
           <li>
             <span>📍</span>
-            <span><strong>Pickup Counter:</strong> <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Shree Taste N Taste Catering (Google Maps)</a></span>
+            <span><strong>Pickup Counter:</strong> <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank"
+                rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Shree Taste N Taste
+                Catering (Google Maps)</a></span>
           </li>
         </ul>
       </div>
@@ -231,8 +252,8 @@
     function renderProducts() {
       if (!catalogueGrid) return;
 
-      const filtered = activeFilter === 'all' 
-        ? PRODUCTS 
+      const filtered = activeFilter === 'all'
+        ? PRODUCTS
         : PRODUCTS.filter(p => p.category === activeFilter);
 
       let html = '';
@@ -371,4 +392,5 @@
     syncStickyBar();
   </script>
 </body>
+
 </html>
