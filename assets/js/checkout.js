@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initCheckout() {
+  loadRazorpaySdk();
   renderCartSummary();
   renderBackendStatusNotice();
   setupFormListeners();

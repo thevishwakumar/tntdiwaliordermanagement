@@ -47,6 +47,7 @@ loadEnv();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_TrldCRnEsCFYTj';
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '6tJrsoptI5w6rdicuxsk07xn';
+const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'tnt_webhook_secret_2026';
 
 // Authoritative Products Master (Prices strictly in Integer Paise)
 const AUTHORITATIVE_PRODUCTS = [
@@ -112,8 +113,12 @@ const DB = {
       is_active: true
     }
   ],
-  admin_sessions: new Map()
+  admin_sessions: new Map(),
+  processed_webhook_events: new Set()
 };
+
+// In-flight concurrency lock to prevent race conditions during simultaneous idempotency bursts
+const PENDING_IDEMPOTENCY_PROMISES = new Map();
 
 // Seed sample demo verified order for UI testing
 const demoOrderId = 'demo-order-2026';
@@ -209,6 +214,12 @@ function createRazorpayOrder(amountPaise, receipt, notes = {}) {
       resolve({ id: 'order_test_' + crypto.randomBytes(8).toString('hex') });
     });
 
+    req.setTimeout(2500, () => {
+      req.destroy();
+      console.warn('Razorpay API request timed out (2.5s). Falling back gracefully.');
+      resolve({ id: 'order_test_' + crypto.randomBytes(8).toString('hex') });
+    });
+
     req.write(postData);
     req.end();
   });
@@ -298,13 +309,21 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
+  // 1b. GET /api/products — Public Authoritative Catalogue
+  if (pathname === '/api/products' && req.method === 'GET') {
+    return sendJson(res, 200, {
+      success: true,
+      products: AUTHORITATIVE_PRODUCTS.filter(p => p.is_active)
+    });
+  }
+
   // 2. POST /api/create-order — Atomic server-side creation & Razorpay Order generation
   if (pathname === '/api/create-order' && req.method === 'POST') {
     try {
       const body = await parseJson(req);
       const idempotencyKey = req.headers['idempotency-key'] || body.idempotencyKey || null;
 
-      // Idempotency check
+      // Idempotency check: Already completed order
       if (idempotencyKey && DB.idempotency_keys.has(idempotencyKey)) {
         const existingOrderId = DB.idempotency_keys.get(idempotencyKey);
         const existingOrder = DB.orders.get(existingOrderId);
@@ -322,6 +341,31 @@ const server = http.createServer(async (req, res) => {
           is_duplicate: true,
           message: 'Existing order retrieved via idempotency key.'
         });
+      }
+
+      // Concurrency check: A concurrent request with identical idempotency key is already in-flight
+      if (idempotencyKey && PENDING_IDEMPOTENCY_PROMISES.has(idempotencyKey)) {
+        const existingOrder = await PENDING_IDEMPOTENCY_PROMISES.get(idempotencyKey);
+        return sendJson(res, 200, {
+          success: true,
+          order_id: existingOrder.id,
+          public_order_number: existingOrder.public_order_number,
+          subtotal_paise: existingOrder.subtotal_paise,
+          total_paise: existingOrder.total_paise,
+          total_in_rupees: existingOrder.total_paise / 100,
+          order_status: existingOrder.order_status,
+          payment_status: existingOrder.payment_status,
+          razorpay_order_id: existingOrder.razorpay_order_id,
+          razorpay_key_id: RAZORPAY_KEY_ID,
+          is_duplicate: true,
+          message: 'Concurrent order request deduplicated via idempotency lock.'
+        });
+      }
+
+      let resolveIdempotency;
+      if (idempotencyKey) {
+        const p = new Promise(resolve => { resolveIdempotency = resolve; });
+        PENDING_IDEMPOTENCY_PROMISES.set(idempotencyKey, p);
       }
 
       const { customerName, customerMobile, customerEmail, customerNotes, items } = body;
@@ -406,6 +450,8 @@ const server = http.createServer(async (req, res) => {
       DB.orders.set(orderId, newOrder);
       if (idempotencyKey) {
         DB.idempotency_keys.set(idempotencyKey, orderId);
+        if (resolveIdempotency) resolveIdempotency(newOrder);
+        PENDING_IDEMPOTENCY_PROMISES.delete(idempotencyKey);
       }
 
       DB.order_events.push({
@@ -524,6 +570,152 @@ const server = http.createServer(async (req, res) => {
       console.error('verify-payment error:', e);
       return sendJson(res, 500, { success: false, verified: false, message: 'Server error during payment verification.' });
     }
+  }
+
+  // 3b. POST /api/razorpay-webhook — Cryptographic Webhook Handler & Idempotent Order Confirmation
+  if (pathname === '/api/razorpay-webhook' && req.method === 'POST') {
+    let rawBody = '';
+    req.on('data', chunk => { rawBody += chunk; });
+    req.on('end', async () => {
+      try {
+        const receivedSignature = req.headers['x-razorpay-signature'];
+        if (!receivedSignature) {
+          return sendJson(res, 400, { success: false, message: 'Missing x-razorpay-signature header' });
+        }
+
+        const expectedSignature = crypto
+          .createHmac('sha256', RAZORPAY_WEBHOOK_SECRET)
+          .update(rawBody)
+          .digest('hex');
+
+        let signaturesMatch = false;
+        try {
+          signaturesMatch = crypto.timingSafeEqual(
+            Buffer.from(expectedSignature, 'hex'),
+            Buffer.from(receivedSignature, 'hex')
+          );
+        } catch {
+          signaturesMatch = false;
+        }
+
+        if (!signaturesMatch) {
+          console.error('[Security Alert] Invalid Razorpay webhook signature rejected.');
+          return sendJson(res, 400, { success: false, message: 'Invalid webhook signature.' });
+        }
+
+        const event = JSON.parse(rawBody);
+        const eventId = event.event_id || (event.payload?.payment?.entity?.id ? event.payload.payment.entity.id + '_' + event.event : String(event.created_at));
+
+        // Idempotency: Deduplicate repeated webhook deliveries
+        if (DB.processed_webhook_events.has(eventId)) {
+          return sendJson(res, 200, { success: true, message: 'Webhook event already processed (idempotent duplicate).' });
+        }
+        DB.processed_webhook_events.add(eventId);
+
+        const eventType = event.event;
+        const paymentEntity = event.payload?.payment?.entity;
+        const orderEntity = event.payload?.order?.entity;
+        const rzpOrderId = paymentEntity?.order_id || orderEntity?.id;
+
+        if (!rzpOrderId) {
+          return sendJson(res, 200, { success: true, message: 'Event acknowledged: No order ID attached.' });
+        }
+
+        // Locate internal order
+        let targetOrder = null;
+        for (const o of DB.orders.values()) {
+          if (o.razorpay_order_id === rzpOrderId) {
+            targetOrder = o;
+            break;
+          }
+        }
+
+        if (!targetOrder) {
+          console.warn(`[Webhook] No internal order matched razorpay_order_id: ${rzpOrderId}`);
+          return sendJson(res, 200, { success: true, message: 'No matching internal order found.' });
+        }
+
+        // Successful Payment Captured or Order Paid
+        if (eventType === 'payment.captured' || eventType === 'order.paid') {
+          // If order is already PAID or further in fulfilment pipeline, do not overwrite state
+          if (targetOrder.payment_status === 'PAID') {
+            return sendJson(res, 200, { success: true, message: 'Order is already marked PAID.' });
+          }
+
+          const now = new Date().toISOString();
+          const pickupCode = targetOrder.pickup_code_hash || generatePickupCode();
+
+          targetOrder.order_status = 'PAID';
+          targetOrder.payment_status = 'PAID';
+          targetOrder.paid_at = now;
+          targetOrder.pickup_code_hash = pickupCode;
+          targetOrder.pickup_status = 'READY_FOR_PICKUP';
+
+          DB.order_events.push({
+            id: crypto.randomUUID(),
+            order_id: targetOrder.id,
+            event_type: 'WEBHOOK_PAYMENT_CAPTURED',
+            from_status: 'AWAITING_PAYMENT',
+            to_status: 'PAID',
+            actor_type: 'SYSTEM',
+            actor_id: 'RAZORPAY_WEBHOOK',
+            metadata: {
+              event_id: eventId,
+              event_type: eventType,
+              razorpay_payment_id: paymentEntity?.id,
+              razorpay_order_id: rzpOrderId,
+              pickup_code: pickupCode,
+              verified_at: now
+            },
+            created_at: now
+          });
+
+          return sendJson(res, 200, {
+            success: true,
+            message: `Order ${targetOrder.public_order_number} confirmed via webhook.`,
+            orderId: targetOrder.id,
+            publicOrderNumber: targetOrder.public_order_number
+          });
+        }
+
+        // Payment Failed Event
+        if (eventType === 'payment.failed') {
+          // Never overwrite an order that is already paid (e.g. if a customer had a retry that succeeded)
+          if (targetOrder.payment_status === 'PAID') {
+            return sendJson(res, 200, { success: true, message: 'Order is already PAID; failed payment event ignored.' });
+          }
+
+          targetOrder.payment_status = 'FAILED';
+          const now = new Date().toISOString();
+
+          DB.order_events.push({
+            id: crypto.randomUUID(),
+            order_id: targetOrder.id,
+            event_type: 'WEBHOOK_PAYMENT_FAILED',
+            from_status: targetOrder.order_status,
+            to_status: targetOrder.order_status,
+            actor_type: 'SYSTEM',
+            actor_id: 'RAZORPAY_WEBHOOK',
+            metadata: {
+              event_id: eventId,
+              error_code: paymentEntity?.error_code,
+              error_description: paymentEntity?.error_description,
+              timestamp: now
+            },
+            created_at: now
+          });
+
+          return sendJson(res, 200, { success: true, message: 'Payment failure recorded.' });
+        }
+
+        return sendJson(res, 200, { success: true, message: `Event ${eventType} received and logged.` });
+
+      } catch (err) {
+        console.error('Webhook processing error:', err.message);
+        return sendJson(res, 500, { success: false, message: 'Internal server error processing webhook.' });
+      }
+    });
+    return;
   }
 
   // 4. POST /api/get-order-status — Secure 2-factor lookup

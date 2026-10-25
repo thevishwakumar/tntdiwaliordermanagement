@@ -273,6 +273,16 @@ async function runStage4Tests() {
     assert.strictEqual(updateRes.data.product.price_in_paise, 52000, 'Price updated to 52000 paise');
     assert.strictEqual(updateRes.data.product.stock_quantity, 45, 'Stock quantity updated');
     console.log('  ✔ Product updated: Traditional Sweets set to ₹520 (52000 paise), Stock=45');
+
+    // Clean up: Restore authoritative catalog price (₹500 / 50000 paise) so tests remain deterministic
+    await makeRequest('/api/admin/products/update', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    }, {
+      productId: 'tnt-trad-sweets',
+      priceInPaise: 50000,
+      stockQuantity: 500
+    });
   }
 
   // 7. RFC 4180 CSV Export
