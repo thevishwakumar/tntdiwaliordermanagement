@@ -1,99 +1,293 @@
 /* ==========================================================================
-   TNT DIWALI ORDER MANAGEMENT SYSTEM — PRINT STYLESHEET
-   Optimized for physical receipts (A4, Letter, and POS thermal receipts)
+   TNT DIWALI ORDER MANAGEMENT SYSTEM — OFFICIAL 2-PAGE PRINT STYLESHEET
+   Page 1: CUSTOMER RECEIPT (வாடிக்கையாளர் நகல்)
+   Page 2: STORE / KITCHEN ORDER RECEIPT (கடை & சமையலறை நகல்)
+   Strictly 2 pages with official TNT logo and borderlines
    ========================================================================== */
 
+@page {
+  size: A4 portrait;
+  margin: 8mm 8mm 8mm 8mm;
+}
+
 @media print {
-  /* Hide non-printable elements */
+  /* Hide non-printable interface elements */
   .site-header,
   .top-bar-announcement,
   .site-footer,
   .no-print,
   .receipt-actions,
+  .receipt-toolbar,
+  .receipt-preview-tabs,
   .mobile-nav-toggle,
   .hero-section,
+  #tnt-lookup-form,
+  #lookup-form-heading,
+  .checkout-card,
+  .alert-box,
+  .section-tag,
+  .section-title,
+  .section-subtitle,
   button {
     display: none !important;
   }
 
-  body {
+  html, body {
     background: #FFFFFF !important;
     color: #000000 !important;
-    font-size: 12pt;
-    margin: 0;
-    padding: 10mm;
-  }
-
-  .receipt-card {
-    border: 2px solid #000000 !important;
-    box-shadow: none !important;
-    padding: 15mm !important;
-    max-width: 100% !important;
+    font-size: 10pt !important;
+    line-height: 1.35 !important;
     margin: 0 !important;
-    page-break-inside: avoid;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  .receipt-title {
+  .section {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .receipt-container-2page {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Each receipt page fits within 1 physical A4 sheet */
+  .receipt-page-card {
+    display: block !important;
+    background: #FFFFFF !important;
     color: #000000 !important;
-    font-size: 18pt !important;
+    border: 2.5px solid #000000 !important;
+    border-radius: 6px !important;
+    padding: 6mm 8mm !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 275mm !important;
+    max-height: 275mm !important;
+    overflow: hidden !important;
+    position: relative !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
-  .receipt-tagline, .receipt-contacts {
-    color: #444444 !important;
+  /* Page 1 strictly forces break to Page 2 */
+  .receipt-page-1 {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  /* Page 2 terminates document, preventing 3rd blank page */
+  .receipt-page-2 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* Header & Logo */
+  .receipt-brand-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 2px solid #000000 !important;
+    padding-bottom: 3mm !important;
+    margin-bottom: 3mm !important;
+  }
+
+  .receipt-logo-block {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .receipt-brand-logo-img {
+    width: 48px !important;
+    height: 48px !important;
+    object-fit: cover !important;
+    border: 1.5px solid #000000 !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+  }
+
+  .receipt-brand-name {
+    font-size: 14pt !important;
+    font-weight: 800 !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
+  }
+
+  .receipt-brand-sub {
+    font-size: 8pt !important;
+    color: #333333 !important;
+    margin-top: 2px !important;
+  }
+
+  .receipt-copy-pill {
+    display: inline-block !important;
+    border: 1.5px solid #000000 !important;
+    background: #F0F0F0 !important;
+    color: #000000 !important;
+    padding: 2px 7px !important;
+    font-size: 8.5pt !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    border-radius: 3px !important;
+    text-align: right !important;
   }
 
   .receipt-status-badge {
-    border: 1px solid #000000 !important;
+    border: 1.5px solid #000000 !important;
     color: #000000 !important;
-    background: transparent !important;
+    background: #FAFAFA !important;
+    font-size: 8pt !important;
+    font-weight: 800 !important;
+    padding: 2px 6px !important;
+    border-radius: 3px !important;
   }
 
-  .receipt-meta-grid {
-    background: #F4F4F4 !important;
+  /* Meta details table */
+  .receipt-meta-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 3mm !important;
+    font-size: 9pt !important;
+  }
+
+  .receipt-meta-table td {
+    padding: 2.5px 5px !important;
     border: 1px solid #CCCCCC !important;
+    vertical-align: middle !important;
   }
 
+  .receipt-meta-table .meta-label {
+    font-weight: bold !important;
+    color: #000000 !important;
+    width: 25% !important;
+    background: #F5F5F5 !important;
+  }
+
+  /* Pickup Code Box */
   .pickup-code-box {
+    border: 2px dashed #000000 !important;
     background: #FFFFFF !important;
     color: #000000 !important;
-    border: 2px dashed #000000 !important;
-    margin: 15px 0 !important;
-    padding: 15px !important;
+    padding: 2.5mm !important;
+    text-align: center !important;
+    margin-bottom: 3mm !important;
+    border-radius: 4px !important;
   }
 
   .pickup-code-label {
+    font-size: 8pt !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
     color: #000000 !important;
-    font-weight: bold;
+    text-transform: uppercase !important;
   }
 
   .pickup-code-value {
+    font-size: 22pt !important;
+    font-weight: 900 !important;
+    font-family: monospace !important;
     color: #000000 !important;
-    font-size: 26pt !important;
+    line-height: 1.1 !important;
+    margin: 1px 0 !important;
     text-shadow: none !important;
   }
 
   .pickup-code-instruction {
-    color: #333333 !important;
+    font-size: 7.5pt !important;
+    color: #444444 !important;
+    margin: 0 !important;
   }
 
-  .receipt-item-row {
-    border-bottom: 1px dashed #777777 !important;
-    padding: 4px 0 !important;
+  /* Items Table */
+  .receipt-checklist-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 3mm !important;
+    font-size: 9pt !important;
+  }
+
+  .receipt-checklist-table th {
+    background: #EAEAEA !important;
+    border: 1px solid #000000 !important;
+    padding: 3px 5px !important;
+    text-align: left !important;
+    font-weight: 800 !important;
+    color: #000000 !important;
+  }
+
+  .receipt-checklist-table td {
+    border: 1px solid #DDDDDD !important;
+    padding: 3px 5px !important;
+    color: #000000 !important;
   }
 
   .receipt-total-row {
     border-top: 2px solid #000000 !important;
-    color: #000000 !important;
+    border-bottom: 2px solid #000000 !important;
+    padding: 2mm 0 !important;
+    margin-bottom: 3mm !important;
+    font-size: 11pt !important;
+    font-weight: 800 !important;
+    display: flex !important;
+    justify-content: space-between !important;
   }
 
   .receipt-total-val {
     color: #000000 !important;
-    font-size: 16pt !important;
+    font-size: 12pt !important;
+    font-weight: 900 !important;
   }
 
   .receipt-pickup-guidelines {
     background: #F9F9F9 !important;
     border: 1px solid #CCCCCC !important;
-    color: #000000 !important;
+    padding: 2.5mm !important;
+    font-size: 8pt !important;
+    border-radius: 4px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .receipt-pickup-guidelines h4 {
+    margin: 0 0 2px 0 !important;
+    font-size: 8.5pt !important;
+    font-weight: 800 !important;
+  }
+
+  .receipt-pickup-guidelines ul {
+    margin: 0 0 0 12px !important;
+    padding: 0 !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Page 2 Signatures & Checklists */
+  .receipt-sign-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 3mm !important;
+    margin-top: 3mm !important;
+  }
+
+  .receipt-sign-card {
+    border: 1px solid #666666 !important;
+    padding: 2.5mm !important;
+    background: #FFFFFF !important;
+    font-size: 8pt !important;
+  }
+
+  .receipt-sign-line {
+    border-bottom: 1px solid #000000 !important;
+    margin-top: 10mm !important;
+    margin-bottom: 1mm !important;
+  }
+
+  .receipt-page-badge-corner {
+    display: none !important;
   }
 }

@@ -1296,6 +1296,162 @@ textarea {
   justify-content: center;
 }
 
+/* 2-Page Official Receipt Styles */
+.receipt-container-2page {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.receipt-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: var(--color-bg-surface-alt);
+  border: 1px solid var(--color-gold-400);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.receipt-page-card {
+  background: #FFFFFF;
+  border: 2.5px solid var(--color-maroon-800);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+
+.receipt-page-badge-corner {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--color-bg-surface-alt);
+  color: var(--color-maroon-900);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+}
+
+.receipt-brand-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.25rem;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.receipt-logo-block {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.receipt-brand-logo-img {
+  width: 58px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-gold-500);
+}
+
+.receipt-brand-name {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  color: var(--color-maroon-900);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.receipt-brand-sub {
+  font-size: 0.85rem;
+  color: var(--color-gold-700);
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.receipt-copy-pill {
+  display: inline-block;
+  background: var(--color-maroon-900);
+  color: var(--color-gold-300);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.receipt-meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.receipt-meta-table td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.receipt-meta-table .meta-label {
+  font-weight: 700;
+  color: var(--color-maroon-900);
+  background: var(--color-bg-surface-alt);
+  width: 25%;
+}
+
+.receipt-checklist-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.receipt-checklist-table th {
+  background: var(--color-bg-surface-alt);
+  border: 1px solid var(--color-border);
+  padding: 0.6rem 0.75rem;
+  font-weight: 700;
+  color: var(--color-maroon-900);
+  text-align: left;
+}
+
+.receipt-checklist-table td {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-border);
+}
+
+.receipt-sign-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.receipt-sign-card {
+  border: 1px dashed var(--color-border);
+  background: var(--color-bg-surface-alt);
+  padding: 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.825rem;
+}
+
+.receipt-sign-line {
+  border-bottom: 1px solid #999;
+  margin-top: 2rem;
+  margin-bottom: 0.35rem;
+}
+
 /* ==========================================================================
    FOOTER
    ========================================================================== */

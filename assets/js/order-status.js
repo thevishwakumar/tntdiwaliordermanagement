@@ -142,20 +142,51 @@ function renderOrderDetails(order) {
 
   const isVerifiedPaid = order.paymentStatus === 'PAID_VERIFIED';
 
-  let itemsHtml = '';
-  order.items.forEach(item => {
-    itemsHtml += `
-      <div class="receipt-item-row">
-        <div class="receipt-item-info">
-          <span class="receipt-item-name">${escapeHTML(item.name)}</span>
-          <span class="receipt-item-qty">${formatQuantityUnit(item.quantity, item.unit)}</span>
-        </div>
-        <span class="receipt-item-price">${formatINR(item.total || item.price * item.quantity)}</span>
-      </div>
+  // Customer items table rows
+  let customerItemsHtml = '';
+  // Kitchen checklist rows
+  let kitchenItemsHtml = '';
+
+  (order.items || []).forEach((item, idx) => {
+    const itemTotal = item.total || (item.price * item.quantity);
+    customerItemsHtml += `
+      <tr>
+        <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border);">
+          <strong>${escapeHTML(item.name)}</strong>
+          ${item.tamil_name ? `<div style="font-size: 0.78rem; color: var(--color-text-muted);">${escapeHTML(item.tamil_name)}</div>` : ''}
+        </td>
+        <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: center;">
+          ${formatQuantityUnit(item.quantity, item.unit)}
+        </td>
+        <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right;">
+          ${formatINR(item.price)}
+        </td>
+        <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right; font-weight: 700;">
+          ${formatINR(itemTotal)}
+        </td>
+      </tr>
+    `;
+
+    kitchenItemsHtml += `
+      <tr>
+        <td style="padding: 0.45rem 0.6rem; border: 1px solid var(--color-border); text-align: center; width: 40px;">
+          <span style="font-size: 1.1rem; border: 1.5px solid #333; display: inline-block; width: 16px; height: 16px; border-radius: 2px;"></span>
+        </td>
+        <td style="padding: 0.45rem 0.6rem; border: 1px solid var(--color-border);">
+          <strong>${escapeHTML(item.name)}</strong>
+          ${item.tamil_name ? `<span style="font-size: 0.78rem; color: #555;"> (${escapeHTML(item.tamil_name)})</span>` : ''}
+        </td>
+        <td style="padding: 0.45rem 0.6rem; border: 1px solid var(--color-border); text-align: center; font-weight: 700;">
+          ${item.quantity} ${item.unit}
+        </td>
+        <td style="padding: 0.45rem 0.6rem; border: 1px solid var(--color-border); text-align: center; font-size: 0.8rem; color: #444;">
+          [  ] Packed &nbsp;&nbsp; [  ] Box Sealed
+        </td>
+      </tr>
     `;
   });
 
-  // Pickup code display rule: ONLY when verified paid
+  // Pickup code display
   let pickupCodeSection = '';
   if (isVerifiedPaid && order.pickupCode) {
     pickupCodeSection = `
@@ -169,85 +200,262 @@ function renderOrderDetails(order) {
     `;
   } else {
     pickupCodeSection = `
-      <div class="pickup-pending-box">
-        <span class="status-icon">⏳</span>
+      <div class="pickup-pending-box" style="background: #FFF8E1; border: 1.5px dashed #F57F17; padding: 1rem; border-radius: 6px; text-align: center; margin-bottom: 1.25rem;">
+        <span class="status-icon" style="font-size: 1.5rem;">⏳</span>
         <div>
-          <strong>Pickup Code Awaiting Payment Verification</strong>
-          <p>Pickup codes are generated strictly after confirmed online payment verification.</p>
+          <strong style="color: #E65100;">Pickup Code Awaiting Payment Verification</strong>
+          <p style="font-size: 0.85rem; color: #666; margin: 0.25rem 0 0;">Official pickup codes are generated strictly after confirmed online payment verification.</p>
         </div>
       </div>
     `;
   }
 
   container.innerHTML = `
-    <div class="receipt-card" id="printable-receipt">
-      <div class="receipt-header">
-        <div class="receipt-brand">
-          <h2 class="receipt-title">${escapeHTML(APP_CONFIG.business.name)}</h2>
-          <p class="receipt-tagline">${escapeHTML(APP_CONFIG.business.motto)} • ${escapeHTML(APP_CONFIG.business.tagline)}</p>
-          <p class="receipt-contacts">Contact: ${escapeHTML(APP_CONFIG.business.contacts.join(' / '))}</p>
+    <div class="receipt-container-2page">
+      
+      <!-- Top Action Toolbar (Hidden in print) -->
+      <div class="receipt-toolbar no-print">
+        <div>
+          <strong style="color: var(--color-maroon-900); font-size: 1.05rem;">📄 Official 2-Page Receipt</strong>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0.15rem 0 0;">
+            Page 1: Customer Copy (வாடிக்கையாளர் நகல்) • Page 2: Store &amp; Kitchen Copy (கடை &amp; சமையலறை நகல்)
+          </p>
         </div>
-        <div class="receipt-status-badge ${isVerifiedPaid ? 'badge-verified' : 'badge-pending'}">
-          ${isVerifiedPaid ? '✓ PAYMENT VERIFIED' : '⏳ PAYMENT PENDING'}
+        <div style="display: flex; gap: 0.75rem;">
+          <button type="button" class="btn btn-primary" onclick="window.print()" style="padding: 0.65rem 1.25rem;">
+            🖨️ Print 2-Page Official Receipt
+          </button>
+          <a href="products.html" class="btn btn-outline" style="padding: 0.65rem 1rem;">
+            + Place Another Order
+          </a>
         </div>
       </div>
 
-      <div class="receipt-meta-grid">
-        <div class="meta-block">
-          <span class="meta-label">Order Reference:</span>
-          <span class="meta-val font-mono font-bold">${escapeHTML(order.orderReference)}</span>
-        </div>
-        <div class="meta-block">
-          <span class="meta-label">Customer Name:</span>
-          <span class="meta-val">${escapeHTML(order.customerName)}</span>
-        </div>
-        <div class="meta-block">
-          <span class="meta-label">Registered Mobile:</span>
-          <span class="meta-val font-mono">${maskMobile(order.mobile)}</span>
-        </div>
-        <div class="meta-block">
-          <span class="meta-label">Fulfilment Method:</span>
-          <span class="meta-val text-brand-maroon font-semibold">${escapeHTML(APP_CONFIG.business.fulfilmentType)}</span>
-        </div>
-        ${order.pickupDate ? `
-        <div class="meta-block" style="grid-column: 1 / -1; background: #FFF8E1; padding: 0.5rem 0.75rem; border-radius: 6px; border-left: 3px solid #F57F17;">
-          <span class="meta-label">Scheduled Pickup:</span>
-          <span class="meta-val text-brand-maroon font-bold">📅 ${escapeHTML(order.pickupDate)} ${order.pickupTime ? `(${escapeHTML(order.pickupTime)})` : ''}</span>
-        </div>
-        ` : ''}
-      </div>
+      <!-- =================================================================== -->
+      <!-- PAGE 1: CUSTOMER RECEIPT (வாடிக்கையாளர் நகல்)                         -->
+      <!-- =================================================================== -->
+      <article class="receipt-page-card receipt-page-1" id="receipt-page-customer">
+        <span class="receipt-page-badge-corner">Page 1 of 2 • Customer Copy</span>
 
-      ${pickupCodeSection}
-
-      <div class="receipt-items-section">
-        <h4 class="receipt-section-heading">Order Summary</h4>
-        <div class="receipt-items-list">
-          ${itemsHtml}
+        <!-- Brand Header with Official Logo -->
+        <div class="receipt-brand-row">
+          <div class="receipt-logo-block">
+            <img src="assets/images/tnt-logo.jpg" alt="TNT Logo" class="receipt-brand-logo-img">
+            <div>
+              <h2 class="receipt-brand-name">${escapeHTML(APP_CONFIG.business.name)}</h2>
+              <div class="receipt-brand-sub">${escapeHTML(APP_CONFIG.business.motto)} • ${escapeHTML(APP_CONFIG.business.tagline)}</div>
+              <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.15rem;">
+                Helpline: ${escapeHTML(APP_CONFIG.business.contacts.join(' / '))}
+              </div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <span class="receipt-copy-pill">CUSTOMER COPY / வாடிக்கையாளர் நகல்</span>
+            <div style="margin-top: 0.4rem;">
+              <span class="receipt-status-badge ${isVerifiedPaid ? 'badge-verified' : 'badge-pending'}">
+                ${isVerifiedPaid ? '✓ PAYMENT VERIFIED' : '⏳ PAYMENT PENDING'}
+              </span>
+            </div>
+          </div>
         </div>
+
+        <!-- Order & Customer Meta Table -->
+        <table class="receipt-meta-table">
+          <tbody>
+            <tr>
+              <td class="meta-label">Order Reference:</td>
+              <td class="font-mono font-bold" style="color: var(--color-maroon-900); font-size: 1rem;">
+                ${escapeHTML(order.orderReference)}
+              </td>
+              <td class="meta-label">Customer Name:</td>
+              <td style="font-weight: 600;">${escapeHTML(order.customerName)}</td>
+            </tr>
+            <tr>
+              <td class="meta-label">Fulfilment Type:</td>
+              <td style="color: #78101C; font-weight: 700;">
+                🏬 ${escapeHTML(APP_CONFIG.business.fulfilmentType)} (Shop Pickup Only)
+              </td>
+              <td class="meta-label">Registered Mobile:</td>
+              <td class="font-mono">${maskMobile(order.mobile)}</td>
+            </tr>
+            ${order.pickupDate ? `
+            <tr>
+              <td class="meta-label" style="background: #FFF8E1; color: #B78103;">Scheduled Pickup:</td>
+              <td colspan="3" style="background: #FFFDE7; font-weight: 700; color: #78101C;">
+                📅 ${escapeHTML(order.pickupDate)} ${order.pickupTime ? `— Slot: ${escapeHTML(order.pickupTime)}` : ''}
+              </td>
+            </tr>
+            ` : ''}
+          </tbody>
+        </table>
+
+        <!-- Official Pickup Code Box -->
+        ${pickupCodeSection}
+
+        <!-- Itemized Order Table -->
+        <h4 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.05rem; margin: 1rem 0 0.5rem; border-bottom: 1.5px solid var(--color-border); padding-bottom: 0.35rem;">
+          Ordered Delicacies &amp; Festive Sweets
+        </h4>
+        <table class="receipt-checklist-table" style="margin-bottom: 0.75rem;">
+          <thead>
+            <tr>
+              <th>Delicacy</th>
+              <th style="text-align: center;">Quantity</th>
+              <th style="text-align: right;">Unit Price</th>
+              <th style="text-align: right;">Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${customerItemsHtml}
+          </tbody>
+        </table>
+
+        <!-- Authoritative Total Row -->
         <div class="receipt-total-row">
-          <span>Total Paid Amount:</span>
+          <span>Authoritative Total Paid (Online via Razorpay):</span>
           <span class="receipt-total-val">${formatINR(order.totalAmount)}</span>
         </div>
-      </div>
 
-      <div class="receipt-pickup-guidelines">
-        <h4>Counter Collection Guidelines:</h4>
-        <ul>
-          <li><strong>Location:</strong> ${escapeHTML(APP_CONFIG.business.pickupLocationNote)} — <a href="${APP_CONFIG.business.mapsUrl || 'https://maps.app.goo.gl/X5LNqZjVxdGQFu398'}" target="_blank" rel="noopener noreferrer" style="color: #78101C; text-decoration: underline; font-weight: 700;">📍 Open in Google Maps</a></li>
-          <li><strong>Verification:</strong> Present the pickup code on your mobile or a printed copy of this receipt.</li>
-          <li><strong>Contact:</strong> ${escapeHTML(APP_CONFIG.business.primaryPhone)} / ${escapeHTML(APP_CONFIG.business.secondaryPhone)} for queries.</li>
-          <li><strong>Note:</strong> ${escapeHTML(APP_CONFIG.business.operatingNotice)}</li>
-        </ul>
-      </div>
+        <!-- Counter Collection Guidelines -->
+        <div class="receipt-pickup-guidelines">
+          <h4>🏬 Shop Counter Collection Guidelines:</h4>
+          <ul>
+            <li><strong>Location:</strong> ${escapeHTML(APP_CONFIG.business.pickupLocationNote)} — <a href="${APP_CONFIG.business.mapsUrl || 'https://maps.app.goo.gl/X5LNqZjVxdGQFu398'}" target="_blank" rel="noopener noreferrer" style="color: #78101C; text-decoration: underline; font-weight: 700;">📍 Open in Google Maps</a></li>
+            <li><strong>Handover Verification:</strong> Present the Official Store Pickup Code on your phone or hand this printed copy at the counter.</li>
+            <li><strong>Contact:</strong> ${escapeHTML(APP_CONFIG.business.primaryPhone)} / ${escapeHTML(APP_CONFIG.business.secondaryPhone)} for timing coordination.</li>
+          </ul>
+        </div>
+      </article>
 
-      <div class="receipt-actions no-print">
-        <button type="button" class="btn btn-secondary" onclick="window.print()">
-          🖨️ Print Customer Receipt
-        </button>
-        <a href="products.html" class="btn btn-outline">
-          Place Another Order
-        </a>
-      </div>
+      <!-- =================================================================== -->
+      <!-- PAGE 2: STORE & KITCHEN COPY (கடை & சமையலறை ஆர்டர் நகல்)              -->
+      <!-- =================================================================== -->
+      <article class="receipt-page-card receipt-page-2" id="receipt-page-store">
+        <span class="receipt-page-badge-corner">Page 2 of 2 • Store &amp; Kitchen Copy</span>
+
+        <!-- Brand Header with Official Logo -->
+        <div class="receipt-brand-row">
+          <div class="receipt-logo-block">
+            <img src="assets/images/tnt-logo.jpg" alt="TNT Logo" class="receipt-brand-logo-img">
+            <div>
+              <h2 class="receipt-brand-name">${escapeHTML(APP_CONFIG.business.name)}</h2>
+              <div class="receipt-brand-sub">Store &amp; Kitchen Preparation / Counter Handover Record</div>
+              <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.15rem;">
+                Official Shop Record • Verify Pickup Code Before Release
+              </div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <span class="receipt-copy-pill" style="background: #1B5E20; color: #FFFFFF;">STORE &amp; KITCHEN COPY</span>
+            <div style="margin-top: 0.4rem;">
+              <span class="receipt-status-badge badge-verified">
+                ✓ PAID IN FULL (RAZORPAY)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Store Dispatch & Customer Meta Table -->
+        <table class="receipt-meta-table">
+          <tbody>
+            <tr>
+              <td class="meta-label">Order Reference:</td>
+              <td class="font-mono font-bold" style="color: var(--color-maroon-900); font-size: 1rem;">
+                ${escapeHTML(order.orderReference)}
+              </td>
+              <td class="meta-label">Customer Name:</td>
+              <td style="font-weight: 700;">${escapeHTML(order.customerName)}</td>
+            </tr>
+            <tr>
+              <td class="meta-label">Customer Phone:</td>
+              <td class="font-mono font-bold">${escapeHTML(order.mobile)}</td>
+              <td class="meta-label">Pickup Code:</td>
+              <td class="font-mono font-bold" style="font-size: 1.1rem; color: #1B5E20;">
+                ${escapeHTML(order.pickupCode || 'PENDING')}
+              </td>
+            </tr>
+            <tr>
+              <td class="meta-label" style="background: #FFF8E1; color: #B78103;">Scheduled Pickup:</td>
+              <td colspan="3" style="background: #FFFDE7; font-weight: 800; color: #78101C; font-size: 0.95rem;">
+                📅 ${escapeHTML(order.pickupDate || 'Advance Order')} ${order.pickupTime ? `— Slot: ${escapeHTML(order.pickupTime)}` : ''}
+              </td>
+            </tr>
+            ${order.notes ? `
+            <tr>
+              <td class="meta-label" style="background: #F3E5F5;">Customer Note:</td>
+              <td colspan="3" style="background: #FAF5FB; font-style: italic; color: #4A148C;">
+                📝 ${escapeHTML(order.notes)}
+              </td>
+            </tr>
+            ` : ''}
+          </tbody>
+        </table>
+
+        <!-- Kitchen Packing Checklist -->
+        <h4 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.05rem; margin: 1rem 0 0.5rem; border-bottom: 1.5px solid var(--color-border); padding-bottom: 0.35rem;">
+          Kitchen Packaging &amp; Item Verification Checklist
+        </h4>
+        <table class="receipt-checklist-table" style="margin-bottom: 0.75rem;">
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;">Check</th>
+              <th>Delicacy Description</th>
+              <th style="text-align: center;">Required Pack</th>
+              <th style="text-align: center;">Packaging Verification</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${kitchenItemsHtml}
+          </tbody>
+        </table>
+
+        <!-- Total Summary Bar -->
+        <div class="receipt-total-row" style="margin-bottom: 1.25rem;">
+          <span>Order Settlement: Full Online Payment Received</span>
+          <span class="receipt-total-val" style="color: #1B5E20;">${formatINR(order.totalAmount)}</span>
+        </div>
+
+        <!-- Staff Verification & Counter Handover Certificate Grid -->
+        <div style="margin-top: 1rem;">
+          <h5 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--color-maroon-900); margin-bottom: 0.5rem;">
+            Shop Counter Handover &amp; Verification Certificate:
+          </h5>
+          <div class="receipt-sign-grid">
+            <div class="receipt-sign-card">
+              <strong>1. Kitchen Packaging:</strong>
+              <div style="color: #666; font-size: 0.75rem; margin-top: 0.2rem;">Sweets weighed, packed &amp; sealed freshly.</div>
+              <div class="receipt-sign-line"></div>
+              <div>Packed By (Staff Name &amp; Sign)</div>
+            </div>
+
+            <div class="receipt-sign-card">
+              <strong>2. Quality &amp; Seal Verification:</strong>
+              <div style="color: #666; font-size: 0.75rem; margin-top: 0.2rem;">Box weight and sealing verified.</div>
+              <div class="receipt-sign-line"></div>
+              <div>Verified By (Supervisor Sign)</div>
+            </div>
+
+            <div class="receipt-sign-card">
+              <strong>3. Store Counter Handover:</strong>
+              <div style="color: #666; font-size: 0.75rem; margin-top: 0.2rem;">Pickup Code verified with customer.</div>
+              <div class="receipt-sign-line"></div>
+              <div>Handed Over By (Staff Sign)</div>
+            </div>
+
+            <div class="receipt-sign-card">
+              <strong>4. Customer Handover Acknowledgment:</strong>
+              <div style="color: #666; font-size: 0.75rem; margin-top: 0.2rem;">Received fresh pack in perfect condition.</div>
+              <div class="receipt-sign-line"></div>
+              <div>Customer Signature &amp; Pickup Time: ________________</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; font-size: 0.78rem; color: #777; margin-top: 1rem; border-top: 1px solid var(--color-border); padding-top: 0.5rem;">
+          Shree Taste N Taste Catering • Store Record • Retain signed copy for Diwali audit reconciliation.
+        </div>
+      </article>
+
     </div>
   `;
 
