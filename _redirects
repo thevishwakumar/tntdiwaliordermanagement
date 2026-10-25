@@ -1,0 +1,6 @@
+# Cloudflare Pages Redirect Rules
+/admin        /admin/dashboard.html  301
+/dashboard    /admin/dashboard.html  301
+/track        /order-status.html     301
+/pickup       /order-status.html     301
+/orders       /checkout.html         301
