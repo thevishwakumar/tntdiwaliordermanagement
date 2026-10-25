@@ -167,7 +167,7 @@ Supabase cloud automatically takes daily WAL backups. For external backups, run 
 
 ```bash
 # Daily Backup Script (run via cron at 02:00 AM IST)
-pg_dump "postgresql://postgres:Vishwa@8105@db.bondkwckhnbjslshyflp.supabase.co:5432/postgres" \
+pg_dump "postgresql://postgres:<DB_PASSWORD>@db.bondkwckhnbjslshyflp.supabase.co:5432/postgres" \
   --format=custom \
   --file="/backups/tnt_diwali_$(date +\%Y\%m\%d).dump"
 ```
@@ -175,6 +175,6 @@ pg_dump "postgresql://postgres:Vishwa@8105@db.bondkwckhnbjslshyflp.supabase.co:5
 #### Point-In-Time Restoration Procedure
 ```bash
 pg_restore --clean --if-exists --no-owner \
-  -d "postgresql://postgres:Vishwa@8105@db.bondkwckhnbjslshyflp.supabase.co:5432/postgres" \
+  -d "postgresql://postgres:<DB_PASSWORD>@db.bondkwckhnbjslshyflp.supabase.co:5432/postgres" \
   /backups/tnt_diwali_20261025.dump
 ```
