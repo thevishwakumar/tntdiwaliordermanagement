@@ -76,9 +76,11 @@ serve(async (req: Request) => {
     }
 
     const body = await req.json();
-    const { orderId, newStatus, reason } = body;
+    const targetOrderId = body.orderId || body.order_id;
+    const targetStatus = body.newStatus || body.status;
+    const reason = body.reason || null;
 
-    if (!orderId || !newStatus) {
+    if (!targetOrderId || !targetStatus) {
       return new Response(
         JSON.stringify({ success: false, message: "Both orderId and newStatus are required." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -89,7 +91,7 @@ serve(async (req: Request) => {
     const { data: order, error: orderFetchError } = await serviceClient
       .from("orders")
       .select("id, order_status, public_order_number")
-      .eq("id", orderId)
+      .eq("id", targetOrderId)
       .single();
 
     if (orderFetchError || !order) {
@@ -102,11 +104,11 @@ serve(async (req: Request) => {
     const currentStatus = order.order_status;
     const allowed = ALLOWED_TRANSITIONS[currentStatus] || [];
 
-    if (!allowed.includes(newStatus)) {
+    if (!allowed.includes(targetStatus)) {
       return new Response(
         JSON.stringify({
           success: false,
-          message: `Illegal status transition from ${currentStatus} to ${newStatus}. Permitted next states: [${allowed.join(", ")}]`,
+          message: `Illegal status transition from ${currentStatus} to ${targetStatus}. Permitted next states: [${allowed.join(", ")}]`,
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -114,16 +116,16 @@ serve(async (req: Request) => {
 
     // Prepare timestamp updates
     const updates: Record<string, any> = {
-      order_status: newStatus,
+      order_status: targetStatus,
     };
 
-    if (newStatus === "READY_FOR_PICKUP") {
+    if (targetStatus === "READY_FOR_PICKUP") {
       updates.ready_at = new Date().toISOString();
       updates.pickup_status = "READY_FOR_PICKUP";
-    } else if (newStatus === "PICKED_UP") {
+    } else if (targetStatus === "PICKED_UP") {
       updates.picked_up_at = new Date().toISOString();
       updates.pickup_status = "PICKED_UP";
-    } else if (newStatus === "CANCELLED") {
+    } else if (targetStatus === "CANCELLED") {
       updates.cancelled_at = new Date().toISOString();
     }
 
@@ -131,7 +133,7 @@ serve(async (req: Request) => {
     const { error: updateError } = await serviceClient
       .from("orders")
       .update(updates)
-      .eq("id", orderId);
+      .eq("id", targetOrderId);
 
     if (updateError) {
       throw updateError;
@@ -139,10 +141,10 @@ serve(async (req: Request) => {
 
     // Log event in order_events
     await serviceClient.from("order_events").insert({
-      order_id: orderId,
+      order_id: targetOrderId,
       event_type: "STATUS_CHANGED",
       from_status: currentStatus,
-      to_status: newStatus,
+      to_status: targetStatus,
       actor_type: "ADMIN",
       actor_id: user.id,
       metadata: {
@@ -155,10 +157,10 @@ serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: true,
-        orderId,
+        orderId: targetOrderId,
         previousStatus: currentStatus,
-        newStatus,
-        message: `Order status successfully transitioned to ${newStatus}.`,
+        newStatus: targetStatus,
+        message: `Order status successfully transitioned to ${targetStatus}.`,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

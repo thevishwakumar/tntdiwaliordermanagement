@@ -65,11 +65,23 @@ serve(async (req: Request) => {
     }
 
     const body = await req.json();
-    const { orderId, pickupCode, staffConfirmed } = body;
+    let targetOrderId = body.orderId || body.order_id;
+    const targetOrderNumber = body.orderNumber || body.publicOrderNumber || body.public_order_number;
+    const pickupCode = body.pickupCode || body.pickup_code;
+    const staffConfirmed = body.staffConfirmed !== false;
 
-    if (!orderId || !pickupCode) {
+    if (!targetOrderId && targetOrderNumber) {
+      const { data: ord } = await serviceClient
+        .from("orders")
+        .select("id")
+        .eq("public_order_number", targetOrderNumber)
+        .maybeSingle();
+      if (ord) targetOrderId = ord.id;
+    }
+
+    if (!targetOrderId || !pickupCode) {
       return new Response(
-        JSON.stringify({ success: false, message: "Both orderId and customer pickup code are required." }),
+        JSON.stringify({ success: false, message: "Both order identifier and customer pickup code are required." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -83,7 +95,7 @@ serve(async (req: Request) => {
 
     // Call atomic stored procedure
     const { data: rpcResult, error: rpcError } = await serviceClient.rpc("verify_order_pickup_atomic", {
-      p_order_id: orderId,
+      p_order_id: targetOrderId,
       p_pickup_code: pickupCode,
       p_staff_id: user.id || "admin_counter",
     });
@@ -93,7 +105,16 @@ serve(async (req: Request) => {
     }
 
     const status = rpcResult.success ? 200 : 400;
-    return new Response(JSON.stringify(rpcResult), {
+    return new Response(JSON.stringify({
+      ...rpcResult,
+      order: {
+        id: rpcResult.order_id,
+        public_order_number: rpcResult.public_order_number,
+        customer_name: rpcResult.customer_name,
+        order_status: 'PICKED_UP',
+        picked_up_at: rpcResult.picked_up_at
+      }
+    }), {
       status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
