@@ -1,6 +1,21 @@
-# Cloudflare Pages Redirect Rules
+# Cloudflare Pages Clean URLs
 /admin        /admin/dashboard.html  301
 /dashboard    /admin/dashboard.html  301
 /track        /order-status.html     301
 /pickup       /order-status.html     301
 /orders       /checkout.html         301
+
+# Cloudflare Pages Proxy to Supabase Edge Functions (Project: bondkwckhnbjslshyflp)
+/api/config                    https://bondkwckhnbjslshyflp.supabase.co/functions/v1/config 200
+/api/create-order              https://bondkwckhnbjslshyflp.supabase.co/functions/v1/create-order 200
+/api/verify-payment            https://bondkwckhnbjslshyflp.supabase.co/functions/v1/verify-payment 200
+/api/get-order-status          https://bondkwckhnbjslshyflp.supabase.co/functions/v1/get-order-status 200
+/api/razorpay-webhook          https://bondkwckhnbjslshyflp.supabase.co/functions/v1/razorpay-webhook 200
+/api/admin/login               https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-login 200
+/api/admin/metrics             https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-metrics 200
+/api/admin/orders              https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-list-orders 200
+/api/admin/verify-pickup       https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-verify-pickup 200
+/api/admin/update-order-status https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-update-order-status 200
+/api/admin/products/update     https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-products 200
+/api/admin/products            https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-products 200
+/api/admin/audit-logs          https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-audit-logs 200

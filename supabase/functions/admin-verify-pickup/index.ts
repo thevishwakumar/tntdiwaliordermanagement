@@ -1,0 +1,107 @@
+// Supabase Edge Function: admin-verify-pickup
+// Atomic counter pickup verification requiring valid pickup code and staff physical confirmation.
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ success: false, message: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ success: false, message: "Authorization required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify admin token
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+
+    if (userError || !user) {
+      return new Response(JSON.stringify({ success: false, message: "Invalid or expired session token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check admin authorization
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: adminProfile } = await serviceClient
+      .from("admin_profiles")
+      .select("role, is_active")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!adminProfile) {
+      return new Response(JSON.stringify({ success: false, message: "Forbidden: Administrator access required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json();
+    const { orderId, pickupCode, staffConfirmed } = body;
+
+    if (!orderId || !pickupCode) {
+      return new Response(
+        JSON.stringify({ success: false, message: "Both orderId and customer pickup code are required." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!staffConfirmed) {
+      return new Response(
+        JSON.stringify({ success: false, message: "Staff physical collection confirmation is required." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Call atomic stored procedure
+    const { data: rpcResult, error: rpcError } = await serviceClient.rpc("verify_order_pickup_atomic", {
+      p_order_id: orderId,
+      p_pickup_code: pickupCode,
+      p_staff_id: user.id || "admin_counter",
+    });
+
+    if (rpcError) {
+      throw rpcError;
+    }
+
+    const status = rpcResult.success ? 200 : 400;
+    return new Response(JSON.stringify(rpcResult), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err: any) {
+    console.error("admin-verify-pickup error:", err);
+    return new Response(
+      JSON.stringify({ success: false, message: err.message || "Internal server error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
