@@ -140,6 +140,37 @@
             <span class="field-error hidden" id="error-email"></span>
           </div>
 
+          <!-- Scheduled Pickup Date & Time -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;" class="checkout-pickup-schedule-grid">
+            <div class="form-group">
+              <label for="input-pickupDate" class="form-label">
+                Scheduled Pickup Date <span class="required-star">*</span>
+              </label>
+              <input 
+                type="date" 
+                id="input-pickupDate" 
+                name="pickupDate" 
+                class="form-input" 
+                required
+              >
+              <span class="form-helper">Advance orders supported! Select your collection date.</span>
+              <span class="field-error hidden" id="error-pickupDate"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="input-pickupTime" class="form-label">
+                Preferred Pickup Slot <span class="required-star">*</span>
+              </label>
+              <select id="input-pickupTime" name="pickupTime" class="form-input" required>
+                <option value="Morning (08:00 AM - 12:00 PM)">Morning (08:00 AM - 12:00 PM)</option>
+                <option value="Afternoon (12:00 PM - 04:00 PM)">Afternoon (12:00 PM - 04:00 PM)</option>
+                <option value="Evening (04:00 PM - 08:00 PM)">Evening (04:00 PM - 08:00 PM)</option>
+                <option value="Night (08:00 PM - 10:00 PM)">Night (08:00 PM - 10:00 PM)</option>
+              </select>
+              <span class="form-helper">Freshly packed according to your scheduled slot.</span>
+            </div>
+          </div>
+
           <!-- Fulfilment Notice (No delivery address inputs as this is pickup only) -->
           <div class="alert-box alert-warning" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
             <span class="alert-icon">🏬</span>

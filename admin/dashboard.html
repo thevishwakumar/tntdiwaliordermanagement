@@ -260,7 +260,7 @@
         📦 Order Management
       </button>
       <button type="button" class="subnav-btn" data-tab="tab-packing" id="nav-tab-packing">
-        🍳 Kitchen Packing Queue
+        📅 Upcoming Pickups &amp; Kitchen
       </button>
       <button type="button" class="subnav-btn" data-tab="tab-pickup" id="nav-tab-pickup">
         🛍️ Counter Pickup Station
@@ -285,7 +285,7 @@
             Live Operations Dashboard
           </h1>
           <p style="font-size: 0.875rem; color: var(--color-text-muted);">
-            Real-time verified sales, kitchen packing queue, and store counter handover metrics.
+            Real-time verified sales, advance scheduled pickups, and store counter handover metrics.
           </p>
         </div>
         <button type="button" class="btn btn-secondary btn-refresh-all" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
@@ -293,40 +293,58 @@
         </button>
       </div>
 
-      <!-- Metrics Grid -->
+      <!-- Metrics Grid: Calculated from Actual Database Records -->
       <div class="metrics-grid">
         <div class="metric-card metric-revenue">
           <div class="metric-title">Verified Revenue (INR)</div>
           <div class="metric-value" id="metric-revenue">₹0</div>
-          <div class="metric-sub">Calculated strictly from verified payments</div>
+          <div class="metric-sub">Authoritative verified payments</div>
+        </div>
+
+        <div class="metric-card" style="border-left: 4px solid var(--color-maroon-900);">
+          <div class="metric-title">Total Orders</div>
+          <div class="metric-value" id="metric-total-orders">0</div>
+          <div class="metric-sub">Total festive orders in database</div>
         </div>
 
         <div class="metric-card metric-paid">
-          <div class="metric-title">Paid Orders (Confirmed)</div>
+          <div class="metric-title">Paid Orders</div>
           <div class="metric-value" id="metric-paid-count">0</div>
-          <div class="metric-sub">Eligible for kitchen packing</div>
+          <div class="metric-sub">Payment verified by gateway</div>
         </div>
 
-        <div class="metric-card metric-prep">
-          <div class="metric-title">Preparing in Kitchen</div>
-          <div class="metric-value" id="metric-prep-count">0</div>
-          <div class="metric-sub">Being freshly packed by halwais</div>
+        <div class="metric-card" style="border-left: 4px solid #E65100;">
+          <div class="metric-title">Payment Pending</div>
+          <div class="metric-value" id="metric-pending-count">0</div>
+          <div class="metric-sub">Awaiting customer payment completion</div>
+        </div>
+
+        <div class="metric-card metric-prep" style="border-left: 4px solid var(--color-gold-500);">
+          <div class="metric-title">Upcoming Pickups</div>
+          <div class="metric-value" id="metric-upcoming-count">0</div>
+          <div class="metric-sub">Scheduled for future pickup dates</div>
         </div>
 
         <div class="metric-card metric-ready">
           <div class="metric-title">Ready for Pickup</div>
           <div class="metric-value" id="metric-ready-count">0</div>
-          <div class="metric-sub">Staged at catering shop counter</div>
+          <div class="metric-sub">Packed and staged at store counter</div>
         </div>
 
         <div class="metric-card metric-picked">
-          <div class="metric-title">Picked Up &amp; Completed</div>
+          <div class="metric-title">Picked Up</div>
           <div class="metric-value" id="metric-picked-count">0</div>
-          <div class="metric-sub">Handed over after code verification</div>
+          <div class="metric-sub">Handed over to customer</div>
+        </div>
+
+        <div class="metric-card" style="border-left: 4px solid #C62828;">
+          <div class="metric-title">Cancelled Orders</div>
+          <div class="metric-value" id="metric-cancelled-count">0</div>
+          <div class="metric-sub">Cancelled orders</div>
         </div>
       </div>
 
-      <!-- Secondary Metrics Row: Awaiting Payment, Cancelled, Low Stock -->
+      <!-- Secondary Metrics Row: Daily Breakdown & Inventory Alerts -->
       <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 1.5rem; margin-bottom: 2rem;" class="admin-cols-split">
         <!-- Daily Orders Breakdown -->
         <div style="background: #FFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem;">
@@ -358,7 +376,7 @@
             Order Registry
           </h2>
           <p style="font-size: 0.85rem; color: var(--color-text-muted);">
-            Search, filter, batch print parcel labels, and manage customer orders.
+            Search, filter, manage advance scheduled pickups, and print operational documents.
           </p>
         </div>
 
@@ -380,33 +398,41 @@
             id="order-search-input" 
             class="form-input" 
             placeholder="Search order #, customer, phone..." 
-            style="width: 250px; padding: 0.5rem 0.85rem; font-size: 0.85rem;"
+            style="width: 220px; padding: 0.5rem 0.85rem; font-size: 0.85rem;"
           >
 
           <select id="filter-order-status" class="form-select" style="width: 170px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
-            <option value="ALL">All Order Statuses</option>
-            <option value="PAID">PAID</option>
-            <option value="PREPARING">PREPARING</option>
+            <option value="ALL">All Fulfilment Statuses</option>
+            <option value="PAID">SCHEDULED / PAID</option>
             <option value="READY_FOR_PICKUP">READY FOR PICKUP</option>
             <option value="PICKED_UP">PICKED UP</option>
+            <option value="PREPARING">PREPARING</option>
             <option value="AWAITING_PAYMENT">AWAITING PAYMENT</option>
             <option value="CANCELLED">CANCELLED</option>
           </select>
 
-          <select id="filter-payment-status" class="form-select" style="width: 160px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+          <select id="filter-payment-status" class="form-select" style="width: 150px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
             <option value="ALL">All Payments</option>
             <option value="PAID">PAID (Verified)</option>
             <option value="PENDING">PENDING</option>
             <option value="FAILED">FAILED</option>
           </select>
 
-          <select id="filter-product" class="form-select" style="width: 180px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
-            <option value="ALL">All Products</option>
-            <option value="tnt-trad-sweets">Traditional Sweets</option>
-            <option value="tnt-ghee-sweets">Special Ghee Sweets</option>
-            <option value="tnt-karam-specials">Karam Specials</option>
-            <option value="tnt-dry-fruits">Dry Fruits Sweets</option>
-            <option value="tnt-mixed-combo">Diwali Family Combo</option>
+          <!-- Pickup Date Filter -->
+          <input 
+            type="date" 
+            id="filter-pickup-date" 
+            class="form-input" 
+            style="width: 155px; padding: 0.45rem 0.75rem; font-size: 0.85rem;"
+            title="Filter by Pickup Date"
+          >
+
+          <!-- Sort Selector -->
+          <select id="sort-orders" class="form-select" style="width: 175px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+            <option value="ORDER_DESC">Order Date (Newest)</option>
+            <option value="ORDER_ASC">Order Date (Oldest)</option>
+            <option value="PICKUP_ASC">Pickup Date (Earliest)</option>
+            <option value="PICKUP_DESC">Pickup Date (Latest)</option>
           </select>
         </div>
 
@@ -421,14 +447,14 @@
           <thead>
             <tr>
               <th style="width: 36px;"><input type="checkbox" id="select-all-orders" title="Select all for batch print"></th>
-              <th>Order Number</th>
-              <th>Date &amp; Time (IST)</th>
+              <th>Order ID</th>
+              <th>Order Date &amp; Time</th>
               <th>Customer</th>
-              <th>Items &amp; Units</th>
-              <th>Authoritative Amount</th>
-              <th>Payment</th>
-              <th>Order Status</th>
-              <th>Fulfilment</th>
+              <th>Product Summary</th>
+              <th>Total Amount</th>
+              <th>Payment Status</th>
+              <th>Fulfillment Status</th>
+              <th>Pickup Date &amp; Slot</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -541,42 +567,67 @@
     </div>
   </div>
 
-  <!-- MODAL: COUNTER PICKUP CODE VERIFICATION -->
+  <!-- MODAL: DIRECT PICKUP HANDOVER VERIFICATION -->
   <div id="modal-pickup-verify" class="modal-backdrop hidden">
-    <div class="modal-card" style="max-width: 480px;">
+    <div class="modal-card" style="max-width: 520px;">
       <button type="button" class="btn-modal-close" id="btn-close-verify-modal">✕</button>
       
-      <div style="text-align: center; margin-bottom: 1.5rem;">
-        <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">🛍️</span>
-        <h3 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.4rem;">
-          Counter Pickup Verification
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <span style="font-size: 2.2rem; display: block; margin-bottom: 0.25rem;">🛍️</span>
+        <h3 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.4rem; margin: 0;">
+          Direct Pickup Handover &amp; Verification
         </h3>
-        <p style="font-size: 0.85rem; color: var(--color-text-muted);">
-          Ask customer for their secret Pickup Code (e.g. <code>TNT-PK-XXXX</code>).
+        <p style="font-size: 0.825rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+          Verify customer credentials and record physical counter collection.
         </p>
       </div>
 
       <form id="pickup-verify-form">
         <input type="hidden" id="verify-order-id">
 
-        <div class="form-group">
-          <label for="verify-order-display" class="form-label">Order Reference</label>
-          <input type="text" id="verify-order-display" class="form-input font-mono" readonly style="background: #F4F4F4;">
+        <!-- Order & Customer Summary Grid -->
+        <div style="background: #F8F9FA; border: 1px solid var(--color-border); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem; font-size: 0.85rem; line-height: 1.5;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+            <span style="color: var(--color-text-muted);">Order ID:</span>
+            <strong id="verify-order-ref" style="font-family: var(--font-mono); color: var(--color-maroon-900);">—</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+            <span style="color: var(--color-text-muted);">Customer:</span>
+            <strong id="verify-customer-name">—</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+            <span style="color: var(--color-text-muted);">Payment:</span>
+            <span id="verify-payment-badge" class="status-badge status-PAID">PAID</span>
+          </div>
+          <div style="margin-top: 0.5rem; border-top: 1px dashed var(--color-border); padding-top: 0.4rem;">
+            <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Delicacies Ordered:</span>
+            <div id="verify-items-summary" style="font-weight: 600; color: #333; margin-top: 0.2rem;">—</div>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="verify-code-input" class="form-label">
-            Presented Pickup Code <span class="required-star">*</span>
+        <!-- Staff Confirmation Checkbox -->
+        <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 0.75rem 0.85rem; border-radius: 6px; margin-bottom: 1rem;">
+          <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; font-size: 0.825rem; color: #5D4037; font-weight: 700;">
+            <input type="checkbox" id="verify-handover-confirm" required style="margin-top: 2px;">
+            <span>I confirm that the delicacies have physically been handed over to the customer at the counter.</span>
+          </label>
+        </div>
+
+        <!-- Verification Code Input -->
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <label for="verify-code-input" class="form-label" style="font-weight: 700;">
+            Customer Pickup Verification Code <span class="required-star">*</span>
           </label>
           <input 
             type="text" 
             id="verify-code-input" 
             class="form-input font-mono" 
-            placeholder="TNT-PK-8921" 
+            placeholder="TNT-PK-XXXX" 
             required 
             autocomplete="off"
-            style="font-size: 1.3rem; letter-spacing: 2px; text-transform: uppercase;"
+            style="font-size: 1.25rem; letter-spacing: 2px; text-transform: uppercase; text-align: center;"
           >
+          <span class="form-helper">Enter the secure 4-digit code presented by the customer on their receipt/phone.</span>
         </div>
 
         <div id="verify-error-alert" class="alert-box alert-warning hidden" style="margin-top: 1rem;"></div>

@@ -64,6 +64,8 @@ export class OrderAPI {
       customerMobile: payload.customer.mobile,
       customerEmail: payload.customer.email || null,
       customerNotes: payload.customer.notes || null,
+      pickupDate: payload.pickupDate || payload.customer.pickupDate || null,
+      pickupTime: payload.pickupTime || payload.customer.pickupTime || null,
       items: payload.items.map(item => ({
         productId: item.productId,
         quantity: item.quantity

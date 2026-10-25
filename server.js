@@ -111,6 +111,13 @@ const DB = {
       passwordHash: crypto.createHash('sha256').update('DiwaliAdmin2026!').digest('hex'),
       role: 'admin',
       is_active: true
+    },
+    {
+      id: 'admin-usr-02',
+      email: 'zinointech@gmail.com',
+      passwordHash: crypto.createHash('sha256').update('Admin@123').digest('hex'),
+      role: 'admin',
+      is_active: true
     }
   ],
   admin_sessions: new Map(),
@@ -120,31 +127,7 @@ const DB = {
 // In-flight concurrency lock to prevent race conditions during simultaneous idempotency bursts
 const PENDING_IDEMPOTENCY_PROMISES = new Map();
 
-// Seed sample demo verified order for UI testing
-const demoOrderId = 'demo-order-2026';
-const demoOrderNum = 'TNT-DEMO-2026';
-DB.orders.set(demoOrderId, {
-  id: demoOrderId,
-  public_order_number: demoOrderNum,
-  customer_name: 'Shree Taste N Taste Customer (Sample)',
-  customer_mobile: '9442854444',
-  customer_email: 'customer@example.com',
-  subtotal_paise: 235000,
-  total_paise: 235000,
-  payment_status: 'PAID',
-  order_status: 'PAID',
-  fulfilment_method: 'PICKUP',
-  pickup_code_hash: 'TNT-PK-8921',
-  pickup_status: 'READY_FOR_PICKUP',
-  customer_notes: 'Diwali morning pickup',
-  created_at: new Date().toISOString(),
-  paid_at: new Date().toISOString(),
-  items: [
-    { name: 'Traditional Sweets', unit: 'kg', unit_price_paise: 50000, quantity: 2, line_total_paise: 100000 },
-    { name: 'Special Ghee Sweets', unit: 'kg', unit_price_paise: 90000, quantity: 1, line_total_paise: 90000 },
-    { name: 'Karam Specials', unit: 'kg', unit_price_paise: 45000, quantity: 1, line_total_paise: 45000 }
-  ]
-});
+// In-memory orders store starts 100% clean (no demo / test data)
 
 // Helper: Generate non-sequential, cryptographically unpredictable public order number
 function generateOrderNumber() {
@@ -225,15 +208,17 @@ function createRazorpayOrder(amountPaise, receipt, notes = {}) {
   });
 }
 
-// Allowed order status transitions
+// Allowed order status transitions (No compulsory preparing queue; direct Ready for Pickup allowed)
 const ALLOWED_TRANSITIONS = {
   AWAITING_PAYMENT: ['CANCELLED'],
-  PAID: ['PREPARING', 'CANCELLED'],
+  PAID: ['READY_FOR_PICKUP', 'PREPARING', 'CANCELLED'],
+  SCHEDULED: ['READY_FOR_PICKUP', 'PREPARING', 'CANCELLED'],
   PREPARING: ['READY_FOR_PICKUP', 'CANCELLED'],
   READY_FOR_PICKUP: ['PICKED_UP', 'CANCELLED'],
   PICKED_UP: [],
   CANCELLED: []
 };
+
 
 // Request Parser
 function parseJson(req) {
@@ -368,7 +353,7 @@ const server = http.createServer(async (req, res) => {
         PENDING_IDEMPOTENCY_PROMISES.set(idempotencyKey, p);
       }
 
-      const { customerName, customerMobile, customerEmail, customerNotes, items } = body;
+      const { customerName, customerMobile, customerEmail, customerNotes, items, pickupDate, pickupTime } = body;
 
       // Validation
       const cleanName = typeof customerName === 'string' ? customerName.trim() : '';
@@ -380,6 +365,23 @@ const server = http.createServer(async (req, res) => {
       if (!mobile) {
         return sendJson(res, 400, { success: false, message: 'Valid 10-digit Indian mobile number starting with 6-9 is required.' });
       }
+
+      // Validate advance pickup date (cannot be in the past)
+      const todayDateStr = new Date().toISOString().slice(0, 10);
+      let cleanPickupDate = todayDateStr;
+      if (pickupDate && typeof pickupDate === 'string') {
+        const trimmedDate = pickupDate.trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedDate)) {
+          if (trimmedDate < todayDateStr) {
+            return sendJson(res, 400, { success: false, message: 'Pickup date cannot be in the past.' });
+          }
+          cleanPickupDate = trimmedDate;
+        }
+      }
+
+      const cleanPickupTime = (typeof pickupTime === 'string' && pickupTime.trim()) 
+        ? pickupTime.trim().slice(0, 60) 
+        : 'Morning (08:00 AM - 12:00 PM)';
 
       if (!Array.isArray(items) || items.length === 0) {
         return sendJson(res, 400, { success: false, message: 'Order must contain at least one item.' });
@@ -424,7 +426,8 @@ const server = http.createServer(async (req, res) => {
         orderId,
         publicOrderNumber,
         customerName: cleanName,
-        customerMobile: mobile
+        customerMobile: mobile,
+        pickupDate: cleanPickupDate
       });
 
       const newOrder = {
@@ -438,6 +441,8 @@ const server = http.createServer(async (req, res) => {
         payment_status: 'PENDING',
         order_status: 'AWAITING_PAYMENT',
         fulfilment_method: 'PICKUP',
+        pickup_date: cleanPickupDate,
+        pickup_time: cleanPickupTime,
         pickup_code_hash: null,
         pickup_status: 'PENDING_GENERATION',
         customer_notes: customerNotes ? customerNotes.slice(0, 300) : null,
@@ -474,6 +479,8 @@ const server = http.createServer(async (req, res) => {
         total_in_rupees: totalPaise / 100,
         order_status: 'AWAITING_PAYMENT',
         payment_status: 'PENDING',
+        pickup_date: cleanPickupDate,
+        pickup_time: cleanPickupTime,
         razorpay_order_id: rzpOrder.id,
         razorpay_key_id: RAZORPAY_KEY_ID,
         is_duplicate: false,
@@ -754,6 +761,8 @@ const server = http.createServer(async (req, res) => {
           fulfilment_method: matchedOrder.fulfilment_method,
           total_paise: matchedOrder.total_paise,
           pickup_status: matchedOrder.pickup_status,
+          pickup_date: matchedOrder.pickup_date || null,
+          pickup_time: matchedOrder.pickup_time || null,
           pickup_code: (matchedOrder.payment_status === 'PAID') ? matchedOrder.pickup_code_hash : null,
           created_at: matchedOrder.created_at,
           paid_at: matchedOrder.paid_at || null,
@@ -816,12 +825,17 @@ const server = http.createServer(async (req, res) => {
     }
 
     const statusFilter = parsedUrl.searchParams.get('status');
+    const pickupDateFilter = parsedUrl.searchParams.get('pickup_date');
     const search = (parsedUrl.searchParams.get('search') || '').toLowerCase();
 
     let ordersList = Array.from(DB.orders.values());
 
     if (statusFilter && statusFilter !== 'ALL') {
       ordersList = ordersList.filter(o => o.order_status === statusFilter);
+    }
+
+    if (pickupDateFilter && pickupDateFilter !== 'ALL') {
+      ordersList = ordersList.filter(o => o.pickup_date === pickupDateFilter);
     }
 
     if (search) {
@@ -931,6 +945,7 @@ const server = http.createServer(async (req, res) => {
     let readyForPickup = 0;
     let pickedUp = 0;
     let cancelled = 0;
+    let upcomingPickups = 0;
     let totalVerifiedRevenuePaise = 0;
 
     const dailySummaryMap = new Map();
@@ -939,6 +954,9 @@ const server = http.createServer(async (req, res) => {
       if (o.payment_status === 'PAID') {
         paidOrders++;
         totalVerifiedRevenuePaise += (o.total_paise || 0);
+        if (o.order_status !== 'PICKED_UP' && o.order_status !== 'CANCELLED') {
+          upcomingPickups++;
+        }
       }
       if (o.order_status === 'AWAITING_PAYMENT') awaitingPayment++;
       else if (o.order_status === 'PREPARING') preparing++;
@@ -967,10 +985,13 @@ const server = http.createServer(async (req, res) => {
         totalOrders,
         paidOrders,
         awaitingPayment,
+        pendingPayment: awaitingPayment,
+        upcomingPickups,
         preparing,
         readyForPickup,
         pickedUp,
         cancelled,
+        cancelledOrders: cancelled,
         totalVerifiedRevenuePaise,
         totalVerifiedRevenueRupees: totalVerifiedRevenuePaise / 100,
         lowStockProducts,
@@ -1064,19 +1085,29 @@ const server = http.createServer(async (req, res) => {
       }
 
       const now = new Date().toISOString();
+      const isStaffConfirmed = Boolean(body.staffConfirmed);
+
       order.order_status = 'PICKED_UP';
       order.pickup_status = 'PICKED_UP';
       order.picked_up_at = now;
+      order.picked_up_by = session.email;
+      order.picked_up_by_staff_id = session.userId;
+      order.staff_confirmed = isStaffConfirmed;
 
       DB.order_events.push({
         id: crypto.randomUUID(),
         order_id: order.id,
         event_type: 'PICKUP_VERIFIED_HANDOVER',
-        from_status: 'READY_FOR_PICKUP',
+        from_status: order.order_status,
         to_status: 'PICKED_UP',
         actor_type: 'ADMIN',
         actor_id: session.userId,
-        metadata: { verifiedCode: cleanCode, handoverTime: now },
+        metadata: { 
+          verifiedCode: cleanCode, 
+          handoverTime: now, 
+          staffEmail: session.email,
+          staffConfirmed: isStaffConfirmed 
+        },
         created_at: now
       });
 
@@ -1086,6 +1117,7 @@ const server = http.createServer(async (req, res) => {
         publicOrderNumber: order.public_order_number,
         customerName: order.customer_name,
         pickedUpAt: now,
+        pickedUpBy: session.email,
         message: 'Pickup code verified successfully! Order marked as PICKED UP.'
       });
     } catch (e) {

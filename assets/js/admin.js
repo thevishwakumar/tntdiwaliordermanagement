@@ -28,6 +28,8 @@ let currentFilterStatus = 'ALL';
 let currentSearchQuery = '';
 let currentPaymentFilter = 'ALL';
 let currentProductFilter = 'ALL';
+let currentPickupDateFilter = '';
+let currentSort = 'ORDER_DESC';
 let selectedOrderIds = new Set();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -105,6 +107,8 @@ function setupFilters() {
   const statusSelect = document.getElementById('filter-order-status');
   const paymentSelect = document.getElementById('filter-payment-status');
   const productSelect = document.getElementById('filter-product');
+  const pickupDateInput = document.getElementById('filter-pickup-date');
+  const sortSelect = document.getElementById('sort-orders');
   const resetBtn = document.getElementById('btn-reset-filters');
 
   let debounceTimer;
@@ -131,15 +135,29 @@ function setupFilters() {
     renderOrdersTable();
   });
 
+  pickupDateInput?.addEventListener('change', (e) => {
+    currentPickupDateFilter = e.target.value;
+    renderOrdersTable();
+  });
+
+  sortSelect?.addEventListener('change', (e) => {
+    currentSort = e.target.value;
+    renderOrdersTable();
+  });
+
   resetBtn?.addEventListener('click', () => {
     if (searchInput) searchInput.value = '';
     if (statusSelect) statusSelect.value = 'ALL';
     if (paymentSelect) paymentSelect.value = 'ALL';
     if (productSelect) productSelect.value = 'ALL';
+    if (pickupDateInput) pickupDateInput.value = '';
+    if (sortSelect) sortSelect.value = 'ORDER_DESC';
     currentSearchQuery = '';
     currentFilterStatus = 'ALL';
     currentPaymentFilter = 'ALL';
     currentProductFilter = 'ALL';
+    currentPickupDateFilter = '';
+    currentSort = 'ORDER_DESC';
     renderOrdersTable();
   });
 
@@ -180,11 +198,15 @@ async function loadOverviewMetrics() {
     if (!data.success) return;
 
     const m = data.metrics;
-    document.getElementById('metric-revenue').textContent = formatINR(m.totalVerifiedRevenueRupees);
-    document.getElementById('metric-paid-count').textContent = m.paidOrders;
-    document.getElementById('metric-prep-count').textContent = m.preparing;
-    document.getElementById('metric-ready-count').textContent = m.readyForPickup;
-    document.getElementById('metric-picked-count').textContent = m.pickedUp;
+    if (document.getElementById('metric-revenue')) document.getElementById('metric-revenue').textContent = formatINR(m.totalVerifiedRevenueRupees);
+    if (document.getElementById('metric-total-orders')) document.getElementById('metric-total-orders').textContent = m.totalOrders || 0;
+    if (document.getElementById('metric-paid-count')) document.getElementById('metric-paid-count').textContent = m.paidOrders || 0;
+    if (document.getElementById('metric-pending-count')) document.getElementById('metric-pending-count').textContent = m.pendingPayment || m.awaitingPayment || 0;
+    if (document.getElementById('metric-upcoming-count')) document.getElementById('metric-upcoming-count').textContent = m.upcomingPickups || 0;
+    if (document.getElementById('metric-ready-count')) document.getElementById('metric-ready-count').textContent = m.readyForPickup || 0;
+    if (document.getElementById('metric-picked-count')) document.getElementById('metric-picked-count').textContent = m.pickedUp || 0;
+    if (document.getElementById('metric-cancelled-count')) document.getElementById('metric-cancelled-count').textContent = m.cancelledOrders || m.cancelled || 0;
+    if (document.getElementById('metric-prep-count')) document.getElementById('metric-prep-count').textContent = m.preparing || 0;
 
     // Daily breakdown
     const dailyContainer = document.getElementById('overview-daily-summary');
@@ -264,6 +286,11 @@ function renderOrdersTable() {
     filtered = filtered.filter(o => o.payment_status === currentPaymentFilter);
   }
 
+  // Pickup Date Filter
+  if (currentPickupDateFilter) {
+    filtered = filtered.filter(o => o.pickup_date === currentPickupDateFilter);
+  }
+
   // Product Filter
   if (currentProductFilter !== 'ALL') {
     filtered = filtered.filter(o => (o.items || []).some(i => i.productId === currentProductFilter || (i.name || '').toLowerCase().includes(currentProductFilter.replace('tnt-', ''))));
@@ -276,6 +303,17 @@ function renderOrdersTable() {
       (o.customer_name || '').toLowerCase().includes(currentSearchQuery) ||
       (o.customer_mobile || '').includes(currentSearchQuery)
     );
+  }
+
+  // Sorting
+  if (currentSort === 'ORDER_DESC') {
+    filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  } else if (currentSort === 'ORDER_ASC') {
+    filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  } else if (currentSort === 'PICKUP_ASC') {
+    filtered.sort((a, b) => (a.pickup_date || '').localeCompare(b.pickup_date || '') || new Date(a.created_at) - new Date(b.created_at));
+  } else if (currentSort === 'PICKUP_DESC') {
+    filtered.sort((a, b) => (b.pickup_date || '').localeCompare(a.pickup_date || '') || new Date(b.created_at) - new Date(a.created_at));
   }
 
   if (filtered.length === 0) {
@@ -294,6 +332,10 @@ function renderOrdersTable() {
 
     const itemsSummary = (order.items || []).map(i => `${escapeHTML(i.name)} (${i.quantity} ${i.unit})`).join(', ');
     const totalRupees = (order.total_paise || 0) / 100;
+    const isPaid = order.payment_status === 'PAID';
+    const isReady = order.order_status === 'READY_FOR_PICKUP';
+    const isPickedUp = order.order_status === 'PICKED_UP';
+    const displayFulfillmentStatus = (order.order_status === 'PAID') ? 'SCHEDULED' : order.order_status;
 
     html += `
       <tr data-id="${order.id}">
@@ -310,7 +352,7 @@ function renderOrdersTable() {
           <div style="font-weight: 700;">${escapeHTML(order.customer_name)}</div>
           <div style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-maroon-800);">${escapeHTML(order.customer_mobile)}</div>
         </td>
-        <td style="max-width: 250px; font-size: 0.8rem; line-height: 1.4;">
+        <td style="max-width: 240px; font-size: 0.8rem; line-height: 1.4;">
           ${itemsSummary || 'No items recorded'}
         </td>
         <td>
@@ -320,19 +362,43 @@ function renderOrdersTable() {
           <span class="status-badge status-${order.payment_status}">${order.payment_status}</span>
         </td>
         <td>
-          <span class="status-badge status-${order.order_status}">${order.order_status}</span>
+          <span class="status-badge status-${order.order_status}">${displayFulfillmentStatus}</span>
+        </td>
+        <td style="font-size: 0.82rem; white-space: nowrap;">
+          <strong>📅 ${escapeHTML(order.pickup_date || 'Today')}</strong>
+          <div style="font-size: 0.72rem; color: var(--color-text-muted);">${escapeHTML(order.pickup_time || 'Morning')}</div>
         </td>
         <td>
-          <span style="font-size: 0.8rem; font-weight: 600; color: var(--color-maroon-800);">${escapeHTML(order.fulfilment_method || 'PICKUP')}</span>
-        </td>
-        <td>
-          <div style="display: flex; gap: 0.4rem;">
-            <button type="button" class="btn btn-outline btn-view-order" data-id="${order.id}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
-              View
-            </button>
-            <button type="button" class="btn btn-secondary btn-print-label" data-id="${order.id}" title="Print 1-Page Box Sticker Label" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; white-space: nowrap;">
-              🏷️ Stick Label (1-Page)
-            </button>
+          <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+            <div style="display: flex; gap: 0.35rem;">
+              <button type="button" class="btn btn-outline btn-view-order" data-id="${order.id}" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                View
+              </button>
+
+              ${(isPaid && !isReady && !isPickedUp && order.order_status !== 'CANCELLED') ? `
+                <button type="button" class="btn btn-outline btn-mark-ready" data-id="${order.id}" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #4A148C; border-color: #CE93D8; white-space: nowrap;">
+                  ✓ Ready
+                </button>
+              ` : ''}
+
+              ${isReady ? `
+                <button type="button" class="btn btn-primary btn-mark-picked-up" data-id="${order.id}" data-ref="${order.public_order_number}" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; background: #2E7D32; border-color: #1B5E20; font-weight: 700; white-space: nowrap;">
+                  🛍️ Mark Picked Up
+                </button>
+              ` : ''}
+            </div>
+
+            <div style="display: flex; gap: 0.3rem;">
+              <button type="button" class="btn btn-outline btn-print-receipt-row" data-id="${order.id}" title="Print Customer Receipt" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;">
+                🧾 Receipt
+              </button>
+              <button type="button" class="btn btn-outline btn-print-slip-row" data-id="${order.id}" title="Print Packing Slip" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;">
+                📋 Slip
+              </button>
+              <button type="button" class="btn btn-secondary btn-print-label" data-id="${order.id}" title="Print 1-Page Box Sticker Label" style="padding: 0.2rem 0.4rem; font-size: 0.7rem; white-space: nowrap;">
+                🏷️ Sticker
+              </button>
+            </div>
           </div>
         </td>
       </tr>
@@ -356,6 +422,43 @@ function renderOrdersTable() {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;
       openOrderDetailsModal(id);
+    });
+  });
+
+  // Mark Ready for Pickup Action
+  document.querySelectorAll('.btn-mark-ready').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      await updateOrderStatus(id, 'READY_FOR_PICKUP');
+      loadOverviewMetrics();
+      loadOrders();
+    });
+  });
+
+  // Mark as Picked Up Action
+  document.querySelectorAll('.btn-mark-picked-up').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      const ref = e.currentTarget.dataset.ref;
+      openPickupVerifyModal(id, ref);
+    });
+  });
+
+  // Print Receipt Row Button
+  document.querySelectorAll('.btn-print-receipt-row').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      const order = ordersCache.find(o => o.id === id);
+      if (order) printCustomerReceipt(order);
+    });
+  });
+
+  // Print Slip Row Button
+  document.querySelectorAll('.btn-print-slip-row').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      const order = ordersCache.find(o => o.id === id);
+      if (order) printPackingSlip(order);
     });
   });
 
@@ -555,13 +658,24 @@ function setupModals() {
     e.preventDefault();
     const orderId = document.getElementById('verify-order-id').value;
     const pickupCode = document.getElementById('verify-code-input').value;
+    const confirmCb = document.getElementById('verify-handover-confirm');
     const alertBox = document.getElementById('verify-error-alert');
     const submitBtn = document.getElementById('btn-submit-verify');
 
-    if (!pickupCode.trim()) return;
+    if (confirmCb && !confirmCb.checked) {
+      alertBox.textContent = 'Please confirm that the items have physically been handed to the customer.';
+      alertBox.classList.remove('hidden');
+      return;
+    }
+
+    if (!pickupCode.trim()) {
+      alertBox.textContent = 'Please enter the 4-digit pickup code presented by the customer.';
+      alertBox.classList.remove('hidden');
+      return;
+    }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Verifying with server...';
+    submitBtn.textContent = 'Verifying Handover...';
     alertBox.classList.add('hidden');
 
     try {
@@ -571,7 +685,11 @@ function setupModals() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ orderId, pickupCode })
+        body: JSON.stringify({ 
+          orderId, 
+          pickupCode: pickupCode.trim(),
+          staffConfirmed: true 
+        })
       });
 
       const data = await res.json();
@@ -633,13 +751,28 @@ function setupModals() {
 
 function openPickupVerifyModal(orderId, publicOrderNumber) {
   const modal = document.getElementById('modal-pickup-verify');
+  const order = ordersCache.find(o => o.id === orderId || o.public_order_number === (publicOrderNumber || orderId)) || {};
+
   const idInput = document.getElementById('verify-order-id');
-  const displayInput = document.getElementById('verify-order-display');
+  const refDisplay = document.getElementById('verify-order-ref');
+  const custDisplay = document.getElementById('verify-customer-name');
+  const payBadge = document.getElementById('verify-payment-badge');
+  const itemsDisplay = document.getElementById('verify-items-summary');
+  const confirmCb = document.getElementById('verify-handover-confirm');
   const codeInput = document.getElementById('verify-code-input');
   const alertBox = document.getElementById('verify-error-alert');
 
-  if (idInput) idInput.value = orderId || '';
-  if (displayInput) displayInput.value = publicOrderNumber ? `${publicOrderNumber}` : 'Enter code below to verify any ready order';
+  if (idInput) idInput.value = order.id || orderId || '';
+  if (refDisplay) refDisplay.textContent = order.public_order_number || publicOrderNumber || orderId || '—';
+  if (custDisplay) custDisplay.textContent = order.customer_name ? `${order.customer_name} (${order.customer_mobile})` : 'Walk-in Collection';
+  if (payBadge) {
+    payBadge.textContent = order.payment_status || 'PAID';
+    payBadge.className = `status-badge status-${order.payment_status || 'PAID'}`;
+  }
+  const summaryStr = (order.items || []).map(i => `${i.name} (${i.quantity} ${i.unit})`).join(', ') || 'Festive Sweets & Savouries';
+  if (itemsDisplay) itemsDisplay.textContent = summaryStr;
+
+  if (confirmCb) confirmCb.checked = false;
   if (codeInput) codeInput.value = '';
   if (alertBox) alertBox.classList.add('hidden');
 
@@ -983,7 +1116,7 @@ async function updateOrderStatus(orderId, newStatus) {
    ============================================================================== */
 
 /**
- * Generate Printable Parcel Label HTML
+ * Generate Printable Parcel Label HTML (Sweet Box Sticker)
  * Security Rules:
  * - NO API keys, secret keys, or passwords.
  * - Customer's secret pickup code is NEVER printed on exterior parcel labels.
@@ -1001,7 +1134,7 @@ function generateParcelLabelHtml(order) {
   (order.items || []).forEach(i => {
     itemsHtml += `
       <tr>
-        <td><strong>${escapeHTML(i.name)}</strong></td>
+        <td><strong>${escapeHTML(i.name)}</strong> ${i.tamil_name ? `<span style="font-size: 0.75rem; color: #555;">(${escapeHTML(i.tamil_name)})</span>` : ''}</td>
         <td style="text-align: right; font-weight: 700;">${i.quantity} ${i.unit}</td>
       </tr>
     `;
@@ -1009,7 +1142,7 @@ function generateParcelLabelHtml(order) {
 
   // Safe QR Code SVG linking strictly to public lookup page without secrets
   const qrSvg = `
-    <svg width="90" height="90" viewBox="0 0 100 100" style="display: block; margin: 0 auto;">
+    <svg width="85" height="85" viewBox="0 0 100 100" style="display: block; margin: 0 auto;">
       <rect width="100" height="100" fill="#FFFFFF"/>
       <path d="M10,10 h30 v30 h-30 z M15,15 v20 h20 v-20 z M20,20 h10 v10 h-10 z" fill="#000000"/>
       <path d="M60,10 h30 v30 h-30 z M65,15 v20 h20 v-20 z M70,20 h10 v10 h-10 z" fill="#000000"/>
@@ -1046,6 +1179,12 @@ function generateParcelLabelHtml(order) {
         <div style="text-align: right; font-size: 0.8rem; color: #444;">
           Ordered: ${istDate} (IST)
         </div>
+      </div>
+
+      <!-- Scheduled Collection Banner -->
+      <div style="background: #FFF9C4; border: 1.5px solid #FBC02D; padding: 6px 10px; border-radius: 4px; margin-bottom: 10px; font-size: 0.825rem; display: flex; justify-content: space-between;">
+        <span>📅 <strong>Scheduled Pickup Date:</strong> ${escapeHTML(order.pickup_date || 'Today')}</span>
+        <span>⏰ <strong>Slot:</strong> ${escapeHTML(order.pickup_time || 'Morning')}</span>
       </div>
 
       <div class="parcel-customer-grid">
@@ -1103,22 +1242,29 @@ function generateParcelLabelHtml(order) {
 }
 
 /**
- * Generate Internal Kitchen Packing Slip HTML
+ * Generate Internal Operations & Kitchen Packing Slip HTML
  */
 function generatePackingSlipHtml(order) {
   const istDate = new Date(order.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+  const printTimestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'medium' });
 
   let itemsHtml = '';
-  (order.items || []).forEach(i => {
+  (order.items || []).forEach((i, idx) => {
+    const unitRupees = (i.unit_price_paise || 0) / 100;
     itemsHtml += `
-      <div class="slip-checklist-item">
-        <span class="slip-checkbox-box"></span>
+      <div class="slip-checklist-item" style="display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid #DDD;">
+        <span class="slip-checkbox-box" style="width: 22px; height: 22px; border: 2px solid #000; display: inline-block; margin-right: 12px; border-radius: 3px;"></span>
+        <div style="width: 30px; font-weight: 700; color: #555;">#${idx + 1}</div>
         <div style="flex: 1;">
-          <strong>${escapeHTML(i.name)}</strong>
-          <span style="color: #444; margin-left: 0.5rem;">[Unit: ${i.unit}]</span>
+          <strong style="font-size: 0.95rem;">${escapeHTML(i.name)}</strong>
+          ${i.tamil_name ? `<span style="font-size: 0.8rem; color: #666; margin-left: 6px;">(${escapeHTML(i.tamil_name)})</span>` : ''}
+          <div style="font-size: 0.75rem; color: #777;">Unit Rate: ${formatINR(unitRupees)} per ${i.unit}</div>
         </div>
-        <div style="font-size: 1.15rem; font-weight: 900; min-width: 90px; text-align: right;">
+        <div style="font-size: 1.2rem; font-weight: 900; min-width: 100px; text-align: right; color: #78101C;">
           ${i.quantity} ${i.unit}
+        </div>
+        <div style="width: 90px; text-align: center; border-left: 1px dashed #CCC; margin-left: 10px; font-size: 0.75rem; color: #555;">
+          Packed [ &nbsp; ]
         </div>
       </div>
     `;
@@ -1126,46 +1272,82 @@ function generatePackingSlipHtml(order) {
 
   return `
     <div class="packing-slip-card">
-      <div class="packing-slip-header">
+      <div class="packing-slip-header" style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 12px;">
         <div>
-          <div class="slip-title">TNT Kitchen Packing Slip</div>
-          <div style="font-size: 0.85rem; color: #444;">Shree Taste N Taste Catering • Diwali Festive Kitchen</div>
+          <div class="slip-title" style="font-size: 1.4rem; font-weight: 900; text-transform: uppercase;">TNT INTERNAL PACKING SLIP</div>
+          <div style="font-size: 0.85rem; color: #333;">Shree Taste N Taste Catering • Diwali Operations Hub</div>
+          <div style="font-size: 0.75rem; color: #666;">Slip #: SLIP-${escapeHTML(order.public_order_number)} &bull; Printed: ${printTimestamp}</div>
         </div>
         <div style="text-align: right;">
-          <div style="font-family: ui-monospace, monospace; font-size: 1.3rem; font-weight: 900;">
+          <div style="font-family: ui-monospace, monospace; font-size: 1.4rem; font-weight: 900; color: #78101C;">
             ${escapeHTML(order.public_order_number)}
           </div>
-          <div style="font-size: 0.75rem;">${istDate}</div>
+          <div style="font-size: 0.8rem; color: #444;">Order Placed: ${istDate}</div>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; background: #F8F8F8; padding: 10px; border-radius: 4px;">
-        <div>Customer: <strong>${escapeHTML(order.customer_name)}</strong></div>
-        <div>Contact: <strong>${escapeHTML(order.customer_mobile)}</strong></div>
-        <div>Fulfilment: <strong>Customer Store Pickup</strong></div>
-        <div>Payment State: <strong>${order.payment_status}</strong></div>
+      <!-- Prominent Advance Scheduled Pickup Banner -->
+      <div style="background: #E8F5E9; border: 2px solid #2E7D32; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #1B5E20;">Scheduled Customer Pickup</div>
+          <div style="font-size: 1.25rem; font-weight: 900; color: #1B5E20;">
+            📅 ${escapeHTML(order.pickup_date || 'Today')}
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #1B5E20;">Preferred Collection Slot</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: #1B5E20;">
+            ⏰ ${escapeHTML(order.pickup_time || 'Morning (08:00 AM - 12:00 PM)')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer & Fulfillment Metadata Grid -->
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; background: #F8F8F8; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #E0E0E0;">
+        <div>Customer Name: <strong>${escapeHTML(order.customer_name)}</strong></div>
+        <div>Contact Mobile: <strong>+91 ${escapeHTML(order.customer_mobile)}</strong></div>
+        <div>Email: <strong>${escapeHTML(order.customer_email || 'Not Provided')}</strong></div>
+        <div>Payment State: <strong style="color: #1B5E20;">${escapeHTML(order.payment_status)}</strong></div>
       </div>
 
       ${order.customer_notes ? `
-        <div style="background: #FFF8E1; border: 1px solid #FFE082; padding: 8px 12px; border-radius: 4px; margin-bottom: 14px; font-size: 0.85rem;">
-          ⚠️ <strong>Special Packing Instruction:</strong> ${escapeHTML(order.customer_notes)}
+        <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 8px 12px; border-radius: 4px; margin-bottom: 14px; font-size: 0.85rem;">
+          ⚠️ <strong>Special Packing / Customer Note:</strong> ${escapeHTML(order.customer_notes)}
         </div>
       ` : ''}
 
-      <div style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1.5px solid #000; padding-bottom: 4px;">
-        Items Packaging Checklist:
+      <!-- Item Checklist -->
+      <div style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1.5px solid #000; padding-bottom: 4px; display: flex; justify-content: space-between;">
+        <span>Item Description &amp; Specifications</span>
+        <span>Ordered Quantity</span>
       </div>
 
-      ${itemsHtml}
+      <div style="border: 1px solid #DDD; border-radius: 4px; margin-bottom: 14px;">
+        ${itemsHtml}
+      </div>
 
-      <div class="slip-sign-row">
+      <!-- Operational 6-Point Verification Checklist -->
+      <div style="background: #FAFAFA; border: 1px solid #DDD; border-radius: 6px; padding: 12px; margin-bottom: 14px; font-size: 0.8rem; line-height: 1.7;">
+        <strong style="display: block; text-transform: uppercase; margin-bottom: 4px; color: #333;">Operational Quality Checklist:</strong>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px;">
+          <div>[ &nbsp; ] 1. All delicacies matched against customer order</div>
+          <div>[ &nbsp; ] 2. Quantities and net weights verified on scale</div>
+          <div>[ &nbsp; ] 3. Festive sweet box packaging &amp; seals inspected</div>
+          <div>[ &nbsp; ] 4. Customer pickup schedule confirmed for ${escapeHTML(order.pickup_date || 'Today')}</div>
+          <div>[ &nbsp; ] 5. Verified online payment confirmation checked</div>
+          <div>[ &nbsp; ] 6. Parcel staged in shop counter holding rack</div>
+        </div>
+      </div>
+
+      <!-- Signatures Row -->
+      <div class="slip-sign-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.8rem; border-top: 1.5px solid #000; padding-top: 10px;">
         <div>
-          Packed By (Staff Name): __________________________<br>
-          <span style="font-size: 0.75rem; color: #555;">Verify box seals &amp; festive wrapping</span>
+          Packed By (Staff Name &amp; Sign): _________________________________<br>
+          <span style="font-size: 0.72rem; color: #555;">Handcrafted, sealed, and packed according to TNT hygiene standards.</span>
         </div>
         <div>
-          Quality &amp; Weight Checked: __________________________<br>
-          <span style="font-size: 0.75rem; color: #555;">Confirmed ready for counter pickup</span>
+          Quality &amp; Weight Checked (Supervisor Sign): _________________________________<br>
+          <span style="font-size: 0.72rem; color: #555;">Approved ready for physical shop counter collection.</span>
         </div>
       </div>
     </div>
@@ -1173,80 +1355,146 @@ function generatePackingSlipHtml(order) {
 }
 
 /**
- * Generate Customer Paid Receipt HTML
+ * Generate Detailed Customer Paid Purchase Receipt HTML
  */
 function generateCustomerReceiptHtml(order) {
   const totalRupees = (order.total_paise || 0) / 100;
   const istDate = new Date(order.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
+  const receiptTimestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
 
   let itemsHtml = '';
-  (order.items || []).forEach(i => {
+  (order.items || []).forEach((i, idx) => {
     const unitRupees = (i.unit_price_paise || 0) / 100;
     const lineRupees = (i.line_total_paise || (i.unit_price_paise * i.quantity)) / 100;
     itemsHtml += `
       <tr>
-        <td style="padding: 6px 8px; border-bottom: 1px solid #DDD;"><strong>${escapeHTML(i.name)}</strong></td>
-        <td style="padding: 6px 8px; border-bottom: 1px solid #DDD; text-align: center;">${i.quantity} ${i.unit}</td>
-        <td style="padding: 6px 8px; border-bottom: 1px solid #DDD; text-align: right;">${formatINR(unitRupees)}</td>
-        <td style="padding: 6px 8px; border-bottom: 1px solid #DDD; text-align: right; font-weight: 700;">${formatINR(lineRupees)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: center; color: #666;">${idx + 1}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #DDD;">
+          <strong>${escapeHTML(i.name)}</strong>
+          ${i.tamil_name ? `<div style="font-size: 0.8rem; color: #555;">${escapeHTML(i.tamil_name)}</div>` : ''}
+        </td>
+        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: center;">${i.unit}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: center; font-weight: 700;">${i.quantity}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: right;">${formatINR(unitRupees)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: right; font-weight: 800; color: #78101C;">${formatINR(lineRupees)}</td>
       </tr>
     `;
   });
 
   return `
-    <div class="packing-slip-card" style="border: 2px solid #78101C;">
-      <div style="text-align: center; border-bottom: 2px solid #78101C; padding-bottom: 12px; margin-bottom: 12px;">
-        <h2 style="font-size: 1.4rem; color: #78101C; margin: 0;">Shree Taste N Taste Catering</h2>
-        <div style="font-size: 0.85rem; font-weight: 700;">TNT (Taste N Trust) • Spreading Sweetness This Diwali</div>
-        <div style="font-size: 0.8rem; color: #444;">Contact: 9442854444 / 7200071040</div>
-      </div>
-
-      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 12px;">
-        <div>
-          Order Reference: <strong style="font-family: ui-monospace, monospace; font-size: 1.05rem;">${escapeHTML(order.public_order_number)}</strong><br>
-          Customer Name: <strong>${escapeHTML(order.customer_name)}</strong><br>
-          Mobile: ${escapeHTML(order.customer_mobile)}
+    <div class="packing-slip-card" style="border: 2px solid #78101C; padding: 24px; border-radius: 8px;">
+      <!-- Business Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #78101C; padding-bottom: 14px; margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <img src="../assets/images/tnt-logo.jpg" alt="TNT Logo" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #DDD;">
+          <div>
+            <h2 style="font-size: 1.5rem; color: #78101C; margin: 0; font-family: Georgia, serif;">Shree Taste N Taste Catering</h2>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #333;">TNT (Taste N Trust) &bull; Spreading Sweetness This Festive Season</div>
+            <div style="font-size: 0.8rem; color: #555;">Enquiries: 9442854444 / 7200071040 &bull; Shop Counter Collection</div>
+          </div>
         </div>
         <div style="text-align: right;">
-          Date: ${istDate}<br>
-          Fulfilment: <strong>Customer Store Pickup</strong><br>
-          Payment: <strong style="color: #1B5E20;">PAID &amp; VERIFIED</strong>
+          <span style="display: inline-block; background: #78101C; color: #FFF; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+            Official Purchase Receipt
+          </span>
+          <div style="font-family: ui-monospace, monospace; font-size: 0.95rem; font-weight: 800; margin-top: 4px; color: #333;">
+            REC-${escapeHTML(order.public_order_number)}
+          </div>
+          <div style="font-size: 0.75rem; color: #666;">Generated: ${receiptTimestamp}</div>
         </div>
       </div>
 
-      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 12px;">
+      <!-- Order & Customer Information Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 0.85rem; margin-bottom: 14px; background: #FDF9F3; padding: 12px 16px; border-radius: 6px; border: 1px solid #F0E6D6;">
+        <div>
+          <div style="margin-bottom: 4px;">Order ID: <strong style="font-family: ui-monospace, monospace; font-size: 1rem; color: #78101C;">${escapeHTML(order.public_order_number)}</strong></div>
+          <div style="margin-bottom: 4px;">Customer Name: <strong>${escapeHTML(order.customer_name)}</strong></div>
+          <div style="margin-bottom: 4px;">Mobile: <strong>+91 ${escapeHTML(order.customer_mobile)}</strong></div>
+          ${order.customer_email ? `<div>Email: <strong>${escapeHTML(order.customer_email)}</strong></div>` : ''}
+        </div>
+        <div style="text-align: right;">
+          <div style="margin-bottom: 4px;">Order Placed: <strong>${istDate}</strong></div>
+          <div style="margin-bottom: 4px;">Scheduled Pickup Date: <strong style="color: #1B5E20; font-size: 0.95rem;">📅 ${escapeHTML(order.pickup_date || 'Today')}</strong></div>
+          <div style="margin-bottom: 4px;">Pickup Slot: <strong>⏰ ${escapeHTML(order.pickup_time || 'Morning (08:00 AM - 12:00 PM)')}</strong></div>
+          <div>Payment: <strong style="color: #1B5E20;">✓ ${order.payment_status === 'PAID' ? 'PAID & VERIFIED (Online Razorpay)' : order.payment_status}</strong></div>
+          ${order.razorpay_payment_id ? `<div style="font-size: 0.75rem; color: #555; font-family: ui-monospace, monospace;">Txn ID: ${escapeHTML(order.razorpay_payment_id)}</div>` : ''}
+        </div>
+      </div>
+
+      ${order.customer_notes ? `
+        <div style="border: 1px dashed #B8860B; padding: 8px 12px; border-radius: 4px; font-size: 0.825rem; margin-bottom: 14px; background: #FFFDF5;">
+          📝 <strong>Customer Notes:</strong> ${escapeHTML(order.customer_notes)}
+        </div>
+      ` : ''}
+
+      <!-- Itemized Product Table -->
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 14px;">
         <thead>
-          <tr style="background: #F4F4F4; border-bottom: 2px solid #000;">
-            <th style="padding: 6px 8px; text-align: left;">Item</th>
-            <th style="padding: 6px 8px; text-align: center;">Qty</th>
-            <th style="padding: 6px 8px; text-align: right;">Unit Rate</th>
-            <th style="padding: 6px 8px; text-align: right;">Total</th>
+          <tr style="background: #F4F4F4; border-bottom: 2px solid #78101C; color: #78101C; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">
+            <th style="padding: 8px; text-align: center; width: 40px;">S.No</th>
+            <th style="padding: 8px; text-align: left;">Product Description</th>
+            <th style="padding: 8px; text-align: center; width: 60px;">Unit</th>
+            <th style="padding: 8px; text-align: center; width: 60px;">Qty</th>
+            <th style="padding: 8px; text-align: right; width: 100px;">Unit Price</th>
+            <th style="padding: 8px; text-align: right; width: 110px;">Line Total</th>
           </tr>
         </thead>
         <tbody>
           ${itemsHtml}
-          <tr>
-            <td colspan="3" style="padding: 10px 8px; text-align: right; font-weight: 900; font-size: 1rem;">Total Paid Amount:</td>
-            <td style="padding: 10px 8px; text-align: right; font-weight: 900; font-size: 1.15rem; color: #78101C;">${formatINR(totalRupees)}</td>
-          </tr>
         </tbody>
       </table>
 
+      <!-- Financial Summary Table -->
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+        <div style="width: 320px; font-size: 0.85rem; background: #F8F9FA; padding: 12px; border-radius: 6px; border: 1px solid #DDD;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span>Delicacies Subtotal:</span>
+            <strong>${formatINR(totalRupees)}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span>Fulfilment (Store Pickup):</span>
+            <strong style="color: #1B5E20;">FREE (₹0)</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #CCC;">
+            <span>Applicable Taxes:</span>
+            <span>Inclusive</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 900; color: #78101C; margin-bottom: 4px;">
+            <span>Grand Total:</span>
+            <span>${formatINR(totalRupees)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; color: #1B5E20; font-weight: 700; font-size: 0.9rem;">
+            <span>Amount Paid:</span>
+            <span>${formatINR(totalRupees)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; color: #555; font-size: 0.8rem; margin-top: 4px;">
+            <span>Balance Due:</span>
+            <span>₹0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secret Customer Pickup Code Banner (Only printed here) -->
       ${order.pickup_code_hash ? `
-        <div style="background: #E8F5E9; border: 1.5px dashed #2E7D32; padding: 12px; text-align: center; border-radius: 6px; margin-bottom: 12px;">
-          <div style="font-size: 0.8rem; font-weight: 700; color: #1B5E20; text-transform: uppercase;">Customer Store Pickup Code</div>
-          <div style="font-family: ui-monospace, monospace; font-size: 2rem; font-weight: 900; letter-spacing: 3px; color: #1B5E20;">
+        <div style="background: #E8F5E9; border: 2px dashed #2E7D32; padding: 14px; text-align: center; border-radius: 8px; margin-bottom: 16px;">
+          <div style="font-size: 0.8rem; font-weight: 800; color: #1B5E20; text-transform: uppercase; letter-spacing: 1px;">
+            Authorized Counter Pickup Verification Code
+          </div>
+          <div style="font-family: ui-monospace, monospace; font-size: 2.2rem; font-weight: 900; letter-spacing: 4px; color: #1B5E20; margin: 4px 0;">
             ${escapeHTML(order.pickup_code_hash)}
           </div>
-          <div style="font-size: 0.75rem; color: #333; margin-top: 4px;">
-            Please present this Pickup Code and your Order Reference when collecting your festive order at the counter.
+          <div style="font-size: 0.775rem; color: #333;">
+            Please present this official Pickup Code along with your Order Reference at our shop counter when collecting your sweets.
           </div>
         </div>
       ` : ''}
 
-      <div style="font-size: 0.75rem; color: #555; line-height: 1.4; border-top: 1px solid #DDD; padding-top: 8px;">
-        * Thank you for choosing Shree Taste N Taste Catering for your Diwali celebration.<br>
-        * Store pickup hours apply. Please present your pickup code at the counter.
+      <!-- Customer Instructions Footer -->
+      <div style="font-size: 0.75rem; color: #555; line-height: 1.5; border-top: 1px solid #DDD; padding-top: 10px;">
+        • <strong>Customer Store Pickup Only:</strong> Collection at Shree Taste N Taste Catering, shop counter.<br>
+        • <strong>Collection Date:</strong> Please arrive on your scheduled date: <strong>${escapeHTML(order.pickup_date || 'Today')}</strong> during <strong>${escapeHTML(order.pickup_time || 'Morning')}</strong>.<br>
+        • <strong>Support:</strong> For scheduling changes or inquiries, call 9442854444 / 7200071040.<br>
+        • <em>Thank you for celebrating Diwali with Shree Taste N Taste Catering!</em>
       </div>
     </div>
   `;

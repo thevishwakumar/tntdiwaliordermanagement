@@ -214,6 +214,18 @@ export function validateCheckoutForm(formData, cartItems) {
     cleanData.notes = notesRes.value;
   }
 
+  // Scheduled Pickup Date & Slot
+  const todayStr = new Date().toISOString().slice(0, 10);
+  if (!formData.pickupDate) {
+    errors.pickupDate = 'Please select a scheduled pickup date.';
+  } else if (formData.pickupDate < todayStr) {
+    errors.pickupDate = 'Pickup date cannot be in the past.';
+  } else {
+    cleanData.pickupDate = formData.pickupDate;
+  }
+
+  cleanData.pickupTime = formData.pickupTime || 'Morning (08:00 AM - 12:00 PM)';
+
   // Terms Acceptance
   if (!formData.acceptTerms) {
     errors.acceptTerms = 'You must accept the customer pickup terms and conditions to proceed.';

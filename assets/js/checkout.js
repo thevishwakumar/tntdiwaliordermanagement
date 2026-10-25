@@ -188,8 +188,18 @@ function setupFormListeners() {
   // Load Razorpay script
   loadRazorpaySdk();
 
+  // Set pickup date default & minimum
+  const pickupDateInput = document.getElementById('input-pickupDate');
+  if (pickupDateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    pickupDateInput.min = today;
+    if (!pickupDateInput.value) {
+      pickupDateInput.value = today;
+    }
+  }
+
   // Real-time input cleaning and error clearing
-  ['fullName', 'mobile', 'email', 'notes', 'acceptTerms'].forEach(fieldName => {
+  ['fullName', 'mobile', 'email', 'notes', 'pickupDate', 'acceptTerms'].forEach(fieldName => {
     const input = document.getElementById(`input-${fieldName}`);
     if (input) {
       input.addEventListener('input', () => {
@@ -211,6 +221,8 @@ function setupFormListeners() {
       mobile: document.getElementById('input-mobile')?.value || '',
       email: document.getElementById('input-email')?.value || '',
       notes: document.getElementById('input-notes')?.value || '',
+      pickupDate: document.getElementById('input-pickupDate')?.value || '',
+      pickupTime: document.getElementById('input-pickupTime')?.value || '',
       acceptTerms: document.getElementById('input-acceptTerms')?.checked || false
     };
 
@@ -229,6 +241,8 @@ function setupFormListeners() {
 
     const payload = {
       customer: validation.cleanData,
+      pickupDate: validation.cleanData.pickupDate,
+      pickupTime: validation.cleanData.pickupTime,
       items: cart.map(i => ({
         productId: i.productId,
         quantity: i.quantity,
