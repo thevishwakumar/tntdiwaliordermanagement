@@ -4,7 +4,6 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
-import { hmac } from "https://deno.land/x/hmac@v2.0.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -43,31 +42,24 @@ serve(async (req: Request) => {
       );
     }
 
-    // 1. Verify HMAC SHA256 Signature
-    let isSignatureValid = false;
-    try {
-      const expectedSignature = hmac("sha256", razorpaySecret, `${razorpayOrderId}|${razorpayPaymentId}`, "utf8", "hex");
-      isSignatureValid = (expectedSignature === razorpaySignature);
-    } catch {
-      // Web Crypto API fallback
-      const encoder = new TextEncoder();
-      const key = await crypto.subtle.importKey(
-        "raw",
-        encoder.encode(razorpaySecret),
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign"]
-      );
-      const signatureBuffer = await crypto.subtle.sign(
-        "HMAC",
-        key,
-        encoder.encode(`${razorpayOrderId}|${razorpayPaymentId}`)
-      );
-      const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
-        .map(b => b.toString(16).padStart(2, "0"))
-        .join("");
-      isSignatureValid = (expectedSignature === razorpaySignature);
-    }
+    // 1. Verify HMAC SHA256 Signature using Web Crypto API
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(razorpaySecret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const signatureBuffer = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      encoder.encode(`${razorpayOrderId}|${razorpayPaymentId}`)
+    );
+    const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+    const isSignatureValid = (expectedSignature === razorpaySignature);
 
     if (!isSignatureValid) {
       console.error(`Invalid payment signature for orderId ${orderId}. Received ${razorpaySignature}`);

@@ -4,7 +4,6 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
-import { hmac } from "https://deno.land/x/hmac@v2.0.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -43,26 +42,19 @@ serve(async (req: Request) => {
 
     // Preserve raw text body for cryptographic signature calculation
     const rawBody = await req.text();
-    let isSignatureValid = false;
-    try {
-      const expectedSignature = hmac("sha256", webhookSecret, rawBody, "utf8", "hex");
-      isSignatureValid = (expectedSignature === receivedSignature);
-    } catch {
-      // Web Crypto API fallback
-      const encoder = new TextEncoder();
-      const key = await crypto.subtle.importKey(
-        "raw",
-        encoder.encode(webhookSecret),
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign"]
-      );
-      const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(rawBody));
-      const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
-        .map(b => b.toString(16).padStart(2, "0"))
-        .join("");
-      isSignatureValid = (expectedSignature === receivedSignature);
-    }
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(webhookSecret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(rawBody));
+    const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+    const isSignatureValid = (expectedSignature === receivedSignature);
 
     if (!isSignatureValid) {
       console.error("[Security Alert] Invalid Razorpay webhook signature rejected.");
