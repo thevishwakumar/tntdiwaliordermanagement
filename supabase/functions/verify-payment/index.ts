@@ -44,10 +44,33 @@ serve(async (req: Request) => {
     }
 
     // 1. Verify HMAC SHA256 Signature
-    const expectedSignature = hmac("sha256", razorpaySecret, `${razorpayOrderId}|${razorpayPaymentId}`, "utf8", "hex");
+    let isSignatureValid = false;
+    try {
+      const expectedSignature = hmac("sha256", razorpaySecret, `${razorpayOrderId}|${razorpayPaymentId}`, "utf8", "hex");
+      isSignatureValid = (expectedSignature === razorpaySignature);
+    } catch {
+      // Web Crypto API fallback
+      const encoder = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(razorpaySecret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+      );
+      const signatureBuffer = await crypto.subtle.sign(
+        "HMAC",
+        key,
+        encoder.encode(`${razorpayOrderId}|${razorpayPaymentId}`)
+      );
+      const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+      isSignatureValid = (expectedSignature === razorpaySignature);
+    }
 
-    if (expectedSignature !== razorpaySignature) {
-      console.error(`Invalid payment signature for orderId ${orderId}. Expected ${expectedSignature}, received ${razorpaySignature}`);
+    if (!isSignatureValid) {
+      console.error(`Invalid payment signature for orderId ${orderId}. Received ${razorpaySignature}`);
       
       // Update order to FAILED
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -74,8 +97,7 @@ serve(async (req: Request) => {
         order_status: "PAID",
         payment_status: "PAID",
         paid_at: now,
-        pickup_code_hash: pickupCode,
-        pickup_status: "READY_FOR_PICKUP"
+        pickup_code_hash: pickupCode
       })
       .eq("id", orderId)
       .select("id, public_order_number, total_paise, customer_mobile")

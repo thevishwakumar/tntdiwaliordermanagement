@@ -216,6 +216,12 @@ function renderOrderDetails(order, isDemo = false) {
           <span class="meta-label">Fulfilment Method:</span>
           <span class="meta-val text-brand-maroon font-semibold">${escapeHTML(APP_CONFIG.business.fulfilmentType)}</span>
         </div>
+        ${order.pickupDate ? `
+        <div class="meta-block" style="grid-column: 1 / -1; background: #FFF8E1; padding: 0.5rem 0.75rem; border-radius: 6px; border-left: 3px solid #F57F17;">
+          <span class="meta-label">Scheduled Pickup:</span>
+          <span class="meta-val text-brand-maroon font-bold">📅 ${escapeHTML(order.pickupDate)} ${order.pickupTime ? `(${escapeHTML(order.pickupTime)})` : ''}</span>
+        </div>
+        ` : ''}
       </div>
 
       ${pickupCodeSection}

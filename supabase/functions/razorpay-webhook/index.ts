@@ -43,9 +43,28 @@ serve(async (req: Request) => {
 
     // Preserve raw text body for cryptographic signature calculation
     const rawBody = await req.text();
-    const expectedSignature = hmac("sha256", webhookSecret, rawBody, "utf8", "hex");
+    let isSignatureValid = false;
+    try {
+      const expectedSignature = hmac("sha256", webhookSecret, rawBody, "utf8", "hex");
+      isSignatureValid = (expectedSignature === receivedSignature);
+    } catch {
+      // Web Crypto API fallback
+      const encoder = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(webhookSecret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+      );
+      const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(rawBody));
+      const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+      isSignatureValid = (expectedSignature === receivedSignature);
+    }
 
-    if (expectedSignature !== receivedSignature) {
+    if (!isSignatureValid) {
       console.error("[Security Alert] Invalid Razorpay webhook signature rejected.");
       return new Response(
         JSON.stringify({ success: false, message: "Invalid webhook digital signature." }),
@@ -129,7 +148,6 @@ serve(async (req: Request) => {
         payment_status: "PAID",
         paid_at: now,
         pickup_code_hash: pickupCode,
-        pickup_status: "READY_FOR_PICKUP",
         updated_at: now
       }).eq("id", order.id);
 

@@ -85,6 +85,8 @@ serve(async (req: Request) => {
         order_status,
         fulfilment_method,
         pickup_status,
+        pickup_date,
+        pickup_time,
         customer_notes,
         created_at,
         paid_at,

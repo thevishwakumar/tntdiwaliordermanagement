@@ -10,12 +10,13 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// State Machine of permitted order status transitions
+// State Machine of permitted order status transitions (No compulsory preparing queue)
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   AWAITING_PAYMENT: ["CANCELLED"],
-  PAID: ["PREPARING", "CANCELLED"],
+  PAID: ["READY_FOR_PICKUP", "PREPARING", "CANCELLED"],
+  SCHEDULED: ["READY_FOR_PICKUP", "PREPARING", "CANCELLED"],
   PREPARING: ["READY_FOR_PICKUP", "CANCELLED"],
-  READY_FOR_PICKUP: ["PICKED_UP", "CANCELLED"],
+  READY_FOR_PICKUP: ["CANCELLED"], // Direct transition to PICKED_UP requires verification code via verify_pickup_code RPC
   PICKED_UP: [],
   CANCELLED: [],
 };

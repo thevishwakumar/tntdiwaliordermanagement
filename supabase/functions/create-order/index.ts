@@ -39,6 +39,8 @@ serve(async (req: Request) => {
       customerEmail,
       customerNotes,
       items,
+      pickupDate,
+      pickupTime,
       idempotencyKey: bodyIdempotencyKey
     } = body;
 
@@ -51,7 +53,9 @@ serve(async (req: Request) => {
       p_customer_email: customerEmail || null,
       p_customer_notes: customerNotes || null,
       p_items: items,
-      p_idempotency_key: idempotencyKey
+      p_idempotency_key: idempotencyKey,
+      p_pickup_date: pickupDate || undefined,
+      p_pickup_time: pickupTime || undefined
     });
 
     if (error) {
