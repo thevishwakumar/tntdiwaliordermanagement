@@ -263,74 +263,88 @@ function setupFormListeners() {
         return;
       }
 
-      // If Razorpay order and key are present, trigger Razorpay modal
-      if (response.razorpayOrderId && response.razorpayKeyId && window.Razorpay) {
-        const options = {
-          key: response.razorpayKeyId,
-          amount: response.totalPaise,
-          currency: 'INR',
-          name: APP_CONFIG.business.name,
-          description: `Diwali Sweets Pre-Order: ${response.publicOrderNumber}`,
-          image: 'assets/images/tnt-logo.jpg',
-          order_id: response.razorpayOrderId,
-          prefill: {
-            name: validation.cleanData.fullName,
-            contact: validation.cleanData.mobile,
-            email: validation.cleanData.email
-          },
-          theme: {
-            color: '#78101C'
-          },
-          handler: async function (paymentResponse) {
-            setSubmittingState(true);
-            showCheckoutFeedback('info', 'Verifying payment signature with secure server...');
+      const rzpOrderId = response.razorpayOrderId || response.razorpay_order_id;
+      const rzpKeyId = response.razorpayKeyId || response.razorpay_key_id || APP_CONFIG.backend?.razorpayKeyId;
 
-            const verificationPayload = {
-              orderId: response.orderId,
-              razorpayPaymentId: paymentResponse.razorpay_payment_id,
-              razorpayOrderId: paymentResponse.razorpay_order_id,
-              razorpaySignature: paymentResponse.razorpay_signature
-            };
-
-            const verifyResult = await OrderAPI.verifyPayment(verificationPayload);
-
-            if (verifyResult.verified) {
-              CartManager.clearCart();
-              window.location.href = `order-status.html?ref=${encodeURIComponent(response.publicOrderNumber)}&mobile=${encodeURIComponent(validation.cleanData.mobile)}&verified=1`;
-            } else {
-              showCheckoutFeedback('error', verifyResult.message || 'Payment signature could not be verified.');
-              setSubmittingState(false);
-            }
-          },
-          modal: {
-            ondismiss: function () {
-              setSubmittingState(false);
-              showCheckoutFeedback('info', 'Online payment was closed or cancelled. Your order remains pending and you can retry at any time.');
-            }
-          }
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', function (failResp) {
-          console.error('Payment failed:', failResp);
-          showCheckoutFeedback('error', `Payment failed: ${failResp.error.description || 'Transaction unsuccessful'}`);
-          setSubmittingState(false);
-        });
-
-        rzp.open();
+      if (!rzpOrderId) {
+        showCheckoutFeedback('error', 'Payment gateway order could not be generated. Please retry or contact support at 9442854444.');
+        setSubmittingState(false);
         return;
       }
 
-      // Fallback if Razorpay modal script is not yet initialized:
-      const ref = response.publicOrderNumber;
-      const totalFormatted = formatINR(response.totalRupees);
+      // Ensure Razorpay SDK is loaded
+      if (!window.Razorpay) {
+        await new Promise((resolve) => {
+          if (window.Razorpay) return resolve(true);
+          const s = document.createElement('script');
+          s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          s.onload = () => resolve(true);
+          s.onerror = () => resolve(false);
+          document.head.appendChild(s);
+          setTimeout(() => resolve(Boolean(window.Razorpay)), 3000);
+        });
+      }
 
-      showCheckoutFeedback('success', 
-        `Order ${ref} created successfully on server. Authoritative total: ${totalFormatted}. Status: ${response.orderStatus}.`
-      );
+      if (!window.Razorpay) {
+        showCheckoutFeedback('error', 'Unable to load Razorpay payment window. Please check your internet connection or ad-blocker.');
+        setSubmittingState(false);
+        return;
+      }
 
-      CartManager.clearCart();
-      setSubmittingState(false);
+      const options = {
+        key: rzpKeyId,
+        amount: response.totalPaise,
+        currency: 'INR',
+        name: APP_CONFIG.business.name,
+        description: `Diwali Sweets Pre-Order: ${response.publicOrderNumber}`,
+        image: 'assets/images/tnt-logo.jpg',
+        order_id: rzpOrderId,
+        prefill: {
+          name: validation.cleanData.fullName,
+          contact: validation.cleanData.mobile,
+          email: validation.cleanData.email
+        },
+        theme: {
+          color: '#78101C'
+        },
+        handler: async function (paymentResponse) {
+          setSubmittingState(true);
+          showCheckoutFeedback('info', 'Verifying payment signature with secure server...');
+
+          const verificationPayload = {
+            orderId: response.orderId,
+            razorpayPaymentId: paymentResponse.razorpay_payment_id,
+            razorpayOrderId: paymentResponse.razorpay_order_id,
+            razorpaySignature: paymentResponse.razorpay_signature
+          };
+
+          const verifyResult = await OrderAPI.verifyPayment(verificationPayload);
+
+          if (verifyResult.verified) {
+            CartManager.clearCart();
+            window.location.href = `order-status.html?ref=${encodeURIComponent(response.publicOrderNumber)}&mobile=${encodeURIComponent(validation.cleanData.mobile)}&verified=1`;
+          } else {
+            showCheckoutFeedback('error', verifyResult.message || 'Payment signature could not be verified.');
+            setSubmittingState(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setSubmittingState(false);
+            showCheckoutFeedback('info', 'Payment window was closed. Your order is pending payment. Click Proceed to Online Payment to retry.');
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (failResp) {
+        console.error('Payment failed:', failResp);
+        showCheckoutFeedback('error', `Payment failed: ${failResp.error?.description || 'Transaction unsuccessful'}`);
+        setSubmittingState(false);
+      });
+
+      rzp.open();
+      return;
 
     } catch (err) {
       console.error('Checkout error:', err);

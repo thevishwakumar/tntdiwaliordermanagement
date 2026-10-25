@@ -35,16 +35,6 @@
       margin-bottom: 1rem;
       letter-spacing: 0.5px;
     }
-    .admin-help-box {
-      margin-top: 1.5rem;
-      background: var(--color-bg-surface-alt);
-      border: 1px dashed var(--color-gold-500);
-      border-radius: var(--radius-md);
-      padding: 1rem;
-      font-size: 0.8rem;
-      color: var(--color-text-muted);
-      line-height: 1.45;
-    }
   </style>
 </head>
 <body style="background-color: var(--color-bg-surface-alt);">
@@ -108,16 +98,6 @@
           Sign In to Admin Dashboard
         </button>
       </form>
-
-      <div class="admin-help-box">
-        <strong style="color: var(--color-maroon-900);">First Administrator Access:</strong>
-        <p style="margin-top: 0.35rem;">
-          For local testing, default credentials are: <code>admin@tntcatering.in</code> / <code>DiwaliAdmin2026!</code>.
-        </p>
-        <p style="margin-top: 0.35rem;">
-          In cloud Supabase, admins are provisioned by adding a row to <code>admin_profiles</code> linked to Supabase Auth UUID.
-        </p>
-      </div>
     </div>
   </main>
 
@@ -151,9 +131,12 @@
         }
 
         // Store session token securely for API calls
+        const adminEmail = (data.admin && data.admin.email) || (data.user && data.user.email) || email;
+        const adminRole = (data.admin && data.admin.role) || (data.user && data.user.role) || 'admin';
+
         sessionStorage.setItem('tnt_admin_token', data.token);
-        sessionStorage.setItem('tnt_admin_email', data.admin.email);
-        sessionStorage.setItem('tnt_admin_role', data.admin.role);
+        sessionStorage.setItem('tnt_admin_email', adminEmail);
+        sessionStorage.setItem('tnt_admin_role', adminRole);
 
         window.location.href = 'dashboard.html';
 

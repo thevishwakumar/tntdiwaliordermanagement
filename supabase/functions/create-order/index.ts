@@ -113,7 +113,9 @@ serve(async (req: Request) => {
         success: true,
         ...data,
         razorpayOrderId,
-        razorpayKeyId: razorpayKeyId || null
+        razorpayKeyId: razorpayKeyId || null,
+        razorpay_order_id: razorpayOrderId,
+        razorpay_key_id: razorpayKeyId || null
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

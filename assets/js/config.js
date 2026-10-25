@@ -11,7 +11,7 @@ export const APP_CONFIG = {
   business: {
     name: 'Shree Taste N Taste Catering',
     brand: 'TNT',
-    motto: 'Taste N Trust',
+    motto: 'Taste N Taste',
     tagline: 'Spreading Sweetness This Diwali',
     tamilTagline: 'தீபாவளி ஸ்வீட் ஆர்டர் வரவேற்கப்படுகிறது',
     contacts: ['9442854444', '7200071040'],

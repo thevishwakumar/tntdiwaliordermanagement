@@ -1,7 +1,7 @@
 # TNT Diwali Order Management System
 
 **Client:** Shree Taste N Taste Catering  
-**Brand:** TNT (*Taste N Trust*)  
+**Brand:** TNT (*Taste N Taste*)  
 **Tagline:** *Spreading Sweetness This Diwali* (தீபாவளி ஸ்வீட் ஆர்டர் வரவேற்கப்படுகிறது)  
 **Fulfilment Model:** Customer Store Pickup Only (No home delivery, No Cash on Delivery)  
 **Primary Contact Numbers:** 9442854444 / 7200071040  
@@ -63,7 +63,7 @@ TNT Diwali Order Mangement/
         ├── karam-specials.jpg      # Crispy murukku, mixture, and savoury snacks
         ├── dry-fruits-sweets.jpg   # Premium silver-foiled Kaju Katli and dry fruit sweets
         ├── diwali-combo.jpg        # Festive family combo assortment
-        ├── tnt-logo.jpg            # Shree Taste N Taste Catering (TNT Taste N Trust) brand mark
+        ├── tnt-logo.jpg            # Shree Taste N Taste Catering (TNT Taste N Taste) brand mark
         └── tnt-diwali-flyer.jpg    # Authentic business promotional flyer
 ```
 
@@ -116,7 +116,7 @@ Right-click on `index.html` and click **"Open with Live Server"**.
 
 As specified in project instructions, the following backend components will be integrated in **Stage 2**:
 1. **Supabase Database Schema:** Tables for `orders`, `order_items`, `customers`, and `pickup_codes` with Row Level Security (RLS) policies.
-2. **Server-Side Authoritative Total Calculation:** Server-side validation of item prices against a trusted database table.
+2. **Server-Side Authoritative Total Calculation:** Server-side validation of item prices against a Tasteed database table.
 3. **Razorpay Live Order Creation:** Backend generation of `razorpay_order_id` and passing key IDs to Razorpay Checkout JS modal.
 4. **Server-Side Payment Signature Verification:** Cryptographic HMAC SHA256 verification of `razorpay_signature` in a Supabase Edge Function before order confirmation.
 5. **Secure Generation of Official Pickup Code:** Auto-generation of unique pickup codes only upon verified payment confirmation.

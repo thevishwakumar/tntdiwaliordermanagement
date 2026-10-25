@@ -1,7 +1,7 @@
 /* ==========================================================================
    TNT DIWALI ORDER MANAGEMENT SYSTEM — MASTER STYLESHEET
    Design System: Festive Royal Diwali Theme (Professional Light Mode)
-   Brand: Shree Taste N Taste Catering (TNT - Taste N Trust)
+   Brand: Shree Taste N Taste Catering (TNT - Taste N Taste)
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -66,7 +66,9 @@
 }
 
 /* Base Reset */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -104,7 +106,10 @@ a:hover {
   color: var(--color-gold-600);
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font: inherit;
   color: inherit;
 }
@@ -207,7 +212,8 @@ button, input, select, textarea {
   transition: all var(--transition-fast);
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover,
+.nav-link.active {
   color: var(--color-gold-300);
   background: rgba(207, 157, 56, 0.12);
 }
@@ -345,7 +351,9 @@ button, input, select, textarea {
   color: var(--color-error);
 }
 
-.form-input, .form-textarea, .form-select {
+.form-input,
+.form-textarea,
+.form-select {
   width: 100%;
   padding: 0.75rem 0.9rem;
   border: 1.5px solid var(--color-border);
@@ -355,13 +363,16 @@ button, input, select, textarea {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.form-input:focus, .form-textarea:focus, .form-select:focus {
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
   border-color: var(--color-gold-500);
   box-shadow: 0 0 0 3px rgba(207, 157, 56, 0.15);
   outline: none;
 }
 
-.form-input.input-invalid, .form-textarea.input-invalid {
+.form-input.input-invalid,
+.form-textarea.input-invalid {
   border-color: var(--color-error);
   background-color: var(--color-error-bg);
 }
@@ -776,7 +787,7 @@ button, input, select, textarea {
   font-weight: 700;
   padding: 0.3rem 0.65rem;
   border-radius: var(--radius-pill);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   text-transform: uppercase;
 }
 
@@ -997,7 +1008,8 @@ button, input, select, textarea {
   overflow: hidden;
 }
 
-.btn-qty-minus, .btn-qty-plus {
+.btn-qty-minus,
+.btn-qty-plus {
   background: var(--color-bg-surface-alt);
   border: none;
   width: 32px;
@@ -1006,7 +1018,8 @@ button, input, select, textarea {
   font-weight: 700;
 }
 
-.btn-qty-minus:hover, .btn-qty-plus:hover {
+.btn-qty-minus:hover,
+.btn-qty-plus:hover {
   background: var(--color-gold-300);
 }
 
@@ -1199,7 +1212,7 @@ button, input, select, textarea {
   font-weight: 800;
   letter-spacing: 4px;
   color: #FFFDF9;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   margin-bottom: 0.75rem;
 }
 

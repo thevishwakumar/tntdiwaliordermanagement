@@ -1,5 +1,5 @@
 # TNT Diwali Order Management System — Production Deployment Guide
-## Shree Taste N Taste Catering (TNT — Taste N Trust)
+## Shree Taste N Taste Catering (TNT — Taste N Taste)
 
 This guide provides end-to-end instructions for deploying the TNT Diwali Order Management System to production.
 

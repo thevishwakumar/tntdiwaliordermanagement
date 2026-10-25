@@ -685,10 +685,10 @@ function setupModals() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          orderId, 
+        body: JSON.stringify({
+          orderId,
           pickupCode: pickupCode.trim(),
-          staffConfirmed: true 
+          staffConfirmed: true
         })
       });
 
@@ -1162,7 +1162,7 @@ function generateParcelLabelHtml(order) {
           <img src="../assets/images/tnt-logo.jpg" alt="TNT Logo" class="parcel-brand-logo">
           <div>
             <div class="parcel-brand-name">Shree Taste N Taste Catering</div>
-            <div class="parcel-brand-sub">TNT (Taste N Trust) • Spreading Sweetness This Diwali</div>
+            <div class="parcel-brand-sub">TNT (Taste N Taste) • Spreading Sweetness This Diwali</div>
           </div>
         </div>
         <div class="parcel-header-badges">
@@ -1389,7 +1389,7 @@ function generateCustomerReceiptHtml(order) {
           <img src="../assets/images/tnt-logo.jpg" alt="TNT Logo" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #DDD;">
           <div>
             <h2 style="font-size: 1.5rem; color: #78101C; margin: 0; font-family: Georgia, serif;">Shree Taste N Taste Catering</h2>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #333;">TNT (Taste N Trust) &bull; Spreading Sweetness This Festive Season</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #333;">TNT (Taste N Taste) &bull; Spreading Sweetness This Festive Season</div>
             <div style="font-size: 0.8rem; color: #555;">Enquiries: 9442854444 / 7200071040 &bull; Shop Counter Collection</div>
           </div>
         </div>

@@ -95,15 +95,15 @@ export class OrderAPI {
 
       return {
         success: true,
-        orderId: data.order_id,
-        publicOrderNumber: data.public_order_number,
-        totalPaise: data.total_paise,
-        totalRupees: data.total_in_rupees || (data.total_paise / 100),
-        orderStatus: data.order_status,
-        paymentStatus: data.payment_status,
-        razorpayOrderId: data.razorpay_order_id,
-        razorpayKeyId: data.razorpay_key_id,
-        isDuplicate: Boolean(data.is_duplicate),
+        orderId: data.order_id || data.orderId,
+        publicOrderNumber: data.public_order_number || data.publicOrderNumber,
+        totalPaise: data.total_paise || data.totalPaise,
+        totalRupees: data.total_in_rupees || ((data.total_paise || data.totalPaise) / 100),
+        orderStatus: data.order_status || data.orderStatus,
+        paymentStatus: data.payment_status || data.paymentStatus,
+        razorpayOrderId: data.razorpayOrderId || data.razorpay_order_id,
+        razorpayKeyId: data.razorpayKeyId || data.razorpay_key_id || APP_CONFIG.backend.razorpayKeyId,
+        isDuplicate: Boolean(data.is_duplicate || data.isDuplicate),
         message: data.message || 'Order created successfully on server.'
       };
 

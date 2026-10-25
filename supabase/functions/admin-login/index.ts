@@ -75,6 +75,11 @@ serve(async (req: Request) => {
       JSON.stringify({
         success: true,
         token: authData.session.access_token,
+        admin: {
+          id: authData.user.id,
+          email: authData.user.email,
+          role: adminProfile.role,
+        },
         user: {
           id: authData.user.id,
           email: authData.user.email,
