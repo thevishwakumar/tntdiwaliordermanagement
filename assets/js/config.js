@@ -21,7 +21,9 @@ export const APP_CONFIG = {
     fulfilmentType: 'Customer Pickup Only',
     pickupLocationNote: 'Direct Pickup from Shree Taste N Taste Catering counter',
     pickupAddress: 'Shree Taste N Taste Catering, Shop Counter',
-    mapsUrl: 'https://maps.app.goo.gl/X5LNqZjVxdGQFu398',
+    mapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM',
+    mapsPlaceUrl: 'https://maps.google.com/?cid=3716949033379685700',
+    mapsEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.112166727533!2d76.987673!3d11.0302105!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba8f622cb4faa31%3A0x339503dd384d4544!2sShree%20TasteNTaste%20Catering!5e0!3m2!1sen!2sin!4v1793019092675!5m2!1sen!2sin',
     pickupRequirement: 'Customer must present their verified Pickup Code and Order Reference upon collection.',
     operatingNotice: 'Strictly customer pickup. Home delivery and Cash on Delivery (COD) are not available.'
   },

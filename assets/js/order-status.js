@@ -174,14 +174,13 @@ function renderOrderDetails(order) {
         <div class="pickup-code-label">OFFICIAL STORE PICKUP CODE</div>
         <div class="pickup-code-value">${escapeHTML(order.pickupCode)}</div>
         <p class="pickup-code-instruction">
-          ⚠️ Please show this code and your Order Reference (<strong>${escapeHTML(order.orderReference)}</strong>) at the TNT Catering shop counter to collect your fresh pack.
+          Please present this Pickup Code and your Order Reference (<strong>${escapeHTML(order.orderReference)}</strong>) at the TNT Catering shop counter to collect your fresh pack.
         </p>
       </div>
     `;
   } else {
     pickupCodeSection = `
       <div class="pickup-pending-box" style="background: #FFF8E1; border: 1.5px dashed #F57F17; padding: 1rem; border-radius: 6px; text-align: center; margin-bottom: 1.25rem;">
-        <span class="status-icon" style="font-size: 1.5rem;">⏳</span>
         <div>
           <strong style="color: #E65100;">Pickup Code Awaiting Payment Verification</strong>
           <p style="font-size: 0.85rem; color: #666; margin: 0.25rem 0 0;">Official pickup codes are generated strictly after confirmed online payment verification.</p>
@@ -196,14 +195,18 @@ function renderOrderDetails(order) {
       <!-- Top Action Toolbar (Hidden in print) -->
       <div class="receipt-toolbar no-print">
         <div>
-          <strong style="color: var(--color-maroon-900); font-size: 1.05rem;">📄 Official Customer Receipt</strong>
+          <strong style="color: var(--color-maroon-900); font-size: 1.05rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Official Customer Receipt
+          </strong>
           <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0.15rem 0 0;">
             Present this receipt or your Store Pickup Code at the counter to collect your fresh festive pack.
           </p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
-          <button type="button" class="btn btn-primary" onclick="window.print()" style="padding: 0.65rem 1.25rem;">
-            🖨️ Print Customer Receipt
+          <button type="button" class="btn btn-primary btn-shimmer" onclick="window.print()" style="padding: 0.65rem 1.25rem;">
+            <svg style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print Receipt
           </button>
           <a href="products.html" class="btn btn-outline" style="padding: 0.65rem 1rem;">
             + Place Another Order
@@ -232,7 +235,7 @@ function renderOrderDetails(order) {
             <span class="receipt-copy-pill">CUSTOMER RECEIPT / வாடிக்கையாளர் ரசீது</span>
             <div style="margin-top: 0.4rem;">
               <span class="receipt-status-badge ${isVerifiedPaid ? 'badge-verified' : 'badge-pending'}">
-                ${isVerifiedPaid ? '✓ PAYMENT VERIFIED' : '⏳ PAYMENT PENDING'}
+                ${isVerifiedPaid ? '✓ PAYMENT VERIFIED' : 'PAYMENT PENDING'}
               </span>
             </div>
           </div>
@@ -252,7 +255,7 @@ function renderOrderDetails(order) {
             <tr>
               <td class="meta-label">Fulfilment Type:</td>
               <td style="color: #78101C; font-weight: 700;">
-                🏬 ${escapeHTML(APP_CONFIG.business.fulfilmentType)} (Shop Pickup Only)
+                ${escapeHTML(APP_CONFIG.business.fulfilmentType)} (Shop Pickup Only)
               </td>
               <td class="meta-label">Registered Mobile:</td>
               <td class="font-mono">${maskMobile(order.mobile)}</td>
@@ -261,7 +264,7 @@ function renderOrderDetails(order) {
             <tr>
               <td class="meta-label" style="background: #FFF8E1; color: #B78103;">Scheduled Pickup:</td>
               <td colspan="3" style="background: #FFFDE7; font-weight: 700; color: #78101C;">
-                📅 ${escapeHTML(order.pickupDate)} ${order.pickupTime ? `— Slot: ${escapeHTML(order.pickupTime)}` : ''}
+                ${escapeHTML(order.pickupDate)} ${order.pickupTime ? `— Slot: ${escapeHTML(order.pickupTime)}` : ''}
               </td>
             </tr>
             ` : ''}
@@ -297,9 +300,12 @@ function renderOrderDetails(order) {
 
         <!-- Counter Collection Guidelines -->
         <div class="receipt-pickup-guidelines">
-          <h4>🏬 Shop Counter Collection Guidelines:</h4>
+          <h4 style="display: flex; align-items: center; gap: 0.4rem;">
+            <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2"/></svg>
+            Shop Counter Collection Guidelines:
+          </h4>
           <ul>
-            <li><strong>Location:</strong> ${escapeHTML(APP_CONFIG.business.pickupLocationNote)} — <a href="${APP_CONFIG.business.mapsUrl || 'https://maps.app.goo.gl/X5LNqZjVxdGQFu398'}" target="_blank" rel="noopener noreferrer" style="color: #78101C; text-decoration: underline; font-weight: 700;">📍 Open in Google Maps</a></li>
+            <li><strong>Location:</strong> ${escapeHTML(APP_CONFIG.business.pickupLocationNote)} — <a href="${APP_CONFIG.business.mapsUrl || 'https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM'}" target="_blank" rel="noopener noreferrer" style="color: #78101C; text-decoration: underline; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg style="width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Get Turn-by-Turn Directions</a></li>
             <li><strong>Handover Verification:</strong> Present the Official Store Pickup Code on your phone or hand this printed copy at the counter.</li>
             <li><strong>Contact:</strong> ${escapeHTML(APP_CONFIG.business.primaryPhone)} / ${escapeHTML(APP_CONFIG.business.secondaryPhone)} for timing coordination.</li>
           </ul>

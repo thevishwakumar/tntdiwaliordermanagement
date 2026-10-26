@@ -323,9 +323,10 @@ function showQrPaymentModal(session) {
         <!-- Header -->
         <div class="qr-modal-header">
           <h3 class="qr-modal-title" id="qr-heading">
-            <span>📱</span> Scan &amp; Pay (UPI QR)
+            <svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Scan &amp; Pay (UPI QR)
           </h3>
-          <button type="button" class="qr-modal-close-btn" id="btn-qr-modal-close" aria-label="Close Payment Modal" title="Close">✕</button>
+          <button type="button" class="qr-modal-close-btn" id="btn-qr-modal-close" aria-label="Close Payment Modal" title="Close">&times;</button>
         </div>
 
         <!-- Body -->
@@ -341,7 +342,7 @@ function showQrPaymentModal(session) {
 
           <!-- QR Instruction Banner -->
           <div class="qr-scan-badge-banner">
-            <span>⚡</span>
+            <svg style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             <span>Scan using Google Pay, PhonePe, Paytm, BHIM, or any UPI App</span>
           </div>
 
@@ -354,14 +355,14 @@ function showQrPaymentModal(session) {
           <!-- Primary Actions (QR Default, Other Methods Below) -->
           <div class="qr-modal-actions">
             <!-- 1. Primary QR Button -->
-            <button type="button" class="qr-btn-primary" id="btn-open-qr-flow">
-              <span>📱</span>
+            <button type="button" class="qr-btn-primary btn-shimmer" id="btn-open-qr-flow">
+              <svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
               <span>Open Scan &amp; Pay (UPI QR Code)</span>
             </button>
 
             <!-- 2. Alternative Payment Methods -->
             <button type="button" class="qr-btn-secondary" id="btn-open-other-methods">
-              <span>💳</span>
+              <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
               <span>Other Payment Methods (UPI Apps, Cards, Netbanking)</span>
             </button>
 
@@ -707,7 +708,7 @@ function setSubmittingState(submitting) {
     } else {
       submitBtn.classList.remove('btn-loading');
       if (spinner) spinner.classList.add('hidden');
-      if (btnText) btnText.textContent = '📱 Proceed to Scan & Pay (UPI QR Code)';
+      if (btnText) btnText.innerHTML = '<svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; display: inline-block; vertical-align: middle; margin-right: 0.4rem;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Proceed to Scan &amp; Pay (UPI QR Code)';
     }
   }
 }
@@ -722,7 +723,9 @@ function showCheckoutFeedback(type, message) {
   feedbackBox.className = `feedback-banner feedback-${type}`;
   feedbackBox.innerHTML = `
     <div class="feedback-inner">
-      <span class="feedback-icon">${type === 'error' ? '⚠️' : 'ℹ️'}</span>
+      <span class="feedback-icon" style="display: inline-flex; align-items: center;">
+        <svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </span>
       <div class="feedback-body">
         <strong>${type === 'error' ? 'Order Submission Notice' : 'Notice'}</strong>
         <p>${escapeHTML(message)}</p>

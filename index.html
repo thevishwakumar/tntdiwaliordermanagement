@@ -17,9 +17,13 @@
   <!-- Top Announcement Bar -->
   <aside class="top-bar-announcement" aria-label="Announcement">
     <div style="max-width: var(--max-width); margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1rem; flex-wrap: wrap; gap: 0.5rem;">
-      <span>🪔 Spreading Sweetness This Diwali • Store Pickup Only • TNT Taste N Taste</span>
-      <a href="admin/dashboard.html" style="color: var(--color-gold-200); text-decoration: none; font-weight: 700; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.25rem;">
-        🔐 Staff / Admin Sign In →
+      <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+        <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2c.5 2.5 2 4 2 6a4 4 0 0 1-8 0c0-2 1.5-3.5 2-6 1.5 1 2.5 1 4 0z"/><path d="M3 13c1 5 4.5 8 9 8s8-3 9-8c0-2-3-3-9-3s-9 1-9 3z"/></svg>
+        Spreading Sweetness This Diwali • Store Pickup Only • TNT Taste N Taste
+      </span>
+      <a href="admin/dashboard.html" style="color: var(--color-gold-200); text-decoration: none; font-weight: 700; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+        <svg class="nav-svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Staff / Admin Sign In &rarr;
       </a>
     </div>
   </aside>
@@ -36,19 +40,25 @@
       </a>
 
       <button class="mobile-nav-toggle" id="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false">
-        ☰
+        <svg style="width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.2; fill: none; display: block;" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
 
       <ul class="nav-links" id="nav-menu">
         <li><a href="index.html" class="nav-link active" id="nav-link-home">Home</a></li>
-        <li><a href="products.html" class="nav-link" id="nav-link-products">Diwali Sweets & Savouries</a></li>
+        <li><a href="products.html" class="nav-link" id="nav-link-products">Diwali Sweets &amp; Savouries</a></li>
         <li><a href="order-status.html" class="nav-link" id="nav-link-lookup">Track / Pickup Code</a></li>
-        <li><a href="admin/dashboard.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600;">🔐 Admin Sign In</a></li>
+        <li>
+          <a href="admin/dashboard.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+            <svg class="nav-svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Staff Sign In
+          </a>
+        </li>
       </ul>
 
       <div class="nav-cta-group">
         <a href="checkout.html" class="cart-button-link" id="nav-cart-btn" aria-label="View Cart">
-          <span>🛒 Your Order</span>
+          <svg class="nav-cart-svg" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span>Your Order</span>
           <span class="tnt-cart-badge hidden" id="header-cart-badge">0</span>
         </a>
       </div>
@@ -62,7 +72,8 @@
       <div class="hero-container">
         <div class="hero-text-col">
           <div class="hero-tag">
-            🪔 Happy Diwali 2026 Celebration
+            <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2c.5 2.5 2 4 2 6a4 4 0 0 1-8 0c0-2 1.5-3.5 2-6 1.5 1 2.5 1 4 0z"/><path d="M3 13c1 5 4.5 8 9 8s8-3 9-8c0-2-3-3-9-3s-9 1-9 3z"/></svg>
+            Happy Diwali 2026 Celebration
           </div>
           <h1 class="hero-title" id="hero-heading">
             Festive Sweets &amp; Savouries <span class="gold-gradient-text">Fresh From The Kitchen</span>
@@ -73,11 +84,13 @@
           <p class="hero-description">
             Experience the culinary mastery of Shree Taste N Taste Catering. From fragrant pure ghee Mysore Pak and
             artisanal dry fruit barfis to crisp, crunchy Kai Murukku, elevate your festive celebrations with authentic
-            taste and uncompromising Taste.
+            taste and uncompromising quality.
           </p>
 
           <div class="hero-fulfilment-badge">
-            <span class="badge-icon">🏬</span>
+            <span class="badge-icon" aria-hidden="true">
+              <svg style="width: 22px; height: 22px; stroke: var(--color-gold-300); fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2"/></svg>
+            </span>
             <div>
               <strong>Fulfilment: Customer Pickup From Shop Only</strong>
               <div>Freshly packed for in-person collection upon verified online payment.</div>
@@ -85,7 +98,7 @@
           </div>
 
           <div class="hero-cta-group">
-            <a href="products.html" class="btn btn-secondary" id="hero-cta-order">
+            <a href="products.html" class="btn btn-secondary btn-shimmer" id="hero-cta-order">
               Order Sweets Now
             </a>
             <a href="order-status.html" class="btn btn-outline"
@@ -99,7 +112,9 @@
           <img src="assets/images/hero-diwali.jpg" alt="Platter of authentic Diwali sweets and glowing brass diyas"
             class="hero-main-img" width="1376" height="768">
           <div class="hero-floating-card">
-            <span class="floating-icon">✨</span>
+            <span class="floating-icon" aria-hidden="true">
+              <svg style="width: 28px; height: 28px; stroke: var(--color-gold-300); fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </span>
             <div>
               <div class="floating-title">Prepared With</div>
               <div class="floating-val">Pure Desi Ghee &amp; Spices</div>
@@ -111,53 +126,56 @@
 
     <!-- 4-Step Order & Pickup Process -->
     <section class="section section-alt" aria-labelledby="process-heading">
-      <div class="section-header">
+      <div class="section-header reveal">
         <span class="section-tag">Convenient &amp; Seamless</span>
         <h2 class="section-title" id="process-heading">How Diwali Pre-Ordering Works</h2>
         <p class="section-subtitle">
-          Enjoy a smooth, queue-free festive experience with our straightforward 4-step ordering and store pickup
-          system.
+          Enjoy a smooth, queue-free festive experience with our straightforward 4-step ordering and store pickup system.
         </p>
       </div>
 
       <div class="process-grid">
-        <article class="process-card">
+        <article class="process-card reveal stagger-1">
           <div class="process-step-num">1</div>
-          <span class="process-icon">📋</span>
+          <div class="process-icon-box" aria-hidden="true">
+            <svg class="process-icon-svg" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="m9 14 2 2 4-4"/></svg>
+          </div>
           <h3 class="process-card-title">1. Select Delicacies</h3>
           <p class="process-card-desc">
-            Choose your desired traditional sweets, pure ghee specials, karam savouries, or the Family Combo by kilogram
-            or pack.
+            Choose your desired traditional sweets, pure ghee specials, karam savouries, or the Family Combo by kilogram or pack.
           </p>
         </article>
 
-        <article class="process-card">
+        <article class="process-card reveal stagger-2">
           <div class="process-step-num">2</div>
-          <span class="process-icon">💳</span>
+          <div class="process-icon-box" aria-hidden="true">
+            <svg class="process-icon-svg" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </div>
           <h3 class="process-card-title">2. Online Payment</h3>
           <p class="process-card-desc">
-            Complete your order with secure online payment via Razorpay. Orders are confirmed strictly upon server
-            payment verification.
+            Complete your order with secure online payment via Razorpay. Orders are confirmed strictly upon server payment verification.
           </p>
         </article>
 
-        <article class="process-card">
+        <article class="process-card reveal stagger-3">
           <div class="process-step-num">3</div>
-          <span class="process-icon">📦</span>
+          <div class="process-icon-box" aria-hidden="true">
+            <svg class="process-icon-svg" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
           <h3 class="process-card-title">3. Fresh Kitchen Packing</h3>
           <p class="process-card-desc">
-            Our master halwais prepare your items fresh and pack them in pristine food-grade festive boxes to preserve
-            crunch and aroma.
+            Our master halwais prepare your items fresh and pack them in pristine food-grade festive boxes to preserve crunch and aroma.
           </p>
         </article>
 
-        <article class="process-card">
+        <article class="process-card reveal stagger-4">
           <div class="process-step-num">4</div>
-          <span class="process-icon">🛍️</span>
+          <div class="process-icon-box" aria-hidden="true">
+            <svg class="process-icon-svg" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </div>
           <h3 class="process-card-title">4. Store Counter Pickup</h3>
           <p class="process-card-desc">
-            Visit the TNT Catering shop counter, present your unique verified Pickup Code, and collect your order
-            without waiting in long lines.
+            Visit the TNT Catering shop counter, present your unique verified Pickup Code, and collect your order without waiting in long lines.
           </p>
         </article>
       </div>
@@ -165,7 +183,7 @@
 
     <!-- Featured Products Showcase -->
     <section class="section" aria-labelledby="featured-heading">
-      <div class="section-header">
+      <div class="section-header reveal">
         <span class="section-tag">Festive Catalogue</span>
         <h2 class="section-title" id="featured-heading">Diwali Sweets &amp; Savouries</h2>
         <p class="section-subtitle">
@@ -173,35 +191,38 @@
         </p>
       </div>
 
-      <div class="products-grid" id="home-featured-grid">
+      <div class="products-grid reveal" id="home-featured-grid">
         <!-- Rendered dynamically via home-featured.js or products module -->
       </div>
 
-      <div style="text-align: center; margin-top: 3rem;">
-        <a href="products.html" class="btn btn-primary" id="btn-view-all-products">
-          View Complete Catalogue &amp; Customize Order →
+      <div style="text-align: center; margin-top: 3rem;" class="reveal">
+        <a href="products.html" class="btn btn-primary btn-shimmer" id="btn-view-all-products">
+          View Complete Catalogue &amp; Customize Order &rarr;
         </a>
       </div>
     </section>
 
     <!-- Official Pickup & Fulfillment Policy Notice -->
     <section class="section section-alt" aria-labelledby="pickup-policy-heading">
-      <div class="section-header" style="margin-bottom: 1.5rem;">
+      <div class="section-header reveal" style="margin-bottom: 1.5rem;">
         <span class="section-tag">Important Store Guidelines</span>
         <h2 class="section-title" id="pickup-policy-heading">Store Pickup &amp; Payment Guidelines</h2>
       </div>
 
-      <div
-        style="max-width: 800px; margin: 0 auto; background: #FFF; border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); padding: 2rem;">
+      <div class="reveal"
+        style="max-width: 800px; margin: 0 auto; background: #FFF; border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm);">
         <div class="alert-box alert-warning" style="margin-bottom: 1.25rem;">
-          <span class="alert-icon">⚠️</span>
+          <span class="alert-icon" aria-hidden="true">
+            <svg style="width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </span>
           <div>
             <strong>Strictly Store Pickup:</strong> Home delivery and Cash on Delivery (COD) are not supported. All
             orders must be collected directly from the Shree Taste N Taste Catering shop counter:
             <div style="margin-top: 0.35rem;">
-              <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank" rel="noopener noreferrer"
-                style="color: var(--color-maroon-900); font-weight: 700; text-decoration: underline;">
-                📍 Shree Taste N Taste Catering — Open Shop Location in Google Maps
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM" target="_blank" rel="noopener noreferrer"
+                style="color: var(--color-maroon-900); font-weight: 700; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.35rem;">
+                <svg style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Shree Taste N Taste Catering — Open Shop Location &amp; Directions in Google Maps
               </a>
             </div>
           </div>
@@ -217,62 +238,278 @@
         </ul>
       </div>
     </section>
+
+    <!-- Dedicated Store Pickup Location & Interactive Google Map -->
+    <section class="section-store-location" id="store-location" aria-labelledby="store-location-heading">
+      <div class="section-header reveal" style="text-align: center; margin-bottom: 2.5rem;">
+        <span class="section-tag">Store Pickup &amp; Navigation</span>
+        <h2 class="section-title" id="store-location-heading">Visit Our Shop Counter</h2>
+        <p class="section-subtitle">
+          Collect your freshly packed Diwali orders directly from Shree Taste N Taste Catering. Click the map or button below for live turn-by-turn directions.
+        </p>
+      </div>
+
+      <div class="location-grid">
+        <!-- Store Information Card -->
+        <div class="location-info-card reveal stagger-1">
+          <div>
+            <div class="location-header-badge">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Official Kitchen &amp; Collection Counter</span>
+            </div>
+            <h3 class="location-store-title">Shree Taste N Taste Catering</h3>
+            <p class="location-store-tagline">
+              Traditional festive sweets &amp; savoury delicacies made fresh daily with 100% pure ghee.
+            </p>
+
+            <div class="location-details-list">
+              <!-- Counter Timings -->
+              <div class="location-detail-item">
+                <div class="location-detail-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="location-detail-content">
+                  <strong>Counter Collection Timings</strong>
+                  <p>7:00 AM – 10:00 PM (Active throughout all Diwali festival days)</p>
+                </div>
+              </div>
+
+              <!-- Pickup Policy -->
+              <div class="location-detail-item">
+                <div class="location-detail-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2"/></svg>
+                </div>
+                <div class="location-detail-content">
+                  <strong>Strict Counter Pickup Only</strong>
+                  <p>No home delivery or COD. Present your 6-character Pickup Code at the counter for instant collection.</p>
+                </div>
+              </div>
+
+              <!-- Direct Hotline Support -->
+              <div class="location-detail-item">
+                <div class="location-detail-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </div>
+                <div class="location-detail-content">
+                  <strong>Route &amp; Order Assistance</strong>
+                  <p>Call: <a href="tel:9442854444" style="color: var(--color-maroon-900); font-weight: 700;">+91 94428 54444</a> &bull; <a href="tel:7200071040" style="color: var(--color-maroon-900); font-weight: 700;">+91 72000 71040</a></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direct Navigation CTA Buttons (Customer click panni vara mari!) -->
+          <div class="location-actions-group">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM"
+              target="_blank" rel="noopener noreferrer" class="btn-navigate-primary btn-shimmer" id="btn-get-directions"
+              title="Launch Google Maps with directions from your location">
+              <span>Get Turn-by-Turn Directions (வழிசெலுத்தல்)</span>
+              <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            </a>
+            <a href="https://maps.google.com/?cid=3716949033379685700"
+              target="_blank" rel="noopener noreferrer" class="btn-navigate-secondary" id="btn-view-on-google-maps"
+              title="View full place listing on Google Maps">
+              <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              <span>Open Place in Google Maps App</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Interactive Google Map Embed Frame -->
+        <div class="location-map-card reveal stagger-2">
+          <div class="map-card-header">
+            <div class="map-card-header-info">
+              <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span class="map-card-header-title">Live Shop Location &bull; Shree TasteNTaste Catering</span>
+            </div>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM"
+              target="_blank" rel="noopener noreferrer" class="map-card-header-btn">
+              <span>Navigate</span>
+              <span>&nearr;</span>
+            </a>
+          </div>
+
+          <div class="map-embed-container">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.112166727533!2d76.987673!3d11.0302105!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba8f622cb4faa31%3A0x339503dd384d4544!2sShree%20TasteNTaste%20Catering!5e0!3m2!1sen!2sin!4v1793019092675!5m2!1sen!2sin"
+              width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin" title="Shree TasteNTaste Catering Google Maps Location">
+            </iframe>
+
+            <!-- Floating Direct Navigation Badge on Map -->
+            <a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM"
+              target="_blank" rel="noopener noreferrer" class="map-floating-action"
+              title="Click map to launch Google Maps GPS directions">
+              <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+              <span>Start GPS Navigation &rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Site Footer -->
   <footer class="site-footer">
     <div class="footer-container">
+      <!-- Brand & Mission Column -->
       <div class="footer-brand">
-        <h3>Shree Taste N Taste Catering</h3>
-        <p>
+        <div class="footer-brand-header">
+          <img src="assets/images/tnt-logo.jpg" alt="TNT Logo" class="footer-brand-logo">
+          <div>
+            <h3>Shree Taste N Taste</h3>
+            <span class="footer-brand-sub">Authentic Catering &amp; Sweets</span>
+          </div>
+        </div>
+        <p class="footer-brand-desc">
           TNT (Taste N Taste) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to
-          pure ingredients, culinary mastery, and customer Taste.
+          pure ingredients, culinary mastery, and customer satisfaction.
         </p>
-        <div class="footer-notice-box">
-          🏬 Fulfilment: Customer Pickup Only from Shop Counter. Home delivery and COD are not supported.
+
+        <!-- Fulfilment Notice Card with Store SVG -->
+        <div class="footer-fulfilment-card">
+          <div class="footer-fulfilment-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+              <path d="M2 7h20"/>
+              <path d="M22 7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2"/>
+            </svg>
+          </div>
+          <div>
+            <span class="footer-fulfilment-title">Counter Pickup Only</span>
+            <p class="footer-fulfilment-desc">
+              Customer collection directly from the TNT shop counter. Home delivery and Cash on Delivery (COD) are not supported.
+            </p>
+          </div>
+        </div>
+
+        <div class="footer-trust-chips">
+          <span class="footer-trust-chip">
+            <svg viewBox="0 0 24 24" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            100% Pure Desi Ghee
+          </span>
+          <span class="footer-trust-chip">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Fresh Kitchen Batches
+          </span>
+          <span class="footer-trust-chip">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            Verified Pickup Codes
+          </span>
         </div>
       </div>
 
-      <div>
+      <!-- Quick Navigation Column -->
+      <div class="footer-col-nav">
         <h4 class="footer-title">Quick Links</h4>
-        <ul class="footer-links">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="products.html">Product Catalogue</a></li>
-          <li><a href="checkout.html">Shopping Cart &amp; Checkout</a></li>
-          <li><a href="order-status.html">Track Order &amp; Pickup Code</a></li>
-          <li><a href="admin/dashboard.html" style="color: var(--color-gold-400); font-weight: 600;">🔐 Staff / Admin Sign In</a></li>
+        <ul class="footer-links-list">
+          <li class="footer-link-item">
+            <a href="index.html">
+              <svg class="footer-link-chevron" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6"/></svg>
+              <span>Home Overview</span>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="products.html">
+              <svg class="footer-link-chevron" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6"/></svg>
+              <span>Product Catalogue</span>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="checkout.html">
+              <svg class="footer-link-chevron" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6"/></svg>
+              <span>Shopping Cart &amp; Checkout</span>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="order-status.html">
+              <svg class="footer-link-chevron" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6"/></svg>
+              <span>Track Order &amp; Pickup Code</span>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="admin/dashboard.html" class="footer-admin-link-btn">
+              <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Staff / Admin Sign In</span>
+            </a>
+          </li>
         </ul>
       </div>
 
-      <div>
-        <h4 class="footer-title">Contact Information</h4>
-        <ul class="footer-contacts-list">
-          <li>
-            <span>📞</span>
-            <span><strong>Primary:</strong> <a href="tel:9442854444" style="color: inherit;">9442854444</a></span>
-          </li>
-          <li>
-            <span>📞</span>
-            <span><strong>Secondary:</strong> <a href="tel:7200071040" style="color: inherit;">7200071040</a></span>
-          </li>
-          <li>
-            <span>🏷️</span>
-            <span><strong>Brand:</strong> TNT (Taste N Taste)</span>
-          </li>
-          <li>
-            <span>📍</span>
-            <span><strong>Pickup Counter:</strong> <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank"
-                rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Shree Taste N Taste
-                Catering (Google Maps)</a></span>
-          </li>
-        </ul>
+      <!-- Verified Contact Information Column (Replaces raw emojis!) -->
+      <div class="footer-col-contact">
+        <h4 class="footer-title">Contact &amp; Store Pickup</h4>
+        <p class="footer-contact-intro">
+          Direct telephone hotlines for ordering, enquiries, or counter collection assistance:
+        </p>
+
+        <div class="footer-contact-cards">
+          <!-- Primary Hotline -->
+          <a href="tel:9442854444" class="footer-contact-card" title="Click to call primary hotline">
+            <div class="footer-contact-icon-box" aria-hidden="true">
+              <svg class="footer-svg-icon" viewBox="0 0 24 24">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <div class="footer-contact-details">
+              <span class="footer-contact-label">Primary Order Hotline</span>
+              <span class="footer-contact-val">+91 94428 54444</span>
+              <span class="footer-contact-sub">Direct line for pre-orders &amp; assistance</span>
+            </div>
+            <span class="footer-contact-badge">Hotline</span>
+          </a>
+
+          <!-- Secondary Hotline -->
+          <a href="tel:7200071040" class="footer-contact-card" title="Click to call secondary contact">
+            <div class="footer-contact-icon-box" aria-hidden="true">
+              <svg class="footer-svg-icon" viewBox="0 0 24 24">
+                <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <div class="footer-contact-details">
+              <span class="footer-contact-label">Customer Support</span>
+              <span class="footer-contact-val">+91 72000 71040</span>
+              <span class="footer-contact-sub">Available throughout Diwali festival</span>
+            </div>
+            <span class="footer-contact-badge">Support</span>
+          </a>
+
+          <!-- Pickup Counter Location Card -->
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM" target="_blank" rel="noopener noreferrer" class="footer-contact-card" title="Click to navigate with Google Maps">
+            <div class="footer-contact-icon-box" aria-hidden="true">
+              <svg class="footer-svg-icon" viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <div class="footer-contact-details">
+              <span class="footer-contact-label">Pickup Counter Location</span>
+              <span class="footer-contact-val" style="font-size: 0.95rem;">Shree Taste N Taste Catering</span>
+              <span class="footer-contact-sub">Click for Live Directions &amp; Route &rarr;</span>
+            </div>
+            <span class="footer-contact-badge">Navigate &nearr;</span>
+          </a>
+        </div>
       </div>
     </div>
 
+    <!-- Footer Bottom Line -->
     <div class="footer-bottom">
-      <p>&copy; 2026 Shree Taste N Taste Catering (TNT). All rights reserved. • Diwali Special Edition</p>
+      <p>&copy; 2026 Shree Taste N Taste Catering (TNT). All rights reserved.</p>
+      <div class="footer-edition-badge">
+        <svg style="width: 15px; height: 15px; stroke: var(--color-gold-400); fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>Diwali Festive Edition • Store Pickup Only</span>
+      </div>
+      <button type="button" class="footer-back-to-top" id="footer-back-to-top-btn" aria-label="Scroll back to top">
+        <span>Back to Top</span>
+        <svg viewBox="0 0 24 24" fill="none"><path d="m18 15-6-6-6 6"/></svg>
+      </button>
     </div>
   </footer>
+
+  <script type="module" src="assets/js/animations.js"></script>
 
   <script type="module">
     import { PRODUCTS } from './assets/js/products.js';

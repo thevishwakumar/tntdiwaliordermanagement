@@ -88,7 +88,16 @@
 
   <!-- Top Announcement Bar -->
   <aside class="top-bar-announcement" aria-label="Announcement">
-    🪔 TNT Taste N Taste • Spreading Sweetness This Diwali • Shop Counter Pickup Only 🪔
+    <div style="max-width: var(--max-width); margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+        <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2c.5 2.5 2 4 2 6a4 4 0 0 1-8 0c0-2 1.5-3.5 2-6 1.5 1 2.5 1 4 0z"/><path d="M3 13c1 5 4.5 8 9 8s8-3 9-8c0-2-3-3-9-3s-9 1-9 3z"/></svg>
+        TNT Taste N Taste • Spreading Sweetness This Diwali • Shop Counter Pickup Only
+      </span>
+      <a href="admin/dashboard.html" style="color: var(--color-gold-200); text-decoration: none; font-weight: 700; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+        <svg class="nav-svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Staff / Admin Sign In &rarr;
+      </a>
+    </div>
   </aside>
 
   <!-- Site Header -->
@@ -103,19 +112,25 @@
       </a>
 
       <button class="mobile-nav-toggle" id="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false">
-        ☰
+        <svg style="width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.2; fill: none; display: block;" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
 
       <ul class="nav-links" id="nav-menu">
         <li><a href="index.html" class="nav-link">Home</a></li>
         <li><a href="products.html" class="nav-link active">Diwali Sweets &amp; Savouries</a></li>
         <li><a href="order-status.html" class="nav-link">Track / Pickup Code</a></li>
-        <li><a href="admin/dashboard.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600;">🔐 Admin Sign In</a></li>
+        <li>
+          <a href="admin/dashboard.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+            <svg class="nav-svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Staff Sign In
+          </a>
+        </li>
       </ul>
 
       <div class="nav-cta-group">
         <a href="checkout.html" class="cart-button-link" aria-label="View Order">
-          <span>🛒 Your Order</span>
+          <svg class="nav-cart-svg" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span>Your Order</span>
           <span class="tnt-cart-badge hidden">0</span>
         </a>
       </div>
@@ -125,7 +140,7 @@
   <main>
     <!-- Catalogue Header Section -->
     <section class="section" style="padding-bottom: 1.5rem;">
-      <div class="section-header">
+      <div class="section-header reveal">
         <span class="section-tag">Authentic Diwali Menu</span>
         <h1 class="section-title">Festive Sweets &amp; Savouries</h1>
         <p class="section-subtitle">
@@ -134,21 +149,16 @@
       </div>
 
       <!-- Quick Category Filter -->
-      <div class="filter-tabs" role="tablist" aria-label="Product Categories">
-        <button type="button" class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All Delicacies
-          (5)</button>
-        <button type="button" class="filter-btn" data-filter="sweets" role="tab" aria-selected="false">Traditional &amp;
-          Ghee Sweets</button>
-        <button type="button" class="filter-btn" data-filter="savouries" role="tab" aria-selected="false">Karam
-          Savouries</button>
-        <button type="button" class="filter-btn" data-filter="dry-fruits" role="tab" aria-selected="false">Dry Fruits
-          Sweets</button>
-        <button type="button" class="filter-btn" data-filter="combo" role="tab" aria-selected="false">Family
-          Combos</button>
+      <div class="filter-tabs reveal" role="tablist" aria-label="Product Categories">
+        <button type="button" class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All Delicacies (5)</button>
+        <button type="button" class="filter-btn" data-filter="sweets" role="tab" aria-selected="false">Traditional &amp; Ghee Sweets</button>
+        <button type="button" class="filter-btn" data-filter="savouries" role="tab" aria-selected="false">Karam Savouries</button>
+        <button type="button" class="filter-btn" data-filter="dry-fruits" role="tab" aria-selected="false">Dry Fruits Sweets</button>
+        <button type="button" class="filter-btn" data-filter="combo" role="tab" aria-selected="false">Family Combos</button>
       </div>
 
       <!-- Products Grid -->
-      <div class="products-grid" id="catalogue-grid" aria-live="polite">
+      <div class="products-grid reveal" id="catalogue-grid" aria-live="polite">
         <!-- Injected via JavaScript module -->
       </div>
     </section>
@@ -161,11 +171,10 @@
         <span id="sticky-item-count" style="font-weight: 700; color: var(--color-gold-300);">0 items</span> in your
         Diwali order
         <span style="margin: 0 0.5rem; opacity: 0.5;">|</span>
-        <span>Estimated Total: <strong id="sticky-cart-total"
-            style="font-size: 1.15rem; color: #FFF;">₹0</strong></span>
+        <span>Estimated Total: <strong id="sticky-cart-total" style="font-size: 1.15rem; color: #FFF;">₹0</strong></span>
       </div>
-      <a href="checkout.html" class="btn btn-secondary" style="padding: 0.5rem 1.25rem;">
-        Proceed to Checkout →
+      <a href="checkout.html" class="btn btn-secondary btn-shimmer" style="padding: 0.5rem 1.25rem;">
+        Proceed to Checkout &rarr;
       </a>
     </div>
   </aside>
@@ -176,56 +185,164 @@
   <!-- Site Footer -->
   <footer class="site-footer">
     <div class="footer-container">
+      <!-- Brand & Mission Column -->
       <div class="footer-brand">
-        <h3>Shree Taste N Taste Catering</h3>
-        <p>
+        <div class="footer-brand-header">
+          <img src="assets/images/tnt-logo.jpg" alt="TNT Logo" class="footer-brand-logo">
+          <div>
+            <h3>Shree Taste N Taste</h3>
+            <span class="footer-brand-sub">Authentic Catering &amp; Sweets</span>
+          </div>
+        </div>
+        <p class="footer-brand-desc">
           TNT (Taste N Taste) — Spreading sweetness and authentic traditional flavours this festive season. Dedicated to
-          pure ingredients, culinary mastery, and customer Taste.
+          pure ingredients, culinary mastery, and customer satisfaction.
         </p>
-        <div class="footer-notice-box">
-          🏬 Fulfilment: Customer Pickup Only from Shop Counter. Home delivery and COD are not supported.
+
+        <!-- Fulfilment Notice Card with Store SVG -->
+        <div class="footer-fulfilment-card">
+          <div class="footer-fulfilment-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+              <path d="M2 7h20"/>
+              <path d="M22 7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2"/>
+            </svg>
+          </div>
+          <div>
+            <span class="footer-fulfilment-title">Counter Pickup Only</span>
+            <p class="footer-fulfilment-desc">
+              Customer collection directly from the TNT shop counter. Home delivery and Cash on Delivery (COD) are not supported.
+            </p>
+          </div>
+        </div>
+
+        <div class="footer-trust-chips">
+          <span class="footer-trust-chip">
+            <svg viewBox="0 0 24 24" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            100% Pure Desi Ghee
+          </span>
+          <span class="footer-trust-chip">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Fresh Kitchen Batches
+          </span>
+          <span class="footer-trust-chip">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            Verified Pickup Codes
+          </span>
         </div>
       </div>
 
-      <div>
+      <!-- Quick Navigation Column -->
+      <div class="footer-col-nav">
         <h4 class="footer-title">Quick Links</h4>
-        <ul class="footer-links">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="products.html">Product Catalogue</a></li>
-          <li><a href="checkout.html">Shopping Cart &amp; Checkout</a></li>
-          <li><a href="order-status.html">Track Order &amp; Pickup Code</a></li>
+        <ul class="footer-links-list">
+          <li class="footer-link-item">
+            <a href="index.html">
+              <svg class="footer-link-chevron" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6"/></svg>
+              <span>Home Overview</span>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="products.html">
+              <svg class="footer-link-chevron" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6"/></svg>
+              <span>Product Catalogue</span>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="checkout.html">
+              <svg class="footer-link-chevron" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6"/></svg>
+              <span>Shopping Cart &amp; Checkout</span>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="order-status.html">
+              <svg class="footer-link-chevron" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6"/></svg>
+              <span>Track Order &amp; Pickup Code</span>
+            </a>
+          </li>
+          <li class="footer-link-item">
+            <a href="admin/dashboard.html" class="footer-admin-link-btn">
+              <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Staff / Admin Sign In</span>
+            </a>
+          </li>
         </ul>
       </div>
 
-      <div>
-        <h4 class="footer-title">Contact Information</h4>
-        <ul class="footer-contacts-list">
-          <li>
-            <span>📞</span>
-            <span><strong>Primary:</strong> <a href="tel:9442854444" style="color: inherit;">9442854444</a></span>
-          </li>
-          <li>
-            <span>📞</span>
-            <span><strong>Secondary:</strong> <a href="tel:7200071040" style="color: inherit;">7200071040</a></span>
-          </li>
-          <li>
-            <span>🏷️</span>
-            <span><strong>Brand:</strong> TNT (Taste N Taste)</span>
-          </li>
-          <li>
-            <span>📍</span>
-            <span><strong>Pickup Counter:</strong> <a href="https://maps.app.goo.gl/X5LNqZjVxdGQFu398" target="_blank"
-                rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Shree Taste N Taste
-                Catering (Google Maps)</a></span>
-          </li>
-        </ul>
+      <!-- Verified Contact Information Column (Replaces raw emojis!) -->
+      <div class="footer-col-contact">
+        <h4 class="footer-title">Contact &amp; Store Pickup</h4>
+        <p class="footer-contact-intro">
+          Direct telephone hotlines for ordering, enquiries, or counter collection assistance:
+        </p>
+
+        <div class="footer-contact-cards">
+          <!-- Primary Hotline -->
+          <a href="tel:9442854444" class="footer-contact-card" title="Click to call primary hotline">
+            <div class="footer-contact-icon-box" aria-hidden="true">
+              <svg class="footer-svg-icon" viewBox="0 0 24 24">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <div class="footer-contact-details">
+              <span class="footer-contact-label">Primary Order Hotline</span>
+              <span class="footer-contact-val">+91 94428 54444</span>
+              <span class="footer-contact-sub">Direct line for pre-orders &amp; assistance</span>
+            </div>
+            <span class="footer-contact-badge">Hotline</span>
+          </a>
+
+          <!-- Secondary Hotline -->
+          <a href="tel:7200071040" class="footer-contact-card" title="Click to call secondary contact">
+            <div class="footer-contact-icon-box" aria-hidden="true">
+              <svg class="footer-svg-icon" viewBox="0 0 24 24">
+                <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <div class="footer-contact-details">
+              <span class="footer-contact-label">Customer Support</span>
+              <span class="footer-contact-val">+91 72000 71040</span>
+              <span class="footer-contact-sub">Available throughout Diwali festival</span>
+            </div>
+            <span class="footer-contact-badge">Support</span>
+          </a>
+
+          <!-- Pickup Counter Location Card -->
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM" target="_blank" rel="noopener noreferrer" class="footer-contact-card" title="Click to navigate with Google Maps">
+            <div class="footer-contact-icon-box" aria-hidden="true">
+              <svg class="footer-svg-icon" viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <div class="footer-contact-details">
+              <span class="footer-contact-label">Pickup Counter Location</span>
+              <span class="footer-contact-val" style="font-size: 0.95rem;">Shree Taste N Taste Catering</span>
+              <span class="footer-contact-sub">Click for Live Directions &amp; Route &rarr;</span>
+            </div>
+            <span class="footer-contact-badge">Navigate &nearr;</span>
+          </a>
+        </div>
       </div>
     </div>
 
+    <!-- Footer Bottom Line -->
     <div class="footer-bottom">
-      <p>&copy; 2026 Shree Taste N Taste Catering (TNT). All rights reserved. • Customer Store Pickup Only</p>
+      <p>&copy; 2026 Shree Taste N Taste Catering (TNT). All rights reserved.</p>
+      <div class="footer-edition-badge">
+        <svg style="width: 15px; height: 15px; stroke: var(--color-gold-400); fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>Diwali Festive Edition • Store Pickup Only</span>
+      </div>
+      <button type="button" class="footer-back-to-top" id="footer-back-to-top-btn" aria-label="Scroll back to top">
+        <span>Back to Top</span>
+        <svg viewBox="0 0 24 24" fill="none"><path d="m18 15-6-6-6 6"/></svg>
+      </button>
     </div>
   </footer>
+
+  <script type="module" src="assets/js/animations.js"></script>
 
   <script type="module">
     import { PRODUCTS } from './assets/js/products.js';
@@ -359,7 +476,7 @@
       const toast = document.getElementById('toast-box');
       if (!toast) return;
 
-      toast.innerHTML = `<span class="toast-icon">✓</span> <span>${msg}</span>`;
+      toast.innerHTML = `<span class="toast-icon" style="display: inline-flex; align-items: center;"><svg style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span> <span>${msg}</span>`;
       toast.classList.remove('hidden');
 
       clearTimeout(toastTimeout);
