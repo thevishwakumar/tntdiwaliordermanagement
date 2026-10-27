@@ -308,30 +308,32 @@ function renderOrderDetails(order) {
         <h4 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.05rem; margin: 1rem 0 0.5rem; border-bottom: 1.5px solid var(--color-border); padding-bottom: 0.35rem;">
           Ordered Delicacies &amp; Festive Sweets
         </h4>
-        <table class="receipt-checklist-table" style="margin-bottom: 0.75rem;">
-          <thead>
-            <tr>
-              <th>Delicacy</th>
-              <th style="text-align: center;">Quantity</th>
-              <th style="text-align: right;">Unit Price</th>
-              <th style="text-align: right;">Total Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${customerItemsHtml}
-            ${isDelivery ? `
-            <tr>
-              <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border);">
-                <strong>Doorstep Delivery Fee (Porter / Local Partner)</strong>
-                <div style="font-size: 0.78rem; color: var(--color-text-muted);">Coimbatore City Doorstep Delivery</div>
-              </td>
-              <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: center;">1 trip</td>
-              <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right;">${formatINR(order.deliveryFee || 80)}</td>
-              <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right; font-weight: 700;">${formatINR(order.deliveryFee || 80)}</td>
-            </tr>
-            ` : ''}
-          </tbody>
-        </table>
+        <div class="receipt-table-wrapper" style="overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; margin-bottom: 0.75rem;">
+          <table class="receipt-checklist-table" style="margin-bottom: 0; min-width: 480px; width: 100%;">
+            <thead>
+              <tr>
+                <th>Delicacy</th>
+                <th style="text-align: center;">Quantity</th>
+                <th style="text-align: right;">Unit Price</th>
+                <th style="text-align: right;">Total Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${customerItemsHtml}
+              ${isDelivery ? `
+              <tr>
+                <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border);">
+                  <strong>Doorstep Delivery Fee (Porter / Local Partner)</strong>
+                  <div style="font-size: 0.78rem; color: var(--color-text-muted);">Coimbatore City Doorstep Delivery</div>
+                </td>
+                <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: center;">1 trip</td>
+                <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right;">${formatINR(order.deliveryFee || 80)}</td>
+                <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right; font-weight: 700;">${formatINR(order.deliveryFee || 80)}</td>
+              </tr>
+              ` : ''}
+            </tbody>
+          </table>
+        </div>
 
         <!-- Authoritative Total Row -->
         <div class="receipt-total-row">

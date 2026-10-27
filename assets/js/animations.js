@@ -82,13 +82,34 @@ export function initGlobalAnimations() {
   const mobileBtn = document.getElementById('mobile-menu-btn');
   const navMenu = document.getElementById('nav-menu');
   if (mobileBtn && navMenu) {
-    // Avoid double attaching if page already attached
     if (!mobileBtn.dataset.animAttached) {
       mobileBtn.dataset.animAttached = 'true';
-      mobileBtn.addEventListener('click', () => {
+
+      mobileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const isOpen = navMenu.classList.toggle('open');
         mobileBtn.setAttribute('aria-expanded', String(isOpen));
         mobileBtn.classList.toggle('is-active', isOpen);
+      });
+
+      // Close mobile menu when clicking any nav link
+      navMenu.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+          navMenu.classList.remove('open');
+          mobileBtn.setAttribute('aria-expanded', 'false');
+          mobileBtn.classList.remove('is-active');
+        });
+      });
+
+      // Close mobile menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!navMenu.contains(e.target) && !mobileBtn.contains(e.target)) {
+          if (navMenu.classList.contains('open')) {
+            navMenu.classList.remove('open');
+            mobileBtn.setAttribute('aria-expanded', 'false');
+            mobileBtn.classList.remove('is-active');
+          }
+        }
       });
     }
   }

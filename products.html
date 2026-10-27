@@ -37,12 +37,13 @@
     .sticky-checkout-banner {
       position: sticky;
       bottom: 0;
-      background: rgba(62, 8, 14, 0.95);
-      backdrop-filter: blur(8px);
+      background: rgba(62, 8, 14, 0.96);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border-top: 2px solid var(--color-gold-400);
       padding: 0.85rem 1.25rem;
       z-index: 90;
-      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.35);
     }
 
     .sticky-checkout-inner {
@@ -73,6 +74,7 @@
       cursor: pointer;
       color: var(--color-text-main);
       transition: all var(--transition-fast);
+      white-space: nowrap;
     }
 
     .filter-btn:hover,
@@ -80,6 +82,61 @@
       background: var(--color-maroon-700);
       color: var(--color-gold-200);
       border-color: var(--color-maroon-700);
+    }
+
+    /* Mobile Adaptations */
+    @media (max-width: 680px) {
+      .filter-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+        padding: 0.25rem 0.5rem 0.75rem;
+        margin-bottom: 1.5rem;
+        scrollbar-width: none;
+      }
+      .filter-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .filter-btn {
+        padding: 0.45rem 0.85rem;
+        font-size: 0.82rem;
+        flex-shrink: 0;
+      }
+      .sticky-checkout-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        z-index: 95;
+      }
+      .sticky-checkout-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        text-align: center;
+        font-size: 0.88rem;
+      }
+      .sticky-checkout-inner .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.7rem 1rem;
+      }
+      /* Prevent sticky bar from overlaying footer when visible */
+      body:has(#sticky-cart-bar:not(.hidden)) {
+        padding-bottom: 110px;
+      }
+      .toast-notification {
+        left: 1rem;
+        right: 1rem;
+        bottom: 85px;
+        max-width: calc(100vw - 2rem);
+        padding: 0.85rem 1rem;
+        font-size: 0.85rem;
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -349,15 +406,7 @@
     import { formatINR } from './assets/js/config.js';
     import { CartManager } from './assets/js/cart.js';
 
-    // Mobile nav toggle
-    const mobileBtn = document.getElementById('mobile-menu-btn');
-    const navMenu = document.getElementById('nav-menu');
-    if (mobileBtn && navMenu) {
-      mobileBtn.addEventListener('click', () => {
-        const isOpen = navMenu.classList.toggle('open');
-        mobileBtn.setAttribute('aria-expanded', String(isOpen));
-      });
-    }
+
 
     // Initialize cart badge
     CartManager.initCartBadge();

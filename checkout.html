@@ -579,17 +579,7 @@
 
   <script type="module" src="assets/js/animations.js"></script>
   <script type="module" src="assets/js/checkout.js"></script>
-  <script type="module">
-    // Mobile nav toggle
-    const mobileBtn = document.getElementById('mobile-menu-btn');
-    const navMenu = document.getElementById('nav-menu');
-    if (mobileBtn && navMenu) {
-      mobileBtn.addEventListener('click', () => {
-        const isOpen = navMenu.classList.toggle('open');
-        mobileBtn.setAttribute('aria-expanded', String(isOpen));
-      });
-    }
-  </script>
+
 </body>
 
 </html>

@@ -45,6 +45,18 @@
       margin-bottom: 1rem;
       letter-spacing: 0.5px;
     }
+    @media (max-width: 600px) {
+      .admin-login-wrapper {
+        padding: 1.5rem 0.85rem;
+        min-height: auto;
+      }
+      .admin-card {
+        padding: 1.5rem 1.25rem;
+      }
+      .brand-tagline {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body style="background-color: var(--color-bg-surface-alt);">
@@ -58,8 +70,8 @@
           <span class="brand-tagline">Administration Portal</span>
         </div>
       </a>
-      <a href="../index.html" style="color: var(--color-gold-300); font-size: 0.85rem; font-weight: 600;">
-        ← Back to Customer Storefront
+      <a href="../index.html" style="color: var(--color-gold-300); font-size: 0.85rem; font-weight: 600; white-space: nowrap; flex-shrink: 0;">
+        ← Back to Store
       </a>
     </div>
   </header>
