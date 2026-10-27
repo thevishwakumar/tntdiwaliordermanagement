@@ -7,7 +7,7 @@
   <title>Track Order &amp; Pickup Code | Shree Taste N Taste Catering</title>
   <meta name="description"
     content="Check your Diwali order confirmation, retrieve your unique store pickup code, and print customer receipts.">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261027_v2">
   <link rel="stylesheet" href="assets/css/print.css" media="print">
   <link rel="icon" href="assets/images/tnt-logo.jpg" type="image/jpeg">
 </head>
@@ -19,9 +19,9 @@
     <div style="max-width: var(--max-width); margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1rem; flex-wrap: wrap; gap: 0.5rem;">
       <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
         <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2c.5 2.5 2 4 2 6a4 4 0 0 1-8 0c0-2 1.5-3.5 2-6 1.5 1 2.5 1 4 0z"/><path d="M3 13c1 5 4.5 8 9 8s8-3 9-8c0-2-3-3-9-3s-9 1-9 3z"/></svg>
-        TNT Taste N Taste • Spreading Sweetness This Diwali • Shop Counter Pickup Only
+        TNT Taste N Taste • Spreading Sweetness This Diwali • Store Pickup &amp; Doorstep Delivery Available
       </span>
-      <a href="admin/dashboard.html" style="color: var(--color-gold-200); text-decoration: none; font-weight: 700; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+      <a href="admin/login.html" style="color: var(--color-gold-200); text-decoration: none; font-weight: 700; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
         <svg class="nav-svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Staff / Admin Sign In &rarr;
       </a>
@@ -48,7 +48,7 @@
         <li><a href="products.html" class="nav-link">Diwali Sweets &amp; Savouries</a></li>
         <li><a href="order-status.html" class="nav-link active">Track / Pickup Code</a></li>
         <li>
-          <a href="admin/dashboard.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+          <a href="admin/login.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
             <svg class="nav-svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Staff Sign In
           </a>
@@ -57,7 +57,7 @@
 
       <div class="nav-cta-group">
         <a href="checkout.html" class="cart-button-link" aria-label="View Order">
-          <svg class="nav-cart-svg" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <svg class="nav-cart-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; stroke: currentColor; fill: none; flex-shrink: 0;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           <span>Your Order</span>
           <span class="tnt-cart-badge hidden">0</span>
         </a>
@@ -197,9 +197,9 @@
             </svg>
           </div>
           <div>
-            <span class="footer-fulfilment-title">Counter Pickup Only</span>
+            <span class="footer-fulfilment-title">Store Pickup &amp; Doorstep Delivery</span>
             <p class="footer-fulfilment-desc">
-              Customer collection directly from the TNT shop counter. Home delivery and Cash on Delivery (COD) are not supported.
+              Direct collection from the TNT shop counter (Free) or convenient Doorstep Delivery via local partner (Porter). Pre-paid online via Razorpay.
             </p>
           </div>
         </div>
@@ -249,7 +249,7 @@
             </a>
           </li>
           <li class="footer-link-item">
-            <a href="admin/dashboard.html" class="footer-admin-link-btn">
+            <a href="admin/login.html" class="footer-admin-link-btn">
               <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               <span>Staff / Admin Sign In</span>
             </a>
@@ -319,7 +319,7 @@
       <p>&copy; 2026 Shree Taste N Taste Catering (TNT). All rights reserved.</p>
       <div class="footer-edition-badge">
         <svg style="width: 15px; height: 15px; stroke: var(--color-gold-400); fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        <span>Diwali Festive Edition • Store Pickup Only</span>
+        <span>Diwali Festive Edition • Store Pickup &amp; Delivery</span>
       </div>
       <button type="button" class="footer-back-to-top" id="footer-back-to-top-btn" aria-label="Scroll back to top">
         <span>Back to Top</span>

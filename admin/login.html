@@ -4,7 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TNT Admin Portal | Shree Taste N Taste Catering</title>
-  <link rel="stylesheet" href="../assets/css/styles.css">
+
+  <!-- If already logged in, redirect directly to dashboard -->
+  <script>
+    (function () {
+      if (sessionStorage.getItem('tnt_admin_token')) {
+        window.location.replace('dashboard.html');
+      }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="../assets/css/styles.css?v=20261027_v2">
   <link rel="icon" href="../assets/images/tnt-logo.jpg" type="image/jpeg">
   <style>
     .admin-login-wrapper {

@@ -7,7 +7,7 @@
   <title>Checkout &amp; Order Summary | Shree Taste N Taste Catering</title>
   <meta name="description"
     content="Review your Diwali order, fill your pickup contact details, and proceed to secure online payment verification.">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261027_v2">
   <link rel="stylesheet" href="assets/css/print.css" media="print">
   <link rel="icon" href="assets/images/tnt-logo.jpg" type="image/jpeg">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -20,9 +20,9 @@
     <div style="max-width: var(--max-width); margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1rem; flex-wrap: wrap; gap: 0.5rem;">
       <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
         <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2c.5 2.5 2 4 2 6a4 4 0 0 1-8 0c0-2 1.5-3.5 2-6 1.5 1 2.5 1 4 0z"/><path d="M3 13c1 5 4.5 8 9 8s8-3 9-8c0-2-3-3-9-3s-9 1-9 3z"/></svg>
-        TNT Taste N Taste • Spreading Sweetness This Diwali • Store Pickup Only
+        TNT Taste N Taste • Spreading Sweetness This Diwali • Store Pickup &amp; Doorstep Delivery Available
       </span>
-      <a href="admin/dashboard.html" style="color: var(--color-gold-200); text-decoration: none; font-weight: 700; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+      <a href="admin/login.html" style="color: var(--color-gold-200); text-decoration: none; font-weight: 700; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
         <svg class="nav-svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Staff / Admin Sign In &rarr;
       </a>
@@ -49,7 +49,7 @@
         <li><a href="products.html" class="nav-link">Diwali Sweets &amp; Savouries</a></li>
         <li><a href="order-status.html" class="nav-link">Track / Pickup Code</a></li>
         <li>
-          <a href="admin/dashboard.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+          <a href="admin/login.html" class="nav-link" id="nav-link-admin" style="color: var(--color-gold-400); font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
             <svg class="nav-svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Staff Sign In
           </a>
@@ -58,7 +58,7 @@
 
       <div class="nav-cta-group">
         <a href="checkout.html" class="cart-button-link active" aria-label="View Order">
-          <svg class="nav-cart-svg" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <svg class="nav-cart-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; stroke: currentColor; fill: none; flex-shrink: 0;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           <span>Your Order</span>
           <span class="tnt-cart-badge hidden">0</span>
         </a>
@@ -99,12 +99,69 @@
     <div class="checkout-layout" id="checkout-form-section">
       <!-- Left Column: Customer Details Form -->
       <section class="checkout-card" aria-labelledby="customer-info-heading">
-        <h2 class="card-title" id="customer-info-heading">1. Customer Pickup Details</h2>
+        <h2 class="card-title" id="customer-info-heading">1. Fulfilment &amp; Customer Details</h2>
         <p class="card-desc">
-          Your order reference and pickup verification code will be linked to this mobile number.
+          Choose between free store pickup or convenient doorstep delivery via Porter / delivery partner.
         </p>
 
         <form id="tnt-checkout-form" novalidate>
+          <!-- Fulfilment Method Selector: Store Pickup (Default) vs Doorstep Delivery (Porter) -->
+          <div class="fulfilment-selector-group">
+            <label class="fulfilment-selector-title">
+              <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2"/></svg>
+              Select Fulfilment Method <span class="required-star">*</span>
+            </label>
+            <div class="fulfilment-options-grid">
+              <!-- Option 1: Store Pickup (Default) -->
+              <div class="fulfilment-option-card selected" id="opt-fulfilment-pickup" role="radio" aria-checked="true" tabindex="0">
+                <input type="radio" name="fulfilmentMethod" id="radio-pickup" value="PICKUP" checked style="position: absolute; opacity: 0; pointer-events: none;">
+                <div class="fulfilment-option-header">
+                  <div class="fulfilment-option-title-block">
+                    <span class="fulfilment-icon-box">
+                      <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2"/></svg>
+                    </span>
+                    <div>
+                      <div class="fulfilment-option-name">Direct Store Pickup</div>
+                      <div style="font-size: 0.72rem; color: var(--color-text-muted);">Self-Collection at Counter</div>
+                    </div>
+                  </div>
+                  <span class="fulfilment-price-pill price-pill-free">FREE (₹0)</span>
+                </div>
+                <p class="fulfilment-option-desc">
+                  Collect freshly packed sweets directly from our TNT counter in Coimbatore.
+                </p>
+                <div class="fulfilment-option-meta">
+                  <span>✓ Default Option</span>
+                  <span>•</span>
+                  <span>Pickup Code Issued</span>
+                </div>
+              </div>
+
+              <!-- Option 2: Doorstep Delivery (Porter / Delivery Partner) -->
+              <div class="fulfilment-option-card" id="opt-fulfilment-delivery" role="radio" aria-checked="false" tabindex="0">
+                <input type="radio" name="fulfilmentMethod" id="radio-delivery" value="DELIVERY" style="position: absolute; opacity: 0; pointer-events: none;">
+                <div class="fulfilment-option-header">
+                  <div class="fulfilment-option-title-block">
+                    <span class="fulfilment-icon-box">
+                      <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                    </span>
+                    <div>
+                      <div class="fulfilment-option-name">Doorstep Delivery</div>
+                      <div style="font-size: 0.72rem; color: var(--color-text-muted);">Porter / Delivery Partner</div>
+                    </div>
+                  </div>
+                  <span class="fulfilment-price-pill price-pill-fee">+₹80 Est.</span>
+                </div>
+                <p class="fulfilment-option-desc">
+                  We book delivery via Porter / 2-wheeler partner straight to your doorstep.
+                </p>
+                <div class="fulfilment-option-meta">
+                  <span>🚚 Approx. ₹80 Local Delivery</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Full Name -->
           <div class="form-group">
             <label for="input-fullName" class="form-label">
@@ -122,7 +179,7 @@
             </label>
             <input type="tel" id="input-mobile" name="mobile" class="form-input" placeholder="e.g. 9442854444" required
               autocomplete="tel" pattern="^[6-9]\d{9}$" maxlength="14">
-            <span class="form-helper">Required for order verification and receiving your Pickup Code.</span>
+            <span class="form-helper" id="mobile-help-text">Required for order verification and updates.</span>
             <span class="field-error hidden" id="error-mobile"></span>
           </div>
 
@@ -137,21 +194,96 @@
             <span class="field-error hidden" id="error-email"></span>
           </div>
 
-          <!-- Scheduled Pickup Date & Time -->
+          <!-- Doorstep Delivery Address Fields (Visible ONLY when Delivery is selected) -->
+          <div class="delivery-address-section hidden" id="delivery-address-section">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+              <h3 style="font-size: 1rem; color: var(--color-maroon-900); font-weight: 700; display: flex; align-items: center; gap: 0.45rem;">
+                <svg style="width: 18px; height: 18px; stroke: #E65100; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Delivery Address Details
+              </h3>
+              <span class="status-badge" style="background: #FFF3E0; color: #E65100; font-weight: 700; font-size: 0.75rem;">VIA PORTER / PARTNER</span>
+            </div>
+
+            <!-- Estimated Delivery Fee Callout -->
+            <div class="delivery-estimate-banner">
+              <svg class="delivery-estimate-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <div>
+                <div class="delivery-estimate-title">
+                  Estimated Delivery Fee: ₹80 (Coimbatore City)
+                </div>
+                <p class="delivery-estimate-desc">
+                  This approximate delivery fee covers booking a 2-wheeler / Porter delivery partner to bring fresh delicacies directly to your door. Added to your online bill.
+                </p>
+              </div>
+            </div>
+
+            <!-- Street Address & Flat/Door No -->
+            <div class="form-group">
+              <label for="input-deliveryStreet" class="form-label">
+                Door / Flat No., Building &amp; Street <span class="required-star">*</span>
+              </label>
+              <input type="text" id="input-deliveryStreet" name="deliveryStreet" class="form-input"
+                placeholder="e.g. Flat 3B, Sri Krishna Apartments, 12 Cross Cut Road" maxlength="200">
+              <span class="field-error hidden" id="error-deliveryStreet"></span>
+            </div>
+
+            <!-- Area & Pincode 2-Column Grid -->
+            <div class="address-grid-2col">
+              <div class="form-group">
+                <label for="input-deliveryArea" class="form-label">
+                  Area / Locality <span class="required-star">*</span>
+                </label>
+                <input type="text" id="input-deliveryArea" name="deliveryArea" class="form-input"
+                  placeholder="e.g. RS Puram / Gandhipuram" maxlength="100">
+                <span class="field-error hidden" id="error-deliveryArea"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="input-deliveryPincode" class="form-label">
+                  Delivery PIN Code (6 digits) <span class="required-star">*</span>
+                </label>
+                <input type="text" id="input-deliveryPincode" name="deliveryPincode" class="form-input font-mono"
+                  placeholder="e.g. 641002" maxlength="6" pattern="^[1-9][0-9]{5}$">
+                <span class="field-error hidden" id="error-deliveryPincode"></span>
+              </div>
+            </div>
+
+            <div class="address-grid-2col">
+              <div class="form-group">
+                <label for="input-deliveryCity" class="form-label">
+                  City <span class="required-star">*</span>
+                </label>
+                <input type="text" id="input-deliveryCity" name="deliveryCity" class="form-input"
+                  value="Coimbatore" maxlength="50">
+                <span class="field-error hidden" id="error-deliveryCity"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="input-deliveryLandmark" class="form-label">
+                  Prominent Landmark (Optional)
+                </label>
+                <input type="text" id="input-deliveryLandmark" name="deliveryLandmark" class="form-input"
+                  placeholder="e.g. Opposite to Vinayagar Temple, 2nd Floor" maxlength="150">
+                <span class="field-error hidden" id="error-deliveryLandmark"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scheduled Date & Time Slot -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;"
             class="checkout-pickup-schedule-grid">
             <div class="form-group">
-              <label for="input-pickupDate" class="form-label">
+              <label for="input-pickupDate" class="form-label" id="label-date">
                 Scheduled Pickup Date <span class="required-star">*</span>
               </label>
               <input type="date" id="input-pickupDate" name="pickupDate" class="form-input" required>
-              <span class="form-helper">Advance orders supported! Select your collection date.</span>
+              <span class="form-helper" id="help-date">Select your preferred date for festive freshness.</span>
               <span class="field-error hidden" id="error-pickupDate"></span>
             </div>
 
             <div class="form-group">
-              <label for="input-pickupTime" class="form-label">
-                Preferred Pickup Slot <span class="required-star">*</span>
+              <label for="input-pickupTime" class="form-label" id="label-time">
+                Preferred Time Slot <span class="required-star">*</span>
               </label>
               <select id="input-pickupTime" name="pickupTime" class="form-input" required>
                 <option value="Morning (08:00 AM - 12:00 PM)">Morning (08:00 AM - 12:00 PM)</option>
@@ -163,16 +295,15 @@
             </div>
           </div>
 
-          <!-- Fulfilment Notice (No delivery address inputs as this is pickup only) -->
-          <div class="alert-box alert-warning" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- Pickup Counter Notice (Visible ONLY when Store Pickup is active) -->
+          <div class="alert-box alert-warning" id="pickup-location-card" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
             <span class="alert-icon" aria-hidden="true">
               <svg style="width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2"/></svg>
             </span>
             <div>
-              <strong>Fulfilment: Customer Pickup From Shop Counter Only</strong>
+              <strong>Fulfilment: Customer Pickup From Shop Counter (Free)</strong>
               <div style="font-size: 0.85rem; margin-top: 0.25rem;">
-                Home delivery is NOT available. Delivery address fields are intentionally omitted. You will collect this
-                order in person from the Shree Taste N Taste Catering counter:
+                You will collect this order in person from the Shree Taste N Taste Catering counter:
                 <div style="margin-top: 0.4rem;">
                   <a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM" target="_blank" rel="noopener noreferrer"
                     style="color: var(--color-maroon-900); font-weight: 700; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.35rem;">
@@ -187,10 +318,10 @@
           <!-- Customer Notes (Optional) -->
           <div class="form-group">
             <label for="input-notes" class="form-label">
-              Special Packing / Pickup Notes (Optional)
+              Special Packing / Delivery Notes (Optional)
             </label>
             <textarea id="input-notes" name="notes" class="form-textarea" rows="3" maxlength="300"
-              placeholder="e.g., Preferred collection time on Diwali morning or gift packing request"></textarea>
+              placeholder="e.g., Preferred collection/delivery time or special gift packing request"></textarea>
             <span class="form-helper">Maximum 300 characters.</span>
             <span class="field-error hidden" id="error-notes"></span>
           </div>
@@ -199,10 +330,8 @@
           <div class="form-group" style="margin-top: 1.5rem;">
             <label class="checkbox-group">
               <input type="checkbox" id="input-acceptTerms" name="acceptTerms" required>
-              <span class="checkbox-label">
-                I understand that this is strictly a <strong>customer store pickup order</strong>, that home delivery
-                and Cash on Delivery are not available, and that orders are confirmed only after online payment
-                verification via Razorpay.
+              <span class="checkbox-label" id="terms-label-text">
+                I understand that orders are freshly packed and confirmed strictly upon online payment verification via Razorpay. For delivery orders, TNT will arrange a delivery partner (Porter / 2-wheeler) to my address.
               </span>
             </label>
             <span class="field-error hidden" id="error-acceptTerms"></span>
@@ -317,9 +446,9 @@
             </svg>
           </div>
           <div>
-            <span class="footer-fulfilment-title">Counter Pickup Only</span>
+            <span class="footer-fulfilment-title">Store Pickup &amp; Doorstep Delivery</span>
             <p class="footer-fulfilment-desc">
-              Customer collection directly from the TNT shop counter. Home delivery and Cash on Delivery (COD) are not supported.
+              Direct collection from the TNT shop counter (Free) or convenient Doorstep Delivery via local partner (Porter). Pre-paid online via Razorpay.
             </p>
           </div>
         </div>
@@ -369,7 +498,7 @@
             </a>
           </li>
           <li class="footer-link-item">
-            <a href="admin/dashboard.html" class="footer-admin-link-btn">
+            <a href="admin/login.html" class="footer-admin-link-btn">
               <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               <span>Staff / Admin Sign In</span>
             </a>
@@ -439,7 +568,7 @@
       <p>&copy; 2026 Shree Taste N Taste Catering (TNT). All rights reserved.</p>
       <div class="footer-edition-badge">
         <svg style="width: 15px; height: 15px; stroke: var(--color-gold-400); fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        <span>Diwali Festive Edition • Store Pickup Only</span>
+        <span>Diwali Festive Edition • Store Pickup &amp; Delivery</span>
       </div>
       <button type="button" class="footer-back-to-top" id="footer-back-to-top-btn" aria-label="Scroll back to top">
         <span>Back to Top</span>

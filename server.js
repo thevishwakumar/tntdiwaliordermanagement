@@ -353,7 +353,7 @@ const server = http.createServer(async (req, res) => {
         PENDING_IDEMPOTENCY_PROMISES.set(idempotencyKey, p);
       }
 
-      const { customerName, customerMobile, customerEmail, customerNotes, items, pickupDate, pickupTime } = body;
+      const { customerName, customerMobile, customerEmail, customerNotes, items, pickupDate, pickupTime, fulfilmentMethod, deliveryAddress } = body;
 
       // Validation
       const cleanName = typeof customerName === 'string' ? customerName.trim() : '';
@@ -366,14 +366,50 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 400, { success: false, message: 'Valid 10-digit Indian mobile number starting with 6-9 is required.' });
       }
 
-      // Validate advance pickup date (cannot be in the past)
+      // Fulfilment method & Doorstep delivery address validation
+      const cleanFulfilment = fulfilmentMethod === 'DELIVERY' ? 'DELIVERY' : 'PICKUP';
+      let cleanDeliveryAddress = null;
+      let deliveryFeePaise = 0;
+
+      if (cleanFulfilment === 'DELIVERY') {
+        if (!deliveryAddress || typeof deliveryAddress !== 'object') {
+          return sendJson(res, 400, { success: false, message: 'Doorstep delivery address is required when selecting delivery.' });
+        }
+        const street = typeof deliveryAddress.street === 'string' ? deliveryAddress.street.trim() : '';
+        const area = typeof deliveryAddress.area === 'string' ? deliveryAddress.area.trim() : '';
+        const city = typeof deliveryAddress.city === 'string' ? deliveryAddress.city.trim() : 'Coimbatore';
+        const pincode = typeof deliveryAddress.pincode === 'string' ? deliveryAddress.pincode.trim() : '';
+        const landmark = typeof deliveryAddress.landmark === 'string' ? deliveryAddress.landmark.trim().slice(0, 150) : '';
+
+        if (street.length < 5) {
+          return sendJson(res, 400, { success: false, message: 'Please provide a valid doorstep street address (minimum 5 characters).' });
+        }
+        if (area.length < 2) {
+          return sendJson(res, 400, { success: false, message: 'Please provide a valid area or locality.' });
+        }
+        if (!/^[1-9][0-9]{5}$/.test(pincode)) {
+          return sendJson(res, 400, { success: false, message: 'Please provide a valid 6-digit Indian PIN code.' });
+        }
+
+        cleanDeliveryAddress = {
+          street,
+          area,
+          city,
+          pincode,
+          landmark,
+          formatted: `${street}, ${area}, ${city} - ${pincode}${landmark ? ` (Landmark: ${landmark})` : ''}`
+        };
+        deliveryFeePaise = 8000; // ₹80 estimated local Porter / delivery partner fee
+      }
+
+      // Validate advance pickup/delivery date (cannot be in the past)
       const todayDateStr = new Date().toISOString().slice(0, 10);
       let cleanPickupDate = todayDateStr;
       if (pickupDate && typeof pickupDate === 'string') {
         const trimmedDate = pickupDate.trim();
         if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedDate)) {
           if (trimmedDate < todayDateStr) {
-            return sendJson(res, 400, { success: false, message: 'Pickup date cannot be in the past.' });
+            return sendJson(res, 400, { success: false, message: 'Scheduled date cannot be in the past.' });
           }
           cleanPickupDate = trimmedDate;
         }
@@ -417,7 +453,7 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      const totalPaise = subtotalPaise; // Store pickup only: no surcharge
+      const totalPaise = subtotalPaise + deliveryFeePaise; // Subtotal + Delivery Fee (₹80 if delivery)
       const orderId = crypto.randomUUID();
       const publicOrderNumber = generateOrderNumber();
 
@@ -427,7 +463,8 @@ const server = http.createServer(async (req, res) => {
         publicOrderNumber,
         customerName: cleanName,
         customerMobile: mobile,
-        pickupDate: cleanPickupDate
+        pickupDate: cleanPickupDate,
+        fulfilmentMethod: cleanFulfilment
       });
 
       const newOrder = {
@@ -437,14 +474,16 @@ const server = http.createServer(async (req, res) => {
         customer_mobile: mobile,
         customer_email: customerEmail || null,
         subtotal_paise: subtotalPaise,
+        delivery_fee_paise: deliveryFeePaise,
         total_paise: totalPaise,
         payment_status: 'PENDING',
         order_status: 'AWAITING_PAYMENT',
-        fulfilment_method: 'PICKUP',
+        fulfilment_method: cleanFulfilment,
+        delivery_address: cleanDeliveryAddress,
         pickup_date: cleanPickupDate,
         pickup_time: cleanPickupTime,
         pickup_code_hash: null,
-        pickup_status: 'PENDING_GENERATION',
+        pickup_status: cleanFulfilment === 'DELIVERY' ? 'DELIVERY_PENDING' : 'PENDING_GENERATION',
         customer_notes: customerNotes ? customerNotes.slice(0, 300) : null,
         idempotency_key: idempotencyKey,
         razorpay_order_id: rzpOrder.id,
@@ -467,6 +506,7 @@ const server = http.createServer(async (req, res) => {
         to_status: 'AWAITING_PAYMENT',
         actor_type: 'CUSTOMER',
         actor_id: mobile,
+        metadata: { fulfilment_method: cleanFulfilment, delivery_fee_paise: deliveryFeePaise },
         created_at: new Date().toISOString()
       });
 
@@ -475,10 +515,13 @@ const server = http.createServer(async (req, res) => {
         order_id: orderId,
         public_order_number: publicOrderNumber,
         subtotal_paise: subtotalPaise,
+        delivery_fee_paise: deliveryFeePaise,
         total_paise: totalPaise,
         total_in_rupees: totalPaise / 100,
         order_status: 'AWAITING_PAYMENT',
         payment_status: 'PENDING',
+        fulfilment_method: cleanFulfilment,
+        delivery_address: cleanDeliveryAddress,
         pickup_date: cleanPickupDate,
         pickup_time: cleanPickupTime,
         razorpay_order_id: rzpOrder.id,
@@ -758,7 +801,9 @@ const server = http.createServer(async (req, res) => {
           customer_mobile_masked: matchedOrder.customer_mobile.substring(0, 2) + '******' + matchedOrder.customer_mobile.substring(8),
           order_status: matchedOrder.order_status,
           payment_status: matchedOrder.payment_status,
-          fulfilment_method: matchedOrder.fulfilment_method,
+          fulfilment_method: matchedOrder.fulfilment_method || 'PICKUP',
+          delivery_fee_paise: matchedOrder.delivery_fee_paise || 0,
+          delivery_address: matchedOrder.delivery_address || null,
           total_paise: matchedOrder.total_paise,
           pickup_status: matchedOrder.pickup_status,
           pickup_date: matchedOrder.pickup_date || null,
@@ -1202,18 +1247,23 @@ const server = http.createServer(async (req, res) => {
 
     const orders = Array.from(DB.orders.values()).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    let csv = 'Order Number,Order Date (IST),Customer Name,Customer Mobile,Order Status,Payment Status,Total Amount (INR),Items Summary,Pickup Status\r\n';
+    let csv = 'Order Number,Order Date (IST),Customer Name,Customer Mobile,Fulfilment Type,Delivery Fee (INR),Delivery Address,Order Status,Payment Status,Total Amount (INR),Items Summary,Pickup Status\r\n';
 
     for (const o of orders) {
       const istDate = new Date(o.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
       const itemsStr = (o.items || []).map(i => `${i.name} (${i.quantity} ${i.unit})`).join('; ');
       const totalRupees = (o.total_paise || 0) / 100;
+      const deliveryFeeRupees = (o.delivery_fee_paise || 0) / 100;
+      const deliveryAddrStr = o.delivery_address?.formatted || (typeof o.delivery_address === 'string' ? o.delivery_address : '');
 
       const row = [
         `"${o.public_order_number}"`,
         `"${istDate}"`,
         `"${(o.customer_name || '').replace(/"/g, '""')}"`,
         `"${o.customer_mobile}"`,
+        `"${o.fulfilment_method || 'PICKUP'}"`,
+        `"${deliveryFeeRupees.toFixed(2)}"`,
+        `"${deliveryAddrStr.replace(/"/g, '""')}"`,
         `"${o.order_status}"`,
         `"${o.payment_status}"`,
         `"${totalRupees.toFixed(2)}"`,
@@ -1234,6 +1284,12 @@ const server = http.createServer(async (req, res) => {
   // --------------------------------------------------------------------------
   // STATIC FILE SERVING
   // --------------------------------------------------------------------------
+  if (pathname === '/admin' || pathname === '/admin/') {
+    res.writeHead(302, { 'Location': '/admin/login.html' });
+    res.end();
+    return;
+  }
+
   let filePath = path.join(__dirname, pathname === '/' ? 'index.html' : pathname);
 
   if (!filePath.startsWith(__dirname)) {

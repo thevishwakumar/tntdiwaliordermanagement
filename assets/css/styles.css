@@ -2258,12 +2258,27 @@ textarea {
 }
 
 .nav-cart-svg {
-  width: 18px;
-  height: 18px;
-  stroke: currentColor;
-  stroke-width: 2;
-  fill: none;
+  width: 18px !important;
+  height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
   vertical-align: middle;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.nav-cart-svg path,
+.nav-cart-svg rect,
+.nav-cart-svg line,
+.nav-cart-svg polyline {
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
 }
 
 .tnt-cart-badge.badge-pulse {
@@ -2339,8 +2354,10 @@ textarea {
 }
 
 .process-icon-box {
-  width: 58px;
-  height: 58px;
+  width: 58px !important;
+  height: 58px !important;
+  max-width: 58px !important;
+  max-height: 58px !important;
   margin: 0 auto 1.25rem;
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(207, 157, 56, 0.18), rgba(120, 16, 28, 0.08));
@@ -2349,6 +2366,8 @@ textarea {
   align-items: center;
   justify-content: center;
   color: var(--color-maroon-800);
+  overflow: hidden;
+  flex-shrink: 0;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
 }
 
@@ -2360,11 +2379,25 @@ textarea {
 }
 
 .process-icon-svg {
-  width: 28px;
-  height: 28px;
-  stroke-width: 2;
-  stroke: currentColor;
-  fill: none;
+  width: 28px !important;
+  height: 28px !important;
+  max-width: 28px !important;
+  max-height: 28px !important;
+  stroke-width: 2 !important;
+  stroke: currentColor !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
+  display: block;
+}
+
+.process-icon-svg path,
+.process-icon-svg rect,
+.process-icon-svg line,
+.process-icon-svg polyline {
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
 }
 
 /* Product Cards Interactive Lift */
@@ -2742,4 +2775,205 @@ textarea {
     font-size: 0.76rem;
     padding: 0.45rem 0.85rem;
   }
+}
+
+/* ==========================================================================
+   FULFILMENT METHOD SELECTOR (STORE PICKUP VS DOORSTEP DELIVERY VIA PORTER)
+   ========================================================================== */
+.fulfilment-selector-group {
+  margin-bottom: 1.5rem;
+}
+
+.fulfilment-selector-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-maroon-900);
+  margin-bottom: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.fulfilment-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .fulfilment-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fulfilment-option-card {
+  position: relative;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.fulfilment-option-card:hover {
+  border-color: var(--color-gold-400);
+  background: #FFFDF9;
+}
+
+.fulfilment-option-card.selected {
+  border-color: var(--color-gold-500);
+  background: #FFFBF0;
+  box-shadow: 0 4px 14px rgba(207, 157, 56, 0.2);
+}
+
+.fulfilment-option-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.fulfilment-option-title-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fulfilment-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(207, 157, 56, 0.15);
+  color: var(--color-maroon-800);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fulfilment-option-card.selected .fulfilment-icon-box {
+  background: var(--color-gold-500);
+  color: var(--color-maroon-900);
+}
+
+.fulfilment-option-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-maroon-900);
+  line-height: 1.25;
+}
+
+.fulfilment-price-pill {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.price-pill-free {
+  background: #E8F5E9;
+  color: #1B5E20;
+}
+
+.price-pill-fee {
+  background: #FFF3E0;
+  color: #E65100;
+  border: 1px solid #FFE0B2;
+}
+
+.fulfilment-option-desc {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+  margin-bottom: 0.35rem;
+}
+
+.fulfilment-option-meta {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--color-gold-700);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.delivery-estimate-banner {
+  background: #FFF8E1;
+  border: 1.5px solid #FFE082;
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1.1rem;
+  margin: 1rem 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: #5D4037;
+}
+
+.delivery-estimate-icon {
+  width: 24px;
+  height: 24px;
+  color: #E65100;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.delivery-estimate-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #BF360C;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.delivery-estimate-desc {
+  font-size: 0.825rem;
+  margin-top: 0.2rem;
+  line-height: 1.35;
+  color: #5D4037;
+}
+
+.delivery-address-section {
+  background: #FAFAFA;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+.delivery-address-section.hidden {
+  display: none;
+}
+
+.address-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .address-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Badges for Delivery & Pickup */
+.badge-fulfilment-pickup {
+  background: #E8F5E9;
+  color: #1B5E20;
+  border: 1px solid #C8E6C9;
+}
+
+.badge-fulfilment-delivery {
+  background: #FFF3E0;
+  color: #E65100;
+  border: 1px solid #FFE0B2;
 }

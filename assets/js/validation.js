@@ -226,9 +226,47 @@ export function validateCheckoutForm(formData, cartItems) {
 
   cleanData.pickupTime = formData.pickupTime || 'Morning (08:00 AM - 12:00 PM)';
 
+  // Fulfilment Method & Delivery Address Validation
+  const fulfilmentMethod = formData.fulfilmentMethod === 'DELIVERY' ? 'DELIVERY' : 'PICKUP';
+  cleanData.fulfilmentMethod = fulfilmentMethod;
+
+  if (fulfilmentMethod === 'DELIVERY') {
+    const street = typeof formData.deliveryStreet === 'string' ? formData.deliveryStreet.trim() : '';
+    const area = typeof formData.deliveryArea === 'string' ? formData.deliveryArea.trim() : '';
+    const city = typeof formData.deliveryCity === 'string' ? formData.deliveryCity.trim() : 'Coimbatore';
+    const pincode = typeof formData.deliveryPincode === 'string' ? formData.deliveryPincode.trim() : '';
+    const landmark = typeof formData.deliveryLandmark === 'string' ? formData.deliveryLandmark.trim().slice(0, 150) : '';
+
+    if (!street || street.length < 5) {
+      errors.deliveryStreet = 'Please enter your complete doorstep address (Door/Flat No. & Street).';
+    }
+
+    if (!area || area.length < 2) {
+      errors.deliveryArea = 'Please enter your locality or area name.';
+    }
+
+    if (!city || city.length < 2) {
+      errors.deliveryCity = 'Please enter your city.';
+    }
+
+    if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode)) {
+      errors.deliveryPincode = 'Please enter a valid 6-digit delivery PIN code.';
+    }
+
+    cleanData.deliveryAddress = {
+      street: street.replace(/[<>]/g, ''),
+      area: area.replace(/[<>]/g, ''),
+      city: city.replace(/[<>]/g, ''),
+      pincode,
+      landmark: landmark.replace(/[<>]/g, '')
+    };
+  } else {
+    cleanData.deliveryAddress = null;
+  }
+
   // Terms Acceptance
   if (!formData.acceptTerms) {
-    errors.acceptTerms = 'You must accept the customer pickup terms and conditions to proceed.';
+    errors.acceptTerms = 'You must accept the terms and conditions to proceed.';
   } else {
     cleanData.acceptTerms = true;
   }

@@ -19,6 +19,7 @@ let isSubmitting = false;
 let activePaymentSession = null;
 let statusPollingInterval = null;
 let sessionCountdownInterval = null;
+let selectedFulfilmentMethod = 'PICKUP';
 
 document.addEventListener('DOMContentLoaded', () => {
   initCheckout();
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initCheckout() {
   loadRazorpaySdk();
+  setupFulfilmentSelector();
   renderCartSummary();
   renderBackendStatusNotice();
   setupFormListeners();
@@ -35,6 +37,51 @@ function initCheckout() {
   window.addEventListener('tnt:cart-updated', () => {
     renderCartSummary();
   });
+}
+
+/**
+ * Setup Fulfilment Method Selector (Store Pickup vs Doorstep Delivery via Porter)
+ */
+function setupFulfilmentSelector() {
+  const pickupCard = document.getElementById('opt-fulfilment-pickup');
+  const deliveryCard = document.getElementById('opt-fulfilment-delivery');
+  const radioPickup = document.getElementById('radio-pickup');
+  const radioDelivery = document.getElementById('radio-delivery');
+  const addressSection = document.getElementById('delivery-address-section');
+  const pickupLocationCard = document.getElementById('pickup-location-card');
+  const labelDate = document.getElementById('label-date');
+  const labelTime = document.getElementById('label-time');
+
+  function setFulfilment(method) {
+    selectedFulfilmentMethod = method;
+    if (method === 'DELIVERY') {
+      pickupCard?.classList.remove('selected');
+      pickupCard?.setAttribute('aria-checked', 'false');
+      deliveryCard?.classList.add('selected');
+      deliveryCard?.setAttribute('aria-checked', 'true');
+      if (radioDelivery) radioDelivery.checked = true;
+      if (addressSection) addressSection.classList.remove('hidden');
+      if (pickupLocationCard) pickupLocationCard.classList.add('hidden');
+      if (labelDate) labelDate.innerHTML = 'Preferred Delivery Date <span class="required-star">*</span>';
+      if (labelTime) labelTime.innerHTML = 'Preferred Delivery Slot <span class="required-star">*</span>';
+    } else {
+      deliveryCard?.classList.remove('selected');
+      deliveryCard?.setAttribute('aria-checked', 'false');
+      pickupCard?.classList.add('selected');
+      pickupCard?.setAttribute('aria-checked', 'true');
+      if (radioPickup) radioPickup.checked = true;
+      if (addressSection) addressSection.classList.add('hidden');
+      if (pickupLocationCard) pickupLocationCard.classList.remove('hidden');
+      if (labelDate) labelDate.innerHTML = 'Scheduled Pickup Date <span class="required-star">*</span>';
+      if (labelTime) labelTime.innerHTML = 'Preferred Pickup Slot <span class="required-star">*</span>';
+    }
+    renderCartSummary();
+  }
+
+  pickupCard?.addEventListener('click', () => setFulfilment('PICKUP'));
+  deliveryCard?.addEventListener('click', () => setFulfilment('DELIVERY'));
+  radioPickup?.addEventListener('change', () => setFulfilment('PICKUP'));
+  radioDelivery?.addEventListener('change', () => setFulfilment('DELIVERY'));
 }
 
 /**
@@ -93,6 +140,10 @@ function renderCartSummary() {
 
   summaryContainer.innerHTML = html;
 
+  const isDelivery = selectedFulfilmentMethod === 'DELIVERY';
+  const deliveryFee = isDelivery ? (APP_CONFIG.business.estimatedDeliveryFeeINR || 80) : 0;
+  const grandTotal = subtotal + deliveryFee;
+
   if (totalsContainer) {
     totalsContainer.innerHTML = `
       <div class="totals-breakdown">
@@ -101,12 +152,22 @@ function renderCartSummary() {
           <span>${itemCount} ${itemCount === 1 ? 'variety' : 'varieties'}</span>
         </div>
         <div class="totals-row">
-          <span>Fulfilment:</span>
-          <span class="text-accent-gold font-semibold">Customer Store Pickup (Free)</span>
+          <span>Items Subtotal:</span>
+          <span>${formatINR(subtotal)}</span>
         </div>
+        <div class="totals-row">
+          <span>Fulfilment:</span>
+          <span class="text-accent-gold font-semibold">${isDelivery ? 'Doorstep Delivery (Porter Est.)' : 'Customer Store Pickup (Free)'}</span>
+        </div>
+        ${isDelivery ? `
+        <div class="totals-row">
+          <span>Estimated Delivery Fee:</span>
+          <span class="font-semibold" style="color: #E65100;">+${formatINR(deliveryFee)}</span>
+        </div>
+        ` : ''}
         <div class="totals-row totals-grand">
           <span>Estimated Total:</span>
-          <span class="grand-amount">${formatINR(subtotal)}</span>
+          <span class="grand-amount">${formatINR(grandTotal)}</span>
         </div>
         <p class="totals-note">
           Final authoritative payable amount is verified server-side prior to online payment.
@@ -206,7 +267,7 @@ function setupFormListeners() {
   }
 
   // Real-time input cleaning and error clearing
-  ['fullName', 'mobile', 'email', 'notes', 'pickupDate', 'acceptTerms'].forEach(fieldName => {
+  ['fullName', 'mobile', 'email', 'notes', 'pickupDate', 'acceptTerms', 'deliveryStreet', 'deliveryArea', 'deliveryCity', 'deliveryPincode', 'deliveryLandmark'].forEach(fieldName => {
     const input = document.getElementById(`input-${fieldName}`);
     if (input) {
       input.addEventListener('input', () => {
@@ -224,12 +285,18 @@ function setupFormListeners() {
 
     // Gather form values
     const formData = {
+      fulfilmentMethod: selectedFulfilmentMethod,
       fullName: document.getElementById('input-fullName')?.value || '',
       mobile: document.getElementById('input-mobile')?.value || '',
       email: document.getElementById('input-email')?.value || '',
       notes: document.getElementById('input-notes')?.value || '',
       pickupDate: document.getElementById('input-pickupDate')?.value || '',
       pickupTime: document.getElementById('input-pickupTime')?.value || '',
+      deliveryStreet: document.getElementById('input-deliveryStreet')?.value || '',
+      deliveryArea: document.getElementById('input-deliveryArea')?.value || '',
+      deliveryCity: document.getElementById('input-deliveryCity')?.value || '',
+      deliveryPincode: document.getElementById('input-deliveryPincode')?.value || '',
+      deliveryLandmark: document.getElementById('input-deliveryLandmark')?.value || '',
       acceptTerms: document.getElementById('input-acceptTerms')?.checked || false
     };
 
@@ -246,8 +313,14 @@ function setupFormListeners() {
     // Set submitting state (prevents duplicate submission)
     setSubmittingState(true);
 
+    const isDelivery = validation.cleanData.fulfilmentMethod === 'DELIVERY';
+    const deliveryFeePaise = isDelivery ? (APP_CONFIG.business.estimatedDeliveryFeePaise || 8000) : 0;
+
     const payload = {
       customer: validation.cleanData,
+      fulfilmentMethod: validation.cleanData.fulfilmentMethod,
+      deliveryAddress: validation.cleanData.deliveryAddress,
+      deliveryFeePaise: deliveryFeePaise,
       pickupDate: validation.cleanData.pickupDate,
       pickupTime: validation.cleanData.pickupTime,
       items: cart.map(i => ({
@@ -256,7 +329,7 @@ function setupFormListeners() {
         unit: i.unit,
         clientPrice: i.price
       })),
-      fulfilment: APP_CONFIG.business.fulfilmentType,
+      fulfilment: validation.cleanData.fulfilmentMethod,
       createdAt: new Date().toISOString()
     };
 

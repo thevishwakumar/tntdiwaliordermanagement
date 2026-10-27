@@ -44,6 +44,8 @@ serve(async (req: Request) => {
       items,
       pickupDate,
       pickupTime,
+      fulfilmentMethod,
+      deliveryAddress,
       idempotencyKey: bodyIdempotencyKey
     } = body;
 
@@ -64,7 +66,9 @@ serve(async (req: Request) => {
       p_items: normalizedItems,
       p_idempotency_key: idempotencyKey,
       p_pickup_date: pickupDate || null,
-      p_pickup_time: pickupTime || null
+      p_pickup_time: pickupTime || null,
+      p_fulfilment_method: fulfilmentMethod || 'PICKUP',
+      p_delivery_address: deliveryAddress || null
     });
 
     if (error) {

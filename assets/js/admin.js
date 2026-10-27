@@ -27,6 +27,7 @@ let ordersCache = [];
 let currentFilterStatus = 'ALL';
 let currentSearchQuery = '';
 let currentPaymentFilter = 'ALL';
+let currentFulfilmentFilter = 'ALL';
 let currentProductFilter = 'ALL';
 let currentPickupDateFilter = '';
 let currentSort = 'ORDER_DESC';
@@ -106,6 +107,7 @@ function setupFilters() {
   const searchInput = document.getElementById('order-search-input');
   const statusSelect = document.getElementById('filter-order-status');
   const paymentSelect = document.getElementById('filter-payment-status');
+  const fulfilmentSelect = document.getElementById('filter-fulfilment-method');
   const productSelect = document.getElementById('filter-product');
   const pickupDateInput = document.getElementById('filter-pickup-date');
   const sortSelect = document.getElementById('sort-orders');
@@ -130,6 +132,11 @@ function setupFilters() {
     renderOrdersTable();
   });
 
+  fulfilmentSelect?.addEventListener('change', (e) => {
+    currentFulfilmentFilter = e.target.value;
+    renderOrdersTable();
+  });
+
   productSelect?.addEventListener('change', (e) => {
     currentProductFilter = e.target.value;
     renderOrdersTable();
@@ -149,12 +156,14 @@ function setupFilters() {
     if (searchInput) searchInput.value = '';
     if (statusSelect) statusSelect.value = 'ALL';
     if (paymentSelect) paymentSelect.value = 'ALL';
+    if (fulfilmentSelect) fulfilmentSelect.value = 'ALL';
     if (productSelect) productSelect.value = 'ALL';
     if (pickupDateInput) pickupDateInput.value = '';
     if (sortSelect) sortSelect.value = 'ORDER_DESC';
     currentSearchQuery = '';
     currentFilterStatus = 'ALL';
     currentPaymentFilter = 'ALL';
+    currentFulfilmentFilter = 'ALL';
     currentProductFilter = 'ALL';
     currentPickupDateFilter = '';
     currentSort = 'ORDER_DESC';
@@ -286,6 +295,11 @@ function renderOrdersTable() {
     filtered = filtered.filter(o => o.payment_status === currentPaymentFilter);
   }
 
+  // Fulfilment Filter
+  if (currentFulfilmentFilter !== 'ALL') {
+    filtered = filtered.filter(o => (o.fulfilment_method || 'PICKUP') === currentFulfilmentFilter);
+  }
+
   // Pickup Date Filter
   if (currentPickupDateFilter) {
     filtered = filtered.filter(o => o.pickup_date === currentPickupDateFilter);
@@ -336,6 +350,7 @@ function renderOrdersTable() {
     const isReady = order.order_status === 'READY_FOR_PICKUP';
     const isPickedUp = order.order_status === 'PICKED_UP';
     const displayFulfillmentStatus = (order.order_status === 'PAID') ? 'SCHEDULED' : order.order_status;
+    const isDelivery = order.fulfilment_method === 'DELIVERY';
 
     html += `
       <tr data-id="${order.id}">
@@ -351,6 +366,17 @@ function renderOrdersTable() {
         <td>
           <div style="font-weight: 700;">${escapeHTML(order.customer_name)}</div>
           <div style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-maroon-800);">${escapeHTML(order.customer_mobile)}</div>
+          <div style="margin-top: 0.25rem;">
+            ${isDelivery ? `
+              <span class="status-badge badge-fulfilment-delivery" title="${escapeHTML(order.delivery_address?.formatted || (typeof order.delivery_address === 'string' ? order.delivery_address : ''))}">
+                🚚 DELIVERY (PORTER)
+              </span>
+            ` : `
+              <span class="status-badge badge-fulfilment-pickup">
+                🏬 STORE PICKUP
+              </span>
+            `}
+          </div>
         </td>
         <td style="max-width: 240px; font-size: 0.8rem; line-height: 1.4;">
           ${itemsSummary || 'No items recorded'}
@@ -367,6 +393,9 @@ function renderOrdersTable() {
         <td style="font-size: 0.82rem; white-space: nowrap;">
           <strong>📅 ${escapeHTML(order.pickup_date || 'Today')}</strong>
           <div style="font-size: 0.72rem; color: var(--color-text-muted);">${escapeHTML(order.pickup_time || 'Morning')}</div>
+          ${isDelivery ? `
+            <div style="font-size: 0.72rem; color: #E65100; font-weight: 700; margin-top: 2px;">🚚 Doorstep Delivery</div>
+          ` : ''}
         </td>
         <td>
           <div style="display: flex; flex-direction: column; gap: 0.35rem;">
@@ -520,6 +549,10 @@ async function openOrderDetailsModal(orderId) {
       `;
     });
 
+    const isDelivery = o.fulfilment_method === 'DELIVERY';
+    const deliveryFeeRupees = (o.delivery_fee_paise || 0) / 100;
+    const deliveryAddrStr = o.delivery_address?.formatted || (typeof o.delivery_address === 'string' ? o.delivery_address : '') || (o.delivery_address ? `${o.delivery_address.street || ''}, ${o.delivery_address.area || ''}, ${o.delivery_address.city || 'Coimbatore'} - ${o.delivery_address.pincode || ''}` : '');
+
     container.innerHTML = `
       <div style="border-bottom: 2px solid var(--color-bg-surface-alt); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <span class="status-badge status-${o.order_status}" style="float: right;">${o.order_status}</span>
@@ -540,13 +573,29 @@ async function openOrderDetailsModal(orderId) {
         </div>
 
         <div>
-          <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-muted);">Payment &amp; Pickup Authorization:</strong>
+          <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-muted);">Payment &amp; Fulfilment:</strong>
           <div>Payment: <span class="status-badge status-${o.payment_status}">${o.payment_status}</span></div>
-          ${o.razorpay_payment_id ? `<div style="font-size: 0.8rem; font-family: var(--font-mono); margin-top: 0.2rem;">Razorpay ID: ${o.razorpay_payment_id}</div>` : ''}
-          <div style="margin-top: 0.35rem; font-weight: 700;">
-            Counter Pickup Status: <span style="color: var(--color-maroon-800);">${o.pickup_status || 'PENDING'}</span>
+          <div style="margin-top: 0.35rem;">
+            Fulfilment: 
+            ${isDelivery ? `
+              <span class="status-badge badge-fulfilment-delivery">🚚 Doorstep Delivery (Porter)</span>
+            ` : `
+              <span class="status-badge badge-fulfilment-pickup">🏬 Store Pickup (Free)</span>
+            `}
           </div>
-          ${o.pickup_code_hash ? `<div style="font-family: var(--font-mono); font-weight: 800; font-size: 1.15rem; color: #1B5E20; margin-top: 0.2rem;">Pickup Code: ${o.pickup_code_hash}</div>` : ''}
+          ${isDelivery && deliveryAddrStr ? `
+            <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 0.65rem 0.85rem; border-radius: 6px; margin-top: 0.5rem;">
+              <strong style="font-size: 0.78rem; color: #BF360C; display: block;">📍 Delivery Destination:</strong>
+              <div style="font-size: 0.88rem; font-weight: 700; color: #333; margin-top: 0.2rem;">
+                ${escapeHTML(deliveryAddrStr)}
+              </div>
+              <button type="button" class="btn btn-outline btn-copy-address" style="margin-top: 0.45rem; padding: 0.25rem 0.6rem; font-size: 0.75rem;" data-address="${escapeHTML(deliveryAddrStr)}">
+                📋 Copy Address for Porter App
+              </button>
+            </div>
+          ` : ''}
+          ${o.razorpay_payment_id ? `<div style="font-size: 0.8rem; font-family: var(--font-mono); margin-top: 0.35rem;">Razorpay ID: ${o.razorpay_payment_id}</div>` : ''}
+          ${!isDelivery && o.pickup_code_hash ? `<div style="font-family: var(--font-mono); font-weight: 800; font-size: 1.15rem; color: #1B5E20; margin-top: 0.2rem;">Pickup Code: ${o.pickup_code_hash}</div>` : ''}
         </div>
       </div>
 
@@ -562,6 +611,14 @@ async function openOrderDetailsModal(orderId) {
         </thead>
         <tbody>
           ${itemsRows}
+          ${isDelivery ? `
+            <tr>
+              <td><strong>Doorstep Delivery Fee (Porter / Partner)</strong></td>
+              <td>1 trip</td>
+              <td>${formatINR(deliveryFeeRupees || 80)}</td>
+              <td style="font-weight: 700;">${formatINR(deliveryFeeRupees || 80)}</td>
+            </tr>
+          ` : ''}
           <tr>
             <td colspan="3" style="text-align: right; font-weight: 800;">Authoritative Total:</td>
             <td style="font-weight: 800; font-size: 1.15rem; color: var(--color-maroon-900);">${formatINR(totalRupees)}</td>
@@ -615,6 +672,17 @@ async function openOrderDetailsModal(orderId) {
     container.querySelector('.btn-modal-print-label')?.addEventListener('click', () => printSingleParcelLabel(o));
     container.querySelector('.btn-modal-print-slip')?.addEventListener('click', () => printPackingSlip(o));
     container.querySelector('.btn-modal-print-receipt')?.addEventListener('click', () => printCustomerReceipt(o));
+
+    // Copy address button
+    container.querySelector('.btn-copy-address')?.addEventListener('click', (e) => {
+      const addr = e.currentTarget.dataset.address;
+      if (addr && navigator.clipboard) {
+        navigator.clipboard.writeText(addr).then(() => {
+          e.currentTarget.textContent = '✓ Address Copied!';
+          setTimeout(() => { e.currentTarget.textContent = '📋 Copy Address for Porter App'; }, 2000);
+        });
+      }
+    });
 
     // Attach transition handlers
     container.querySelectorAll('.btn-action-transition').forEach(b => {
@@ -1167,7 +1235,9 @@ function generateParcelLabelHtml(order) {
         </div>
         <div class="parcel-header-badges">
           <span class="parcel-sticker-tag">🏷️ SWEET BOX STICKER</span>
-          <span class="parcel-pickup-banner">🏬 CUSTOMER PICKUP ONLY</span>
+          <span class="parcel-pickup-banner" style="${order.fulfilment_method === 'DELIVERY' ? 'background: #E65100; color: #FFF;' : ''}">
+            ${order.fulfilment_method === 'DELIVERY' ? '🚚 DOORSTEP DELIVERY (PORTER)' : '🏬 CUSTOMER PICKUP ONLY'}
+          </span>
         </div>
       </div>
 
@@ -1181,11 +1251,20 @@ function generateParcelLabelHtml(order) {
         </div>
       </div>
 
-      <!-- Scheduled Collection Banner -->
-      <div style="background: #FFF9C4; border: 1.5px solid #FBC02D; padding: 6px 10px; border-radius: 4px; margin-bottom: 10px; font-size: 0.825rem; display: flex; justify-content: space-between;">
-        <span>📅 <strong>Scheduled Pickup Date:</strong> ${escapeHTML(order.pickup_date || 'Today')}</span>
+      <!-- Scheduled Collection / Delivery Banner -->
+      <div style="background: ${order.fulfilment_method === 'DELIVERY' ? '#FFF3E0; border: 1.5px solid #FFB74D;' : '#FFF9C4; border: 1.5px solid #FBC02D;'} padding: 6px 10px; border-radius: 4px; margin-bottom: 10px; font-size: 0.825rem; display: flex; justify-content: space-between;">
+        <span>📅 <strong>${order.fulfilment_method === 'DELIVERY' ? 'Scheduled Delivery Date:' : 'Scheduled Pickup Date:'}</strong> ${escapeHTML(order.pickup_date || 'Today')}</span>
         <span>⏰ <strong>Slot:</strong> ${escapeHTML(order.pickup_time || 'Morning')}</span>
       </div>
+
+      ${order.fulfilment_method === 'DELIVERY' && (order.delivery_address?.formatted || order.delivery_address) ? `
+        <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 6px 10px; border-radius: 4px; margin-bottom: 10px; font-size: 0.825rem;">
+          <strong style="color: #BF360C;">🚚 Doorstep Delivery Address (Porter / Partner):</strong>
+          <div style="font-weight: 700; color: #333; margin-top: 2px;">
+            ${escapeHTML(order.delivery_address?.formatted || (typeof order.delivery_address === 'string' ? order.delivery_address : 'Address on file'))}
+          </div>
+        </div>
+      ` : ''}
 
       <div class="parcel-customer-grid">
         <div class="parcel-info-block">
@@ -1286,21 +1365,34 @@ function generatePackingSlipHtml(order) {
         </div>
       </div>
 
-      <!-- Prominent Advance Scheduled Pickup Banner -->
-      <div style="background: #E8F5E9; border: 2px solid #2E7D32; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+      <!-- Prominent Advance Scheduled Pickup / Delivery Banner -->
+      <div style="background: ${order.fulfilment_method === 'DELIVERY' ? '#FFF3E0; border: 2px solid #E65100;' : '#E8F5E9; border: 2px solid #2E7D32;'} padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #1B5E20;">Scheduled Customer Pickup</div>
-          <div style="font-size: 1.25rem; font-weight: 900; color: #1B5E20;">
+          <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
+            ${order.fulfilment_method === 'DELIVERY' ? '🚚 Scheduled Doorstep Delivery (Porter)' : '🏬 Scheduled Customer Pickup'}
+          </div>
+          <div style="font-size: 1.25rem; font-weight: 900; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
             📅 ${escapeHTML(order.pickup_date || 'Today')}
           </div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #1B5E20;">Preferred Collection Slot</div>
-          <div style="font-size: 1.05rem; font-weight: 800; color: #1B5E20;">
+          <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
+            ${order.fulfilment_method === 'DELIVERY' ? 'Preferred Delivery Slot' : 'Preferred Collection Slot'}
+          </div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
             ⏰ ${escapeHTML(order.pickup_time || 'Morning (08:00 AM - 12:00 PM)')}
           </div>
         </div>
       </div>
+
+      ${order.fulfilment_method === 'DELIVERY' && (order.delivery_address?.formatted || order.delivery_address) ? `
+        <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem;">
+          <strong style="color: #BF360C;">🚚 Doorstep Delivery Address (Book on Porter / Delivery Partner):</strong>
+          <div style="font-size: 1rem; font-weight: 700; color: #222; margin-top: 2px;">
+            ${escapeHTML(order.delivery_address?.formatted || (typeof order.delivery_address === 'string' ? order.delivery_address : 'Address on file'))}
+          </div>
+        </div>
+      ` : ''}
 
       <!-- Customer & Fulfillment Metadata Grid -->
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; background: #F8F8F8; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #E0E0E0;">
@@ -1358,9 +1450,14 @@ function generatePackingSlipHtml(order) {
  * Generate Detailed Customer Paid Purchase Receipt HTML
  */
 function generateCustomerReceiptHtml(order) {
+  const isDelivery = order.fulfilment_method === 'DELIVERY';
+  const deliveryFeePaise = isDelivery ? (order.delivery_fee_paise || 8000) : 0;
+  const deliveryFeeRupees = deliveryFeePaise / 100;
   const totalRupees = (order.total_paise || 0) / 100;
+  const subtotalRupees = Math.max(0, totalRupees - deliveryFeeRupees);
   const istDate = new Date(order.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
   const receiptTimestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+  const deliveryAddrStr = order.delivery_address?.formatted || (typeof order.delivery_address === 'string' ? order.delivery_address : '') || (order.delivery_address ? `${order.delivery_address.street || ''}, ${order.delivery_address.area || ''}, ${order.delivery_address.city || 'Coimbatore'} - ${order.delivery_address.pincode || ''}` : '');
 
   let itemsHtml = '';
   (order.items || []).forEach((i, idx) => {
@@ -1390,7 +1487,7 @@ function generateCustomerReceiptHtml(order) {
           <div>
             <h2 style="font-size: 1.5rem; color: #78101C; margin: 0; font-family: Georgia, serif;">Shree Taste N Taste Catering</h2>
             <div style="font-size: 0.85rem; font-weight: 700; color: #333;">TNT (Taste N Taste) &bull; Spreading Sweetness This Festive Season</div>
-            <div style="font-size: 0.8rem; color: #555;">Enquiries: 9442854444 / 7200071040 &bull; Shop Counter Collection</div>
+            <div style="font-size: 0.8rem; color: #555;">Enquiries: 9442854444 / 7200071040 &bull; ${isDelivery ? 'Doorstep Delivery' : 'Shop Counter Collection'}</div>
           </div>
         </div>
         <div style="text-align: right;">
@@ -1411,15 +1508,32 @@ function generateCustomerReceiptHtml(order) {
           <div style="margin-bottom: 4px;">Customer Name: <strong>${escapeHTML(order.customer_name)}</strong></div>
           <div style="margin-bottom: 4px;">Mobile: <strong>+91 ${escapeHTML(order.customer_mobile)}</strong></div>
           ${order.customer_email ? `<div>Email: <strong>${escapeHTML(order.customer_email)}</strong></div>` : ''}
+          <div style="margin-top: 6px;">
+            Fulfilment: 
+            ${isDelivery ? `
+              <span style="background: #E65100; color: #FFF; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">🚚 Doorstep Delivery (Porter)</span>
+            ` : `
+              <span style="background: #2E7D32; color: #FFF; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">🏬 Direct Store Pickup</span>
+            `}
+          </div>
         </div>
         <div style="text-align: right;">
           <div style="margin-bottom: 4px;">Order Placed: <strong>${istDate}</strong></div>
-          <div style="margin-bottom: 4px;">Scheduled Pickup Date: <strong style="color: #1B5E20; font-size: 0.95rem;">📅 ${escapeHTML(order.pickup_date || 'Today')}</strong></div>
-          <div style="margin-bottom: 4px;">Pickup Slot: <strong>⏰ ${escapeHTML(order.pickup_time || 'Morning (08:00 AM - 12:00 PM)')}</strong></div>
+          <div style="margin-bottom: 4px;">${isDelivery ? 'Scheduled Delivery Date:' : 'Scheduled Pickup Date:'} <strong style="color: #1B5E20; font-size: 0.95rem;">📅 ${escapeHTML(order.pickup_date || 'Today')}</strong></div>
+          <div style="margin-bottom: 4px;">${isDelivery ? 'Delivery Slot:' : 'Pickup Slot:'} <strong>⏰ ${escapeHTML(order.pickup_time || 'Morning (08:00 AM - 12:00 PM)')}</strong></div>
           <div>Payment: <strong style="color: #1B5E20;">✓ ${order.payment_status === 'PAID' ? 'PAID & VERIFIED (Online Razorpay)' : order.payment_status}</strong></div>
           ${order.razorpay_payment_id ? `<div style="font-size: 0.75rem; color: #555; font-family: ui-monospace, monospace;">Txn ID: ${escapeHTML(order.razorpay_payment_id)}</div>` : ''}
         </div>
       </div>
+
+      ${isDelivery && deliveryAddrStr ? `
+        <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem;">
+          <strong style="color: #BF360C; font-size: 0.85rem;">📍 Doorstep Delivery Destination (via Porter / Partner):</strong>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #222; margin-top: 3px;">
+            ${escapeHTML(deliveryAddrStr)}
+          </div>
+        </div>
+      ` : ''}
 
       ${order.customer_notes ? `
         <div style="border: 1px dashed #B8860B; padding: 8px 12px; border-radius: 4px; font-size: 0.825rem; margin-bottom: 14px; background: #FFFDF5;">
@@ -1446,14 +1560,14 @@ function generateCustomerReceiptHtml(order) {
 
       <!-- Financial Summary Table -->
       <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
-        <div style="width: 320px; font-size: 0.85rem; background: #F8F9FA; padding: 12px; border-radius: 6px; border: 1px solid #DDD;">
+        <div style="width: 340px; font-size: 0.85rem; background: #F8F9FA; padding: 12px; border-radius: 6px; border: 1px solid #DDD;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
             <span>Delicacies Subtotal:</span>
-            <strong>${formatINR(totalRupees)}</strong>
+            <strong>${formatINR(subtotalRupees)}</strong>
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-            <span>Fulfilment (Store Pickup):</span>
-            <strong style="color: #1B5E20;">FREE (₹0)</strong>
+            <span>${isDelivery ? 'Doorstep Delivery Fee (Porter / Partner):' : 'Fulfilment (Store Pickup):'}</span>
+            <strong style="color: ${isDelivery ? '#E65100' : '#1B5E20'};">${isDelivery ? formatINR(deliveryFeeRupees) : 'FREE (₹0)'}</strong>
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #CCC;">
             <span>Applicable Taxes:</span>
@@ -1474,8 +1588,8 @@ function generateCustomerReceiptHtml(order) {
         </div>
       </div>
 
-      <!-- Secret Customer Pickup Code Banner (Only printed here) -->
-      ${order.pickup_code_hash ? `
+      <!-- Secret Customer Pickup Code Banner (Only for in-store pickup) -->
+      ${(!isDelivery && order.pickup_code_hash) ? `
         <div style="background: #E8F5E9; border: 2px dashed #2E7D32; padding: 14px; text-align: center; border-radius: 8px; margin-bottom: 16px;">
           <div style="font-size: 0.8rem; font-weight: 800; color: #1B5E20; text-transform: uppercase; letter-spacing: 1px;">
             Authorized Counter Pickup Verification Code
@@ -1491,9 +1605,14 @@ function generateCustomerReceiptHtml(order) {
 
       <!-- Customer Instructions Footer -->
       <div style="font-size: 0.75rem; color: #555; line-height: 1.5; border-top: 1px solid #DDD; padding-top: 10px;">
-        • <strong>Customer Store Pickup Only:</strong> Collection at Shree Taste N Taste Catering shop counter (<a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM" target="_blank" style="color: #78101C; text-decoration: underline; font-weight: 700;">View Location &amp; Directions on Google Maps</a>).<br>
-        • <strong>Collection Date:</strong> Please arrive on your scheduled date: <strong>${escapeHTML(order.pickup_date || 'Today')}</strong> during <strong>${escapeHTML(order.pickup_time || 'Morning')}</strong>.<br>
-        • <strong>Support:</strong> For scheduling changes or inquiries, call 9442854444 / 7200071040.<br>
+        ${isDelivery ? `
+          • <strong>Doorstep Delivery (Porter / Partner):</strong> We will dispatch your order via local delivery partner (Porter / bike courier) to the specified address on <strong>${escapeHTML(order.pickup_date || 'Today')}</strong>.<br>
+          • <strong>Delivery Queries:</strong> For scheduling changes or delivery tracking, call 9442854444 / 7200071040.<br>
+        ` : `
+          • <strong>Customer Store Pickup:</strong> Collection at Shree Taste N Taste Catering shop counter (<a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM" target="_blank" style="color: #78101C; text-decoration: underline; font-weight: 700;">View Location &amp; Directions on Google Maps</a>).<br>
+          • <strong>Collection Date:</strong> Please arrive on your scheduled date: <strong>${escapeHTML(order.pickup_date || 'Today')}</strong> during <strong>${escapeHTML(order.pickup_time || 'Morning')}</strong>.<br>
+          • <strong>Support:</strong> For scheduling changes or inquiries, call 9442854444 / 7200071040.<br>
+        `}
         • <em>Thank you for celebrating Diwali with Shree Taste N Taste Catering!</em>
       </div>
     </div>

@@ -167,9 +167,31 @@ function renderOrderDetails(order) {
   });
 
   // Pickup code display
-  let pickupCodeSection = '';
-  if (isVerifiedPaid && order.pickupCode) {
-    pickupCodeSection = `
+  const isDelivery = order.fulfilmentMethod === 'DELIVERY';
+  const deliveryAddrFormatted = order.deliveryAddress?.formatted || (typeof order.deliveryAddress === 'string' ? order.deliveryAddress : '') || (order.deliveryAddress ? `${order.deliveryAddress.street || ''}, ${order.deliveryAddress.area || ''}, ${order.deliveryAddress.city || 'Coimbatore'} - ${order.deliveryAddress.pincode || ''}` : '');
+
+  // Fulfilment & Pickup / Delivery banner section
+  let fulfilmentActionSection = '';
+  if (isDelivery) {
+    fulfilmentActionSection = `
+      <div class="delivery-address-box" style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 1.1rem 1.25rem; border-radius: 8px; margin-bottom: 1.25rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.4rem;">
+          <strong style="color: #BF360C; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">
+            <svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            DOORSTEP DELIVERY ADDRESS (VIA PORTER / PARTNER)
+          </strong>
+          <span class="status-badge" style="background: #FFE0B2; color: #E65100; font-weight: 800; font-size: 0.75rem;">₹80 DELIVERY FEE PAID</span>
+        </div>
+        <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-maroon-900);">
+          ${escapeHTML(deliveryAddrFormatted || 'Delivery address registered on order.')}
+        </div>
+        <p style="font-size: 0.85rem; color: #5D4037; margin-top: 0.4rem;">
+          TNT will dispatch fresh Diwali delicacies directly to this address via Porter / local delivery partner on your scheduled date.
+        </p>
+      </div>
+    `;
+  } else if (isVerifiedPaid && order.pickupCode) {
+    fulfilmentActionSection = `
       <div class="pickup-code-box">
         <div class="pickup-code-label">OFFICIAL STORE PICKUP CODE</div>
         <div class="pickup-code-value">${escapeHTML(order.pickupCode)}</div>
@@ -179,7 +201,7 @@ function renderOrderDetails(order) {
       </div>
     `;
   } else {
-    pickupCodeSection = `
+    fulfilmentActionSection = `
       <div class="pickup-pending-box" style="background: #FFF8E1; border: 1.5px dashed #F57F17; padding: 1rem; border-radius: 6px; text-align: center; margin-bottom: 1.25rem;">
         <div>
           <strong style="color: #E65100;">Pickup Code Awaiting Payment Verification</strong>
@@ -200,7 +222,7 @@ function renderOrderDetails(order) {
             Official Customer Receipt
           </strong>
           <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0.15rem 0 0;">
-            Present this receipt or your Store Pickup Code at the counter to collect your fresh festive pack.
+            ${isDelivery ? 'Official confirmation receipt for your doorstep delivery order.' : 'Present this receipt or your Store Pickup Code at the counter to collect your fresh festive pack.'}
           </p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
@@ -255,24 +277,32 @@ function renderOrderDetails(order) {
             <tr>
               <td class="meta-label">Fulfilment Type:</td>
               <td style="color: #78101C; font-weight: 700;">
-                ${escapeHTML(APP_CONFIG.business.fulfilmentType)} (Shop Pickup Only)
+                ${isDelivery ? 'Doorstep Delivery (via Porter / Partner)' : 'Shop Counter Collection (Free)'}
               </td>
               <td class="meta-label">Registered Mobile:</td>
               <td class="font-mono">${maskMobile(order.mobile)}</td>
             </tr>
             ${order.pickupDate ? `
             <tr>
-              <td class="meta-label" style="background: #FFF8E1; color: #B78103;">Scheduled Pickup:</td>
+              <td class="meta-label" style="background: #FFF8E1; color: #B78103;">${isDelivery ? 'Scheduled Delivery:' : 'Scheduled Pickup:'}</td>
               <td colspan="3" style="background: #FFFDE7; font-weight: 700; color: #78101C;">
                 ${escapeHTML(order.pickupDate)} ${order.pickupTime ? `— Slot: ${escapeHTML(order.pickupTime)}` : ''}
+              </td>
+            </tr>
+            ` : ''}
+            ${isDelivery && deliveryAddrFormatted ? `
+            <tr>
+              <td class="meta-label" style="background: #FFF3E0; color: #E65100;">Delivery Address:</td>
+              <td colspan="3" style="font-weight: 600; color: #5D4037;">
+                ${escapeHTML(deliveryAddrFormatted)}
               </td>
             </tr>
             ` : ''}
           </tbody>
         </table>
 
-        <!-- Official Pickup Code Box -->
-        ${pickupCodeSection}
+        <!-- Fulfilment Action Box (Delivery Details or Pickup Code) -->
+        ${fulfilmentActionSection}
 
         <!-- Itemized Order Table -->
         <h4 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.05rem; margin: 1rem 0 0.5rem; border-bottom: 1.5px solid var(--color-border); padding-bottom: 0.35rem;">
@@ -289,6 +319,17 @@ function renderOrderDetails(order) {
           </thead>
           <tbody>
             ${customerItemsHtml}
+            ${isDelivery ? `
+            <tr>
+              <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border);">
+                <strong>Doorstep Delivery Fee (Porter / Local Partner)</strong>
+                <div style="font-size: 0.78rem; color: var(--color-text-muted);">Coimbatore City Doorstep Delivery</div>
+              </td>
+              <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: center;">1 trip</td>
+              <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right;">${formatINR(order.deliveryFee || 80)}</td>
+              <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right; font-weight: 700;">${formatINR(order.deliveryFee || 80)}</td>
+            </tr>
+            ` : ''}
           </tbody>
         </table>
 
@@ -298,8 +339,19 @@ function renderOrderDetails(order) {
           <span class="receipt-total-val">${formatINR(order.totalAmount)}</span>
         </div>
 
-        <!-- Counter Collection Guidelines -->
+        <!-- Guidelines (Delivery vs Pickup) -->
         <div class="receipt-pickup-guidelines">
+          ${isDelivery ? `
+          <h4 style="display: flex; align-items: center; gap: 0.4rem;">
+            <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Doorstep Delivery Guidelines:
+          </h4>
+          <ul>
+            <li><strong>Delivery Partner:</strong> We will book a verified delivery partner (Porter / 2-wheeler) to dispatch your order on the scheduled slot.</li>
+            <li><strong>Delivery Coordination:</strong> Please ensure someone is available at the provided mobile number (${maskMobile(order.mobile)}) and address.</li>
+            <li><strong>Helpline Assistance:</strong> For any delivery timing coordination, call ${escapeHTML(APP_CONFIG.business.primaryPhone)} / ${escapeHTML(APP_CONFIG.business.secondaryPhone)}.</li>
+          </ul>
+          ` : `
           <h4 style="display: flex; align-items: center; gap: 0.4rem;">
             <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2"/></svg>
             Shop Counter Collection Guidelines:
@@ -309,6 +361,7 @@ function renderOrderDetails(order) {
             <li><strong>Handover Verification:</strong> Present the Official Store Pickup Code on your phone or hand this printed copy at the counter.</li>
             <li><strong>Contact:</strong> ${escapeHTML(APP_CONFIG.business.primaryPhone)} / ${escapeHTML(APP_CONFIG.business.secondaryPhone)} for timing coordination.</li>
           </ul>
+          `}
         </div>
 
         <div style="text-align: center; font-size: 0.8rem; color: var(--color-text-muted); margin-top: 1rem; border-top: 1px solid var(--color-border); padding-top: 0.5rem;">

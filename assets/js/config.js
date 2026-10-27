@@ -18,14 +18,18 @@ export const APP_CONFIG = {
     primaryPhone: '+91 9442854444',
     secondaryPhone: '+91 7200071040',
     email: 'contact@tntcatering.in', // Configurable contact placeholder
-    fulfilmentType: 'Customer Pickup Only',
+    fulfilmentType: 'Store Pickup & Doorstep Delivery',
+    defaultFulfilment: 'PICKUP',
+    estimatedDeliveryFeeINR: 80,
+    estimatedDeliveryFeePaise: 8000,
+    deliveryPartnerName: 'Porter / Local Delivery Partner',
     pickupLocationNote: 'Direct Pickup from Shree Taste N Taste Catering counter',
     pickupAddress: 'Shree Taste N Taste Catering, Shop Counter',
     mapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM',
     mapsPlaceUrl: 'https://maps.google.com/?cid=3716949033379685700',
     mapsEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.112166727533!2d76.987673!3d11.0302105!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba8f622cb4faa31%3A0x339503dd384d4544!2sShree%20TasteNTaste%20Catering!5e0!3m2!1sen!2sin!4v1793019092675!5m2!1sen!2sin',
     pickupRequirement: 'Customer must present their verified Pickup Code and Order Reference upon collection.',
-    operatingNotice: 'Strictly customer pickup. Home delivery and Cash on Delivery (COD) are not available.'
+    operatingNotice: 'Store pickup (free) and Doorstep delivery (via Porter / Delivery Partner) available across Coimbatore.'
   },
 
   currency: {
@@ -50,10 +54,10 @@ export const APP_CONFIG = {
   },
 
   orderTerms: [
-    'Strictly Customer Pickup: Orders must be collected in person from our shop counter.',
-    'No Home Delivery or Cash on Delivery (COD) is supported.',
+    'Store Pickup: Collect your order in person for free from our shop counter.',
+    'Doorstep Delivery: We arrange delivery directly to your address via Porter or delivery partners for an estimated ₹80 fee.',
     'Orders are confirmed only after successful online payment verification via Razorpay.',
-    'A secure Pickup Code is generated strictly after verified payment and is required for pickup counter verification.',
+    'A secure order reference code is generated for verification and tracking.',
     'Freshly prepared sweets and savouries are packed carefully for Diwali celebrations.'
   ]
 };
