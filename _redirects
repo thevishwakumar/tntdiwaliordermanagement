@@ -1,6 +1,6 @@
 # Cloudflare Pages Clean URLs
-/admin        /admin/login.html      301
-/dashboard    /admin/dashboard.html  301
+/admin        /admin/login.html      302
+/dashboard    /admin/dashboard.html  302
 /track        /order-status.html     301
 /pickup       /order-status.html     301
 /orders       /checkout.html         301

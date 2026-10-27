@@ -5,18 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Operations &amp; Fulfilment Hub | Shree Taste N Taste Catering</title>
   
-  <!-- Immediate Synchronous Authentication Guard (Prevents Dashboard Content Flash) -->
+  <!-- Immediate Synchronous Authentication Guard & Anti-Flash Layout Lock -->
+  <style>
+    /* Critical Anti-Flash Guard: Keep admin layout strictly invisible until authenticated */
+    .admin-app-layout {
+      display: none !important;
+    }
+    html.authenticated .admin-app-layout,
+    body.authenticated .admin-app-layout {
+      display: flex !important;
+    }
+  </style>
   <script>
     (function () {
-      const token = sessionStorage.getItem('tnt_admin_token');
-      if (!token) {
+      try {
+        var token = sessionStorage.getItem('tnt_admin_token') || localStorage.getItem('tnt_admin_token');
+        if (!token) {
+          document.documentElement.style.display = 'none';
+          window.location.replace('login.html');
+        } else {
+          document.documentElement.classList.add('authenticated');
+        }
+      } catch (e) {
         document.documentElement.style.display = 'none';
         window.location.replace('login.html');
       }
     })();
   </script>
 
-  <link rel="stylesheet" href="../assets/css/styles.css?v=20261027_v2">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=20261027_v3">
   <link rel="stylesheet" href="../assets/css/print-documents.css">
   <link rel="icon" href="../assets/images/tnt-logo.jpg" type="image/jpeg">
   <style>

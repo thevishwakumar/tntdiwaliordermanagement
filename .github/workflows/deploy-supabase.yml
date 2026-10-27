@@ -22,6 +22,12 @@ jobs:
 
       - name: Deploy All Edge Functions to Supabase
         run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "::warning::SUPABASE_ACCESS_TOKEN secret is not set in GitHub repository settings. Skipping Edge Functions deployment."
+            echo "Edge Functions automated deployment was skipped because SUPABASE_ACCESS_TOKEN is missing."
+            echo "To enable automated Supabase Edge Function deployment, add SUPABASE_ACCESS_TOKEN under GitHub Repo -> Settings -> Secrets and variables -> Actions."
+            exit 0
+          fi
           supabase functions deploy config --project-ref bondkwckhnbjslshyflp --no-verify-jwt
           supabase functions deploy create-order --project-ref bondkwckhnbjslshyflp --no-verify-jwt
           supabase functions deploy verify-payment --project-ref bondkwckhnbjslshyflp --no-verify-jwt
