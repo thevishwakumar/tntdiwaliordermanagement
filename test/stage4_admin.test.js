@@ -13,8 +13,34 @@
 
 import http from 'http';
 import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env variables
+function loadEnv() {
+  const envPath = path.join(__dirname, '..', '.env');
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx > -1) {
+        const key = trimmed.substring(0, idx).trim();
+        const val = trimmed.substring(idx + 1).trim();
+        if (!process.env[key]) process.env[key] = val;
+      }
+    }
+  }
+}
+loadEnv();
 
 const BASE_URL = 'http://localhost:3000';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '6tJrsoptI5w6rdicuxsk07xn';
 
 function makeRequest(path, options = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -140,7 +166,7 @@ async function runStage4Tests() {
     const razorpayOrderId = createdPaid.razorpay_order_id;
     const razorpayPaymentId = 'pay_test_' + crypto.randomBytes(6).toString('hex');
     const payload = `${razorpayOrderId}|${razorpayPaymentId}`;
-    const signature = crypto.createHmac('sha256', '6tJrsoptI5w6rdicuxsk07xn').update(payload).digest('hex');
+    const signature = crypto.createHmac('sha256', RAZORPAY_KEY_SECRET).update(payload).digest('hex');
 
     const verifyPayRes = await makeRequest('/api/verify-payment', { method: 'POST' }, {
       orderId: createdPaid.order_id,
@@ -296,7 +322,7 @@ async function runStage4Tests() {
     assert.ok(csvRes.headers['content-disposition'].includes('attachment'), 'Must have attachment disposition');
     assert.ok(csvRes.raw.includes('Order Number,Order Date (IST)'), 'Header row must be present');
     assert.ok(csvRes.raw.includes(paidOrder.publicOrderNumber), 'Exported CSV must contain created order');
-    assert.ok(!csvRes.raw.includes('6tJrsoptI5w6rdicuxsk07xn'), 'Secrets must never appear in CSV');
+    assert.ok(!csvRes.raw.includes(RAZORPAY_KEY_SECRET), 'Secrets must never appear in CSV');
     console.log('  ✔ CSV Export generated cleanly with IST timestamps and sanitized customer data');
   }
 

@@ -556,10 +556,17 @@ const server = http.createServer(async (req, res) => {
         .update(`${razorpayOrderId}|${razorpayPaymentId}`)
         .digest('hex');
 
-      const isSignatureValid = crypto.timingSafeEqual(
-        Buffer.from(expectedSignature, 'utf8'),
-        Buffer.from(razorpaySignature, 'utf8')
-      );
+      let isSignatureValid = false;
+      try {
+        if (typeof razorpaySignature === 'string' && expectedSignature.length === razorpaySignature.length) {
+          isSignatureValid = crypto.timingSafeEqual(
+            Buffer.from(expectedSignature, 'utf8'),
+            Buffer.from(razorpaySignature, 'utf8')
+          );
+        }
+      } catch {
+        isSignatureValid = false;
+      }
 
       if (!isSignatureValid) {
         console.warn(`[Security Alert] Invalid payment signature for orderId ${orderId}.`);
