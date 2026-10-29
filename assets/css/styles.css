@@ -2429,6 +2429,29 @@ textarea {
     justify-content: center;
   }
 
+  .receipt-copy-pill {
+    font-size: 0.72rem;
+    white-space: normal;
+    text-align: center;
+    display: inline-block;
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  .receipt-total-row {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .receipt-table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
   .pickup-code-value {
     font-size: 1.6rem !important;
     letter-spacing: 2px !important;
@@ -2442,6 +2465,7 @@ textarea {
   .receipt-meta-table td {
     display: block !important;
     width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .receipt-meta-table tr {
@@ -2458,12 +2482,15 @@ textarea {
     border: none !important;
     border-bottom: 1px dashed var(--color-border) !important;
     width: 100% !important;
+    word-break: break-word;
   }
 
   .receipt-meta-table td:not(.meta-label) {
     padding: 0.45rem 0.65rem !important;
     border: none !important;
     font-size: 0.88rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   /* Location Map */
@@ -2545,6 +2572,48 @@ textarea {
 
   .product-actions .btn {
     width: 100%;
+  }
+
+  .hero-title {
+    font-size: 1.6rem !important;
+    line-height: 1.25 !important;
+    word-break: break-word;
+  }
+
+  .section-title {
+    font-size: 1.45rem !important;
+    word-break: break-word;
+  }
+
+  .card-title {
+    font-size: 1.2rem !important;
+    word-break: break-word;
+  }
+
+  /* Prevent iOS zoom on form inputs while maintaining full touch target */
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px !important;
+  }
+
+  .fulfilment-option-header {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .delivery-estimate-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .modal-card {
+    width: calc(100vw - 1.25rem) !important;
+    max-width: 100% !important;
+    padding: 1rem 0.75rem !important;
+    margin: 0.5rem auto !important;
+    box-sizing: border-box !important;
   }
 }
 

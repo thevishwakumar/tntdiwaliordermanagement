@@ -644,22 +644,24 @@ function renderOrderDetailsModalContent(container, modal, o) {
   const deliveryAddrStr = o.delivery_address?.formatted || (typeof o.delivery_address === 'string' ? o.delivery_address : '') || (o.delivery_address ? `${o.delivery_address.street || ''}, ${o.delivery_address.area || ''}, ${o.delivery_address.city || 'Coimbatore'} - ${o.delivery_address.pincode || ''}` : '');
 
   container.innerHTML = `
-    <div style="border-bottom: 2px solid var(--color-bg-surface-alt); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-      <span class="status-badge status-${o.order_status}" style="float: right;">${escapeHTML(o.order_status || 'AWAITING_PAYMENT')}</span>
-      <h2 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.5rem; margin: 0 0 0.25rem;">
-        Order #${escapeHTML(o.public_order_number || '')}
-      </h2>
-      <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0;">Placed on ${istTime}</p>
+    <div style="border-bottom: 2px solid var(--color-bg-surface-alt); padding-bottom: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; padding-right: 2.75rem;">
+      <div>
+        <h2 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.45rem; margin: 0 0 0.25rem; word-break: break-word;">
+          Order #${escapeHTML(o.public_order_number || '')}
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0;">Placed on ${istTime}</p>
+      </div>
+      <span class="status-badge status-${o.order_status}">${escapeHTML(o.order_status || 'AWAITING_PAYMENT')}</span>
     </div>
 
     <!-- Customer Info & Payment Details -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; background: var(--color-bg-surface-alt); padding: 1rem; border-radius: var(--radius-md);">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; background: var(--color-bg-surface-alt); padding: 1rem; border-radius: var(--radius-md);">
       <div>
         <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-muted); display: block; margin-bottom: 0.35rem;">Customer Information:</strong>
-        <div style="font-weight: 700; font-size: 1rem;">${escapeHTML(o.customer_name || 'Customer')}</div>
+        <div style="font-weight: 700; font-size: 1rem; word-break: break-word;">${escapeHTML(o.customer_name || 'Customer')}</div>
         <div style="font-family: var(--font-mono); color: var(--color-maroon-800); font-weight: 700;">+91 ${escapeHTML(o.customer_mobile || '')}</div>
-        ${o.customer_email ? `<div style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: 2px;">✉️ ${escapeHTML(o.customer_email)}</div>` : ''}
-        ${o.customer_notes ? `<div style="font-style: italic; margin-top: 0.5rem; font-size: 0.8rem; background: #FFF8E1; padding: 0.4rem 0.6rem; border-radius: 4px; border: 1px solid #FFE082;">📝 <strong>Packing Note:</strong> ${escapeHTML(o.customer_notes)}</div>` : ''}
+        ${o.customer_email ? `<div style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: 2px; word-break: break-all;">✉️ ${escapeHTML(o.customer_email)}</div>` : ''}
+        ${o.customer_notes ? `<div style="font-style: italic; margin-top: 0.5rem; font-size: 0.8rem; background: #FFF8E1; padding: 0.4rem 0.6rem; border-radius: 4px; border: 1px solid #FFE082; word-break: break-word;">📝 <strong>Packing Note:</strong> ${escapeHTML(o.customer_notes)}</div>` : ''}
         <div style="margin-top: 0.65rem; font-size: 0.85rem;">
           <strong style="color: var(--color-maroon-900);">${isDelivery ? '🚚 Scheduled Delivery:' : '🏬 Scheduled Pickup:'}</strong>
           <div>📅 <strong>${escapeHTML(o.pickup_date || 'Today')}</strong></div>
@@ -669,7 +671,7 @@ function renderOrderDetailsModalContent(container, modal, o) {
 
       <div>
         <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-muted); display: block; margin-bottom: 0.35rem;">Payment &amp; Fulfilment:</strong>
-        <div>Payment State: <span class="status-badge status-${o.payment_status}">${escapeHTML(o.payment_status || 'PENDING')}</span></div>
+        <div style="margin-bottom: 0.35rem;">Payment State: <span class="status-badge status-${o.payment_status}">${escapeHTML(o.payment_status || 'PENDING')}</span></div>
         <div style="margin-top: 0.35rem;">
           Fulfilment: 
           ${isDelivery ? `
@@ -681,7 +683,7 @@ function renderOrderDetailsModalContent(container, modal, o) {
         ${isDelivery && deliveryAddrStr ? `
           <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 0.65rem 0.85rem; border-radius: 6px; margin-top: 0.5rem;">
             <strong style="font-size: 0.78rem; color: #BF360C; display: block;">📍 Delivery Destination:</strong>
-            <div style="font-size: 0.88rem; font-weight: 700; color: #333; margin-top: 0.2rem;">
+            <div style="font-size: 0.88rem; font-weight: 700; color: #333; margin-top: 0.2rem; word-break: break-word;">
               ${escapeHTML(deliveryAddrStr)}
             </div>
             <button type="button" class="btn btn-outline btn-copy-address" style="margin-top: 0.45rem; padding: 0.25rem 0.6rem; font-size: 0.75rem;" data-address="${escapeHTML(deliveryAddrStr)}">
@@ -689,7 +691,7 @@ function renderOrderDetailsModalContent(container, modal, o) {
             </button>
           </div>
         ` : ''}
-        ${o.razorpay_payment_id ? `<div style="font-size: 0.8rem; font-family: var(--font-mono); margin-top: 0.45rem;">Razorpay ID: <strong>${escapeHTML(o.razorpay_payment_id)}</strong></div>` : ''}
+        ${o.razorpay_payment_id ? `<div style="font-size: 0.8rem; font-family: var(--font-mono); margin-top: 0.45rem; word-break: break-all;">Razorpay ID: <strong>${escapeHTML(o.razorpay_payment_id)}</strong></div>` : ''}
         ${!isDelivery && (o.pickup_code_hash || o.pickup_code) ? `
           <div style="margin-top: 0.5rem; background: #E8F5E9; border: 1.5px solid #A5D6A7; padding: 0.5rem 0.75rem; border-radius: 6px;">
             <span style="font-size: 0.75rem; font-weight: 700; color: #1B5E20; text-transform: uppercase; display: block;">Official Store Pickup Code:</span>
@@ -705,34 +707,36 @@ function renderOrderDetailsModalContent(container, modal, o) {
     <h3 style="font-size: 1rem; color: var(--color-maroon-900); margin: 0 0 0.5rem; font-family: var(--font-heading);">
       Ordered Delicacies &amp; Quantities
     </h3>
-    <table class="admin-table" style="margin-bottom: 1.25rem;">
-      <thead>
-        <tr>
-          <th>Product Description</th>
-          <th>Quantity</th>
-          <th>Unit Rate</th>
-          <th>Line Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${itemsRows}
-        ${isDelivery ? `
+    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1.25rem; width: 100%;">
+      <table class="admin-table" style="min-width: 480px; width: 100%; margin-bottom: 0;">
+        <thead>
           <tr>
-            <td>
-              <strong>Doorstep Delivery Fee (Porter / Partner)</strong>
-              <div style="font-size: 0.75rem; color: var(--color-text-muted);">Coimbatore City Doorstep Delivery</div>
-            </td>
-            <td>1 trip</td>
-            <td>${formatINR(deliveryFeeRupees || 80)}</td>
-            <td style="font-weight: 700;">${formatINR(deliveryFeeRupees || 80)}</td>
+            <th>Product Description</th>
+            <th>Quantity</th>
+            <th>Unit Rate</th>
+            <th>Line Total</th>
           </tr>
-        ` : ''}
-        <tr>
-          <td colspan="3" style="text-align: right; font-weight: 800; font-size: 0.95rem;">Authoritative Total Amount:</td>
-          <td style="font-weight: 800; font-size: 1.2rem; color: var(--color-maroon-900);">${formatINR(totalRupees)}</td>
-        </tr>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          ${itemsRows}
+          ${isDelivery ? `
+            <tr>
+              <td>
+                <strong>Doorstep Delivery Fee (Porter / Partner)</strong>
+                <div style="font-size: 0.75rem; color: var(--color-text-muted);">Coimbatore City Doorstep Delivery</div>
+              </td>
+              <td>1 trip</td>
+              <td>${formatINR(deliveryFeeRupees || 80)}</td>
+              <td style="font-weight: 700;">${formatINR(deliveryFeeRupees || 80)}</td>
+            </tr>
+          ` : ''}
+          <tr>
+            <td colspan="3" style="text-align: right; font-weight: 800; font-size: 0.95rem;">Authoritative Total Amount:</td>
+            <td style="font-weight: 800; font-size: 1.2rem; color: var(--color-maroon-900);">${formatINR(totalRupees)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Document Printing Actions -->
     <div style="background: #FFF; border: 1.5px dashed var(--color-gold-400); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
@@ -750,7 +754,7 @@ function renderOrderDetailsModalContent(container, modal, o) {
     </div>
 
     <!-- Order Status Transition Controls -->
-    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; border-top: 1px solid var(--color-border); padding-top: 1rem;">
+    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--color-border); padding-top: 1rem;">
       <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-right: auto;">Transition State:</span>
       ${o.order_status === 'PAID' ? `
         <button class="btn btn-secondary btn-action-transition" data-id="${o.id}" data-status="PREPARING">🍳 Start Kitchen Packing</button>
@@ -1453,7 +1457,7 @@ function generateParcelLabelHtml(order) {
       </div>
 
       <!-- Scheduled Collection / Delivery Banner -->
-      <div style="background: ${order.fulfilment_method === 'DELIVERY' ? '#FFF3E0; border: 1.5px solid #FFB74D;' : '#FFF9C4; border: 1.5px solid #FBC02D;'} padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-size: 0.825rem; display: flex; justify-content: space-between;">
+      <div style="background: ${order.fulfilment_method === 'DELIVERY' ? '#FFF3E0; border: 1.5px solid #FFB74D;' : '#FFF9C4; border: 1.5px solid #FBC02D;'} padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-size: 0.825rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
         <span>📅 <strong>${order.fulfilment_method === 'DELIVERY' ? 'Scheduled Delivery Date:' : 'Scheduled Pickup Date:'}</strong> ${escapeHTML(order.pickup_date || 'Today')}</span>
         <span>⏰ <strong>Slot:</strong> ${escapeHTML(order.pickup_time || 'Morning')}</span>
       </div>
@@ -1461,14 +1465,14 @@ function generateParcelLabelHtml(order) {
       ${order.fulfilment_method === 'DELIVERY' && (order.delivery_address?.formatted || order.delivery_address) ? `
         <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-size: 0.825rem;">
           <strong style="color: #BF360C;">🚚 Doorstep Delivery Address (Porter / Partner):</strong>
-          <div style="font-weight: 700; color: #333; margin-top: 2px;">
+          <div style="font-weight: 700; color: #333; margin-top: 2px; word-break: break-word;">
             ${escapeHTML(order.delivery_address?.formatted || (typeof order.delivery_address === 'string' ? order.delivery_address : 'Address on file'))}
           </div>
         </div>
       ` : ''}
 
       ${order.fulfilment_method !== 'DELIVERY' && (order.pickup_code_hash || order.pickup_code) ? `
-        <div style="background: #E8F5E9; border: 1.5px dashed #2E7D32; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background: #E8F5E9; border: 1.5px dashed #2E7D32; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
           <span style="font-size: 0.75rem; font-weight: 800; color: #1B5E20; text-transform: uppercase;">Official Store Pickup Code:</span>
           <span class="font-mono" style="font-size: 1.15rem; font-weight: 900; color: #1B5E20; letter-spacing: 2px;">${escapeHTML(order.pickup_code_hash || order.pickup_code)}</span>
         </div>
@@ -1477,7 +1481,7 @@ function generateParcelLabelHtml(order) {
       <div class="parcel-customer-grid">
         <div class="parcel-info-block">
           <span class="parcel-info-label">Customer Name &amp; Contact:</span>
-          <div class="parcel-customer-name">${escapeHTML(order.customer_name)}</div>
+          <div class="parcel-customer-name" style="word-break: break-word;">${escapeHTML(order.customer_name)}</div>
           <div class="parcel-customer-mobile">📞 +91 ${escapeHTML(order.customer_mobile)}</div>
         </div>
         <div class="parcel-info-block" style="text-align: center;">
@@ -1489,22 +1493,24 @@ function generateParcelLabelHtml(order) {
         </div>
       </div>
 
-      <table class="parcel-items-table" style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 0.8rem;">
-        <thead>
-          <tr style="background: #EAEAEA;">
-            <th style="padding: 4px 6px; border: 1px solid #000; text-align: left;">Ordered Delicacy</th>
-            <th style="padding: 4px 6px; border: 1px solid #000; text-align: center; width: 80px;">Qty</th>
-            <th style="padding: 4px 6px; border: 1px solid #000; text-align: right; width: 75px;">Unit Rate</th>
-            <th style="padding: 4px 6px; border: 1px solid #000; text-align: right; width: 85px;">Line Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHtml}
-        </tbody>
-      </table>
+      <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 8px; width: 100%;">
+        <table class="parcel-items-table" style="width: 100%; min-width: 320px; border-collapse: collapse; margin-bottom: 0; font-size: 0.8rem;">
+          <thead>
+            <tr style="background: #EAEAEA;">
+              <th style="padding: 4px 6px; border: 1px solid #000; text-align: left;">Ordered Delicacy</th>
+              <th style="padding: 4px 6px; border: 1px solid #000; text-align: center; width: 80px;">Qty</th>
+              <th style="padding: 4px 6px; border: 1px solid #000; text-align: right; width: 75px;">Unit Rate</th>
+              <th style="padding: 4px 6px; border: 1px solid #000; text-align: right; width: 85px;">Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+      </div>
 
       ${order.customer_notes ? `
-        <div style="border: 1px dashed #777; padding: 5px 8px; border-radius: 4px; font-size: 0.775rem; margin-bottom: 8px; background: #FAFAFA;">
+        <div style="border: 1px dashed #777; padding: 5px 8px; border-radius: 4px; font-size: 0.775rem; margin-bottom: 8px; background: #FAFAFA; word-break: break-word;">
           <strong>Customer Notes:</strong> ${escapeHTML(order.customer_notes)}
         </div>
       ` : ''}
@@ -1553,18 +1559,18 @@ function generatePackingSlipHtml(order) {
     items.forEach((i, idx) => {
       const unitRupees = (i.unit_price_paise || 0) / 100;
       itemsHtml += `
-        <div class="slip-checklist-item" style="display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid #DDD;">
-          <span class="slip-checkbox-box" style="width: 22px; height: 22px; border: 2px solid #000; display: inline-block; margin-right: 12px; border-radius: 3px;"></span>
-          <div style="width: 30px; font-weight: 700; color: #555;">#${idx + 1}</div>
-          <div style="flex: 1;">
-            <strong style="font-size: 0.95rem;">${escapeHTML(i.name)}</strong>
+        <div class="slip-checklist-item" style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 10px; border-bottom: 1px solid #DDD;">
+          <span class="slip-checkbox-box" style="width: 22px; height: 22px; border: 2px solid #000; display: inline-block; margin-right: 6px; border-radius: 3px; flex-shrink: 0;"></span>
+          <div style="width: 28px; font-weight: 700; color: #555; flex-shrink: 0;">#${idx + 1}</div>
+          <div style="flex: 1; min-width: 140px;">
+            <strong style="font-size: 0.95rem; word-break: break-word;">${escapeHTML(i.name)}</strong>
             ${i.tamil_name ? `<span style="font-size: 0.8rem; color: #666; margin-left: 6px;">(${escapeHTML(i.tamil_name)})</span>` : ''}
             <div style="font-size: 0.75rem; color: #777;">Unit Rate: ${formatINR(unitRupees)} per ${i.unit}</div>
           </div>
-          <div style="font-size: 1.2rem; font-weight: 900; min-width: 100px; text-align: right; color: #78101C;">
+          <div style="font-size: 1.15rem; font-weight: 900; min-width: 90px; text-align: right; color: #78101C;">
             ${i.quantity} ${i.unit}
           </div>
-          <div style="width: 90px; text-align: center; border-left: 1px dashed #CCC; margin-left: 10px; font-size: 0.75rem; color: #555;">
+          <div style="width: 80px; text-align: center; border-left: 1px dashed #CCC; margin-left: 6px; font-size: 0.75rem; color: #555;">
             Packed [ &nbsp; ]
           </div>
         </div>
@@ -1573,15 +1579,15 @@ function generatePackingSlipHtml(order) {
   }
 
   return `
-    <div class="packing-slip-card">
-      <div class="packing-slip-header" style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 12px;">
+    <div class="packing-slip-card" style="box-sizing: border-box; width: 100%; max-width: 100%;">
+      <div class="packing-slip-header" style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
         <div>
-          <div class="slip-title" style="font-size: 1.4rem; font-weight: 900; text-transform: uppercase;">TNT INTERNAL PACKING SLIP</div>
+          <div class="slip-title" style="font-size: 1.35rem; font-weight: 900; text-transform: uppercase;">TNT INTERNAL PACKING SLIP</div>
           <div style="font-size: 0.85rem; color: #333;">Shree Taste N Taste Catering • Diwali Operations Hub • <a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM" target="_blank" style="color: #000; text-decoration: underline; font-weight: 700;">Shop Location: Google Maps</a></div>
           <div style="font-size: 0.75rem; color: #666;">Slip #: SLIP-${escapeHTML(order.public_order_number)} &bull; Printed: ${printTimestamp}</div>
         </div>
-        <div style="text-align: right;">
-          <div style="font-family: ui-monospace, monospace; font-size: 1.4rem; font-weight: 900; color: #78101C;">
+        <div>
+          <div style="font-family: ui-monospace, monospace; font-size: 1.35rem; font-weight: 900; color: #78101C; word-break: break-word;">
             ${escapeHTML(order.public_order_number)}
           </div>
           <div style="font-size: 0.8rem; color: #444;">Order Placed: ${istDate}</div>
@@ -1589,20 +1595,20 @@ function generatePackingSlipHtml(order) {
       </div>
 
       <!-- Prominent Advance Scheduled Pickup / Delivery Banner -->
-      <div style="background: ${order.fulfilment_method === 'DELIVERY' ? '#FFF3E0; border: 2px solid #E65100;' : '#E8F5E9; border: 2px solid #2E7D32;'} padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="background: ${order.fulfilment_method === 'DELIVERY' ? '#FFF3E0; border: 2px solid #E65100;' : '#E8F5E9; border: 2px solid #2E7D32;'} padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
         <div>
           <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
             ${order.fulfilment_method === 'DELIVERY' ? '🚚 Scheduled Doorstep Delivery (Porter)' : '🏬 Scheduled Customer Pickup'}
           </div>
-          <div style="font-size: 1.25rem; font-weight: 900; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
+          <div style="font-size: 1.2rem; font-weight: 900; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
             📅 ${escapeHTML(order.pickup_date || 'Today')}
           </div>
         </div>
-        <div style="text-align: right;">
+        <div>
           <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
             ${order.fulfilment_method === 'DELIVERY' ? 'Preferred Delivery Slot' : 'Preferred Collection Slot'}
           </div>
-          <div style="font-size: 1.05rem; font-weight: 800; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
+          <div style="font-size: 1rem; font-weight: 800; color: ${order.fulfilment_method === 'DELIVERY' ? '#BF360C;' : '#1B5E20;'}">
             ⏰ ${escapeHTML(order.pickup_time || 'Morning (08:00 AM - 12:00 PM)')}
           </div>
         </div>
@@ -1611,22 +1617,22 @@ function generatePackingSlipHtml(order) {
       ${order.fulfilment_method === 'DELIVERY' && (order.delivery_address?.formatted || order.delivery_address) ? `
         <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem;">
           <strong style="color: #BF360C;">🚚 Doorstep Delivery Address (Book on Porter / Delivery Partner):</strong>
-          <div style="font-size: 1rem; font-weight: 700; color: #222; margin-top: 2px;">
+          <div style="font-size: 0.95rem; font-weight: 700; color: #222; margin-top: 2px; word-break: break-word;">
             ${escapeHTML(order.delivery_address?.formatted || (typeof order.delivery_address === 'string' ? order.delivery_address : 'Address on file'))}
           </div>
         </div>
       ` : ''}
 
       <!-- Customer & Fulfillment Metadata Grid -->
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; background: #F8F8F8; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #E0E0E0;">
-        <div>Customer Name: <strong>${escapeHTML(order.customer_name)}</strong></div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 14px; background: #F8F8F8; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #E0E0E0;">
+        <div>Customer Name: <strong style="word-break: break-word;">${escapeHTML(order.customer_name)}</strong></div>
         <div>Contact Mobile: <strong>+91 ${escapeHTML(order.customer_mobile)}</strong></div>
-        <div>Email: <strong>${escapeHTML(order.customer_email || 'Not Provided')}</strong></div>
+        <div>Email: <strong style="word-break: break-all;">${escapeHTML(order.customer_email || 'Not Provided')}</strong></div>
         <div>Payment State: <strong style="color: #1B5E20;">${escapeHTML(order.payment_status)}</strong></div>
       </div>
 
       ${order.customer_notes ? `
-        <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 8px 12px; border-radius: 4px; margin-bottom: 14px; font-size: 0.85rem;">
+        <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 8px 12px; border-radius: 4px; margin-bottom: 14px; font-size: 0.85rem; word-break: break-word;">
           ⚠️ <strong>Special Packing / Customer Note:</strong> ${escapeHTML(order.customer_notes)}
         </div>
       ` : ''}
@@ -1644,7 +1650,7 @@ function generatePackingSlipHtml(order) {
       <!-- Operational 6-Point Verification Checklist -->
       <div style="background: #FAFAFA; border: 1px solid #DDD; border-radius: 6px; padding: 12px; margin-bottom: 14px; font-size: 0.8rem; line-height: 1.7;">
         <strong style="display: block; text-transform: uppercase; margin-bottom: 4px; color: #333;">Operational Quality Checklist:</strong>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 4px 14px;">
           <div>[ &nbsp; ] 1. All delicacies matched against customer order</div>
           <div>[ &nbsp; ] 2. Quantities and net weights verified on scale</div>
           <div>[ &nbsp; ] 3. Festive sweet box packaging &amp; seals inspected</div>
@@ -1655,7 +1661,7 @@ function generatePackingSlipHtml(order) {
       </div>
 
       <!-- Signatures Row -->
-      <div class="slip-sign-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.8rem; border-top: 1.5px solid #000; padding-top: 10px;">
+      <div class="slip-sign-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; font-size: 0.8rem; border-top: 1.5px solid #000; padding-top: 10px;">
         <div>
           Packed By (Staff Name &amp; Sign): _________________________________<br>
           <span style="font-size: 0.72rem; color: #555;">Handcrafted, sealed, and packed according to TNT hygiene standards.</span>
@@ -1713,22 +1719,22 @@ function generateCustomerReceiptHtml(order) {
   }
 
   return `
-    <div class="packing-slip-card" style="border: 2px solid #78101C; padding: 24px; border-radius: 8px;">
+    <div class="packing-slip-card" style="border: 2px solid #78101C; padding: 18px; border-radius: 8px; box-sizing: border-box; width: 100%; max-width: 100%;">
       <!-- Business Header -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #78101C; padding-bottom: 14px; margin-bottom: 14px;">
-        <div style="display: flex; align-items: center; gap: 14px;">
-          <img src="../assets/images/tnt-logo.jpg" alt="TNT Logo" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #DDD;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid #78101C; padding-bottom: 14px; margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <img src="../assets/images/tnt-logo.jpg" alt="TNT Logo" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1px solid #DDD; flex-shrink: 0;">
           <div>
-            <h2 style="font-size: 1.5rem; color: #78101C; margin: 0; font-family: Georgia, serif;">Shree Taste N Taste Catering</h2>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #333;">TNT (Taste N Taste) &bull; Spreading Sweetness This Festive Season</div>
-            <div style="font-size: 0.8rem; color: #555;">Enquiries: 9442854444 / 7200071040 &bull; ${isDelivery ? 'Doorstep Delivery' : 'Shop Counter Collection'}</div>
+            <h2 style="font-size: 1.35rem; color: #78101C; margin: 0; font-family: Georgia, serif; word-break: break-word;">Shree Taste N Taste Catering</h2>
+            <div style="font-size: 0.82rem; font-weight: 700; color: #333;">TNT (Taste N Taste) &bull; Spreading Sweetness This Festive Season</div>
+            <div style="font-size: 0.78rem; color: #555;">Enquiries: 9442854444 / 7200071040 &bull; ${isDelivery ? 'Doorstep Delivery' : 'Shop Counter Collection'}</div>
           </div>
         </div>
-        <div style="text-align: right;">
+        <div>
           <span style="display: inline-block; background: #78101C; color: #FFF; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
             Official Purchase Receipt
           </span>
-          <div style="font-family: ui-monospace, monospace; font-size: 0.95rem; font-weight: 800; margin-top: 4px; color: #333;">
+          <div style="font-family: ui-monospace, monospace; font-size: 0.95rem; font-weight: 800; margin-top: 4px; color: #333; word-break: break-word;">
             REC-${escapeHTML(order.public_order_number)}
           </div>
           <div style="font-size: 0.75rem; color: #666;">Generated: ${receiptTimestamp}</div>
@@ -1736,12 +1742,12 @@ function generateCustomerReceiptHtml(order) {
       </div>
 
       <!-- Order & Customer Information Grid -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 0.85rem; margin-bottom: 14px; background: #FDF9F3; padding: 12px 16px; border-radius: 6px; border: 1px solid #F0E6D6;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; font-size: 0.85rem; margin-bottom: 14px; background: #FDF9F3; padding: 12px 14px; border-radius: 6px; border: 1px solid #F0E6D6;">
         <div>
-          <div style="margin-bottom: 4px;">Order ID: <strong style="font-family: ui-monospace, monospace; font-size: 1rem; color: #78101C;">${escapeHTML(order.public_order_number)}</strong></div>
-          <div style="margin-bottom: 4px;">Customer Name: <strong>${escapeHTML(order.customer_name)}</strong></div>
+          <div style="margin-bottom: 4px;">Order ID: <strong style="font-family: ui-monospace, monospace; font-size: 1rem; color: #78101C; word-break: break-word;">${escapeHTML(order.public_order_number)}</strong></div>
+          <div style="margin-bottom: 4px;">Customer Name: <strong style="word-break: break-word;">${escapeHTML(order.customer_name)}</strong></div>
           <div style="margin-bottom: 4px;">Mobile: <strong>+91 ${escapeHTML(order.customer_mobile)}</strong></div>
-          ${order.customer_email ? `<div>Email: <strong>${escapeHTML(order.customer_email)}</strong></div>` : ''}
+          ${order.customer_email ? `<div style="word-break: break-all;">Email: <strong>${escapeHTML(order.customer_email)}</strong></div>` : ''}
           <div style="margin-top: 6px;">
             Fulfilment: 
             ${isDelivery ? `
@@ -1751,50 +1757,52 @@ function generateCustomerReceiptHtml(order) {
             `}
           </div>
         </div>
-        <div style="text-align: right;">
+        <div>
           <div style="margin-bottom: 4px;">Order Placed: <strong>${istDate}</strong></div>
           <div style="margin-bottom: 4px;">${isDelivery ? 'Scheduled Delivery Date:' : 'Scheduled Pickup Date:'} <strong style="color: #1B5E20; font-size: 0.95rem;">📅 ${escapeHTML(order.pickup_date || 'Today')}</strong></div>
           <div style="margin-bottom: 4px;">${isDelivery ? 'Delivery Slot:' : 'Pickup Slot:'} <strong>⏰ ${escapeHTML(order.pickup_time || 'Morning (08:00 AM - 12:00 PM)')}</strong></div>
           <div>Payment: <strong style="color: #1B5E20;">✓ ${order.payment_status === 'PAID' ? 'PAID & VERIFIED (Online Razorpay)' : order.payment_status}</strong></div>
-          ${order.razorpay_payment_id ? `<div style="font-size: 0.75rem; color: #555; font-family: ui-monospace, monospace;">Txn ID: ${escapeHTML(order.razorpay_payment_id)}</div>` : ''}
+          ${order.razorpay_payment_id ? `<div style="font-size: 0.75rem; color: #555; font-family: ui-monospace, monospace; word-break: break-all;">Txn ID: ${escapeHTML(order.razorpay_payment_id)}</div>` : ''}
         </div>
       </div>
 
       ${isDelivery && deliveryAddrStr ? `
         <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem;">
           <strong style="color: #BF360C; font-size: 0.85rem;">📍 Doorstep Delivery Destination (via Porter / Partner):</strong>
-          <div style="font-size: 0.95rem; font-weight: 700; color: #222; margin-top: 3px;">
+          <div style="font-size: 0.95rem; font-weight: 700; color: #222; margin-top: 3px; word-break: break-word;">
             ${escapeHTML(deliveryAddrStr)}
           </div>
         </div>
       ` : ''}
 
       ${order.customer_notes ? `
-        <div style="border: 1px dashed #B8860B; padding: 8px 12px; border-radius: 4px; font-size: 0.825rem; margin-bottom: 14px; background: #FFFDF5;">
+        <div style="border: 1px dashed #B8860B; padding: 8px 12px; border-radius: 4px; font-size: 0.825rem; margin-bottom: 14px; background: #FFFDF5; word-break: break-word;">
           📝 <strong>Customer Notes:</strong> ${escapeHTML(order.customer_notes)}
         </div>
       ` : ''}
 
       <!-- Itemized Product Table -->
-      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 14px;">
-        <thead>
-          <tr style="background: #F4F4F4; border-bottom: 2px solid #78101C; color: #78101C; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">
-            <th style="padding: 8px; text-align: center; width: 40px;">S.No</th>
-            <th style="padding: 8px; text-align: left;">Product Description</th>
-            <th style="padding: 8px; text-align: center; width: 60px;">Unit</th>
-            <th style="padding: 8px; text-align: center; width: 60px;">Qty</th>
-            <th style="padding: 8px; text-align: right; width: 100px;">Unit Price</th>
-            <th style="padding: 8px; text-align: right; width: 110px;">Line Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHtml}
-        </tbody>
-      </table>
+      <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 14px; width: 100%;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 480px; margin-bottom: 0;">
+          <thead>
+            <tr style="background: #F4F4F4; border-bottom: 2px solid #78101C; color: #78101C; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">
+              <th style="padding: 8px; text-align: center; width: 40px;">S.No</th>
+              <th style="padding: 8px; text-align: left;">Product Description</th>
+              <th style="padding: 8px; text-align: center; width: 60px;">Unit</th>
+              <th style="padding: 8px; text-align: center; width: 60px;">Qty</th>
+              <th style="padding: 8px; text-align: right; width: 100px;">Unit Price</th>
+              <th style="padding: 8px; text-align: right; width: 110px;">Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+      </div>
 
       <!-- Financial Summary Table -->
       <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
-        <div style="width: 340px; font-size: 0.85rem; background: #F8F9FA; padding: 12px; border-radius: 6px; border: 1px solid #DDD;">
+        <div style="width: 100%; max-width: 340px; box-sizing: border-box; font-size: 0.85rem; background: #F8F9FA; padding: 12px; border-radius: 6px; border: 1px solid #DDD;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
             <span>Delicacies Subtotal:</span>
             <strong>${formatINR(subtotalRupees)}</strong>

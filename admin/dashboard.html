@@ -263,6 +263,9 @@
     }
 
     @media (max-width: 768px) {
+      #admin-user-display {
+        display: none !important;
+      }
       .admin-subnav {
         position: relative;
         top: auto;
@@ -271,8 +274,12 @@
       .admin-subnav-container {
         padding: 0 0.5rem;
         gap: 0.25rem;
-        scrollbar-width: none;
+        display: flex;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
       }
       .admin-subnav-container::-webkit-scrollbar {
         display: none;
@@ -280,6 +287,7 @@
       .subnav-btn {
         padding: 0.65rem 0.75rem;
         font-size: 0.82rem;
+        flex-shrink: 0 !important;
       }
       .admin-content-area {
         margin: 1rem auto 2.5rem auto;
@@ -292,11 +300,14 @@
       }
       .filter-group {
         width: 100%;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 0.6rem;
       }
       .filter-group > * {
         width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
       }
       #btn-reset-filters {
         width: 100%;
@@ -308,9 +319,11 @@
       .modal-card {
         padding: 1.25rem 1rem !important;
         max-height: 94vh !important;
-        margin: 0.5rem !important;
-        width: calc(100vw - 1rem) !important;
+        margin: 0.5rem auto !important;
+        width: calc(100vw - 1.5rem) !important;
         max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
       }
       .btn-modal-close {
         top: 0.75rem;
@@ -318,6 +331,12 @@
       }
       .table-container {
         -webkit-overflow-scrolling: touch;
+        width: 100%;
+      }
+      .admin-table th,
+      .admin-table td {
+        word-break: break-word;
+        overflow-wrap: break-word;
       }
     }
 
@@ -329,9 +348,6 @@
         font-size: 1.1rem;
       }
       .brand-tagline {
-        display: none;
-      }
-      #admin-user-display {
         display: none;
       }
       .metrics-grid {
@@ -349,6 +365,12 @@
       }
       .metric-sub {
         font-size: 0.68rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .filter-group {
+        grid-template-columns: 1fr;
       }
     }
 
