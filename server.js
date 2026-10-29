@@ -869,6 +869,33 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 401, { success: false, message: 'Unauthorized. Admin session invalid or expired.' });
     }
 
+    const idParam = parsedUrl.searchParams.get('id');
+    if (idParam) {
+      const order = DB.orders.get(idParam) || Array.from(DB.orders.values()).find(o => o.public_order_number === idParam);
+      if (order) {
+        const events = DB.order_events.filter(e => e.order_id === order.id).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        const formatted = {
+          ...order,
+          events,
+          order_items: (order.items || []).map(i => ({
+            id: i.productId || i.id,
+            product_name_snapshot: i.name,
+            unit_snapshot: i.unit,
+            unit_price_paise: i.unit_price_paise || (i.price ? Math.round(i.price * 100) : 0),
+            quantity: i.quantity,
+            line_total_paise: i.line_total_paise || (i.total ? Math.round(i.total * 100) : ((i.price || 0) * 100 * i.quantity))
+          }))
+        };
+        return sendJson(res, 200, {
+          success: true,
+          order: formatted,
+          orders: [formatted],
+          total: 1
+        });
+      }
+      return sendJson(res, 404, { success: false, message: 'Order not found.' });
+    }
+
     const statusFilter = parsedUrl.searchParams.get('status');
     const pickupDateFilter = parsedUrl.searchParams.get('pickup_date');
     const search = (parsedUrl.searchParams.get('search') || '').toLowerCase();
@@ -893,10 +920,22 @@ const server = http.createServer(async (req, res) => {
 
     ordersList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+    const normalizedOrders = ordersList.map(o => ({
+      ...o,
+      order_items: (o.items || []).map(i => ({
+        id: i.productId || i.id,
+        product_name_snapshot: i.name,
+        unit_snapshot: i.unit,
+        unit_price_paise: i.unit_price_paise || (i.price ? Math.round(i.price * 100) : 0),
+        quantity: i.quantity,
+        line_total_paise: i.line_total_paise || (i.total ? Math.round(i.total * 100) : ((i.price || 0) * 100 * i.quantity))
+      }))
+    }));
+
     return sendJson(res, 200, {
       success: true,
-      orders: ordersList,
-      total: ordersList.length
+      orders: normalizedOrders,
+      total: normalizedOrders.length
     });
   }
 

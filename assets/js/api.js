@@ -207,13 +207,25 @@ export class OrderAPI {
           pickupLocation: APP_CONFIG.business.pickupLocationNote,
           pickupStatus: o.pickup_status,
           totalAmount: o.total_paise / 100,
-          items: (o.items || []).map(i => ({
-            name: i.name,
-            unit: i.unit,
-            quantity: i.quantity,
-            price: i.unit_price_paise / 100,
-            total: i.line_total_paise / 100
-          })),
+          items: (Array.isArray(o.items) && o.items.length ? o.items : (Array.isArray(o.order_items) ? o.order_items : [])).map(i => {
+            const name = i.name || i.product_name_snapshot || i.productName || 'Festive Delicacy';
+            const unit = i.unit || i.unit_snapshot || 'box';
+            const quantity = Number(i.quantity) || 1;
+            const price = i.price != null
+              ? Number(i.price)
+              : (i.unit_price_paise != null ? Number(i.unit_price_paise) / 100 : 0);
+            const total = i.total != null
+              ? Number(i.total)
+              : (i.line_total_paise != null ? Number(i.line_total_paise) / 100 : (price * quantity));
+            return {
+              name,
+              tamil_name: i.tamil_name || i.product_tamil_name || '',
+              unit,
+              quantity,
+              price,
+              total
+            };
+          }),
           createdAt: o.created_at,
           paidAt: o.paid_at
         },

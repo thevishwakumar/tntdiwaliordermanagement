@@ -13,6 +13,7 @@
 /api/razorpay-webhook          https://bondkwckhnbjslshyflp.supabase.co/functions/v1/razorpay-webhook 200
 /api/admin/login               https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-login 200
 /api/admin/metrics             https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-metrics 200
+/api/admin/orders/*            https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-list-orders?id=:splat 200
 /api/admin/orders              https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-list-orders 200
 /api/admin/verify-pickup       https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-verify-pickup 200
 /api/admin/update-order-status https://bondkwckhnbjslshyflp.supabase.co/functions/v1/admin-update-order-status 200

@@ -144,27 +144,50 @@ function renderOrderDetails(order) {
 
   // Customer items table rows
   let customerItemsHtml = '';
+  const rawCustomerItems = (Array.isArray(order.items) && order.items.length > 0)
+    ? order.items
+    : (Array.isArray(order.order_items) ? order.order_items : []);
 
-  (order.items || []).forEach((item) => {
-    const itemTotal = item.total || (item.price * item.quantity);
-    customerItemsHtml += `
+  if (rawCustomerItems.length === 0) {
+    customerItemsHtml = `
       <tr>
-        <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border);">
-          <strong>${escapeHTML(item.name)}</strong>
-          ${item.tamil_name ? `<div style="font-size: 0.78rem; color: var(--color-text-muted);">${escapeHTML(item.tamil_name)}</div>` : ''}
-        </td>
-        <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: center;">
-          ${formatQuantityUnit(item.quantity, item.unit)}
-        </td>
-        <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right;">
-          ${formatINR(item.price)}
-        </td>
-        <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right; font-weight: 700;">
-          ${formatINR(itemTotal)}
+        <td colspan="4" style="padding: 1rem; text-align: center; color: var(--color-text-muted);">
+          Festive Delicacies Pack — Official Diwali Pack
         </td>
       </tr>
     `;
-  });
+  } else {
+    rawCustomerItems.forEach((item) => {
+      const name = item.name || item.product_name_snapshot || item.productName || 'Festive Delicacy';
+      const tamilName = item.tamil_name || item.product_tamil_name || item.tamilName || '';
+      const unit = item.unit || item.unit_snapshot || 'box';
+      const quantity = Number(item.quantity) || 1;
+      const price = item.price != null
+        ? Number(item.price)
+        : (item.unit_price_paise != null ? Number(item.unit_price_paise) / 100 : 0);
+      const itemTotal = item.total != null
+        ? Number(item.total)
+        : (item.line_total_paise != null ? Number(item.line_total_paise) / 100 : (price * quantity));
+
+      customerItemsHtml += `
+        <tr>
+          <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border);">
+            <strong>${escapeHTML(name)}</strong>
+            ${tamilName ? `<div style="font-size: 0.78rem; color: var(--color-text-muted);">${escapeHTML(tamilName)}</div>` : ''}
+          </td>
+          <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: center;">
+            ${formatQuantityUnit(quantity, unit)}
+          </td>
+          <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right;">
+            ${formatINR(price)}
+          </td>
+          <td style="padding: 0.5rem 0.6rem; border: 1px solid var(--color-border); text-align: right; font-weight: 700;">
+            ${formatINR(itemTotal)}
+          </td>
+        </tr>
+      `;
+    });
+  }
 
   // Pickup code display
   const isDelivery = order.fulfilmentMethod === 'DELIVERY';
@@ -228,7 +251,7 @@ function renderOrderDetails(order) {
         <div style="display: flex; gap: 0.75rem;">
           <button type="button" class="btn btn-primary btn-shimmer" onclick="window.print()" style="padding: 0.65rem 1.25rem;">
             <svg style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            Print Receipt
+            Print / Download Receipt (PDF)
           </button>
           <a href="products.html" class="btn btn-outline" style="padding: 0.65rem 1rem;">
             + Place Another Order

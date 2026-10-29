@@ -22,6 +22,54 @@ if (!token && !window.location.pathname.includes('login.html')) {
   window.location.href = 'login.html';
 }
 
+/**
+ * Extract and standardize ordered items from order record
+ * Handles Postgres schema (order_items with snapshots) and API schema (items)
+ */
+function getOrderItems(order) {
+  if (!order) return [];
+  const rawItems = (Array.isArray(order.items) && order.items.length > 0)
+    ? order.items
+    : (Array.isArray(order.order_items) ? order.order_items : []);
+
+  return rawItems.map(item => {
+    const name = item.name || item.product_name_snapshot || item.productName || 'Festive Delicacy';
+    const tamil_name = item.tamil_name || item.product_tamil_name || item.tamilName || '';
+    const unit = item.unit || item.unit_snapshot || 'box';
+    const quantity = Number(item.quantity) || 1;
+    const unitPricePaise = item.unit_price_paise != null
+      ? Number(item.unit_price_paise)
+      : (item.price != null ? Math.round(Number(item.price) * 100) : 0);
+    const lineTotalPaise = item.line_total_paise != null
+      ? Number(item.line_total_paise)
+      : (item.total != null ? Math.round(Number(item.total) * 100) : (unitPricePaise * quantity));
+
+    return {
+      id: item.id || item.product_id || '',
+      productId: item.productId || item.product_id || '',
+      name,
+      tamil_name,
+      unit,
+      quantity,
+      unit_price_paise: unitPricePaise,
+      line_total_paise: lineTotalPaise,
+      price: unitPricePaise / 100,
+      total: lineTotalPaise / 100
+    };
+  });
+}
+
+/**
+ * Standardize an order object so items and order_items are guaranteed to exist
+ */
+function normalizeOrder(order) {
+  if (!order) return order;
+  const items = getOrderItems(order);
+  order.items = items;
+  order.order_items = items;
+  return order;
+}
+
 // Global State
 let ordersCache = [];
 let currentFilterStatus = 'ALL';
@@ -269,7 +317,7 @@ async function loadOrders() {
     const data = await res.json();
     if (!data.success) return;
 
-    ordersCache = data.orders || [];
+    ordersCache = (data.orders || []).map(normalizeOrder);
     renderOrdersTable();
   } catch (e) {
     console.error('Failed to load orders:', e);
@@ -307,7 +355,7 @@ function renderOrdersTable() {
 
   // Product Filter
   if (currentProductFilter !== 'ALL') {
-    filtered = filtered.filter(o => (o.items || []).some(i => i.productId === currentProductFilter || (i.name || '').toLowerCase().includes(currentProductFilter.replace('tnt-', ''))));
+    filtered = filtered.filter(o => getOrderItems(o).some(i => i.productId === currentProductFilter || (i.name || '').toLowerCase().includes(currentProductFilter.replace('tnt-', ''))));
   }
 
   // Search Filter
@@ -344,7 +392,8 @@ function renderOrdersTable() {
       timeStyle: 'short'
     });
 
-    const itemsSummary = (order.items || []).map(i => `${escapeHTML(i.name)} (${i.quantity} ${i.unit})`).join(', ');
+    const orderItems = getOrderItems(order);
+    const itemsSummary = orderItems.map(i => `${escapeHTML(i.name)} (${i.quantity} ${i.unit})`).join(', ');
     const totalRupees = (order.total_paise || 0) / 100;
     const isPaid = order.payment_status === 'PAID';
     const isReady = order.order_status === 'READY_FOR_PICKUP';
@@ -379,7 +428,7 @@ function renderOrdersTable() {
           </div>
         </td>
         <td style="max-width: 240px; font-size: 0.8rem; line-height: 1.4;">
-          ${itemsSummary || 'No items recorded'}
+          ${itemsSummary || 'Festive Delicacy Pack'}
         </td>
         <td>
           <strong style="color: var(--color-maroon-900);">${formatINR(totalRupees)}</strong>
@@ -478,7 +527,7 @@ function renderOrdersTable() {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;
       const order = ordersCache.find(o => o.id === id);
-      if (order) printCustomerReceipt(order);
+      if (order) printCustomerReceipt(normalizeOrder(order));
     });
   });
 
@@ -487,7 +536,7 @@ function renderOrdersTable() {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;
       const order = ordersCache.find(o => o.id === id);
-      if (order) printPackingSlip(order);
+      if (order) printPackingSlip(normalizeOrder(order));
     });
   });
 
@@ -496,8 +545,229 @@ function renderOrdersTable() {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;
       const order = ordersCache.find(o => o.id === id);
-      if (order) printSingleParcelLabel(order);
+      if (order) printSingleParcelLabel(normalizeOrder(order));
     });
+  });
+}
+
+/**
+ * Render Complete End-to-End Order Details in Modal
+ */
+function renderOrderDetailsModalContent(container, modal, o) {
+  o = normalizeOrder(o);
+  const totalRupees = (o.total_paise || 0) / 100;
+  const istTime = new Date(o.created_at || Date.now()).toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    dateStyle: 'full',
+    timeStyle: 'short'
+  });
+
+  const items = getOrderItems(o);
+  let itemsRows = '';
+  if (items.length === 0) {
+    itemsRows = `
+      <tr>
+        <td colspan="4" style="text-align: center; padding: 1.25rem; color: var(--color-text-muted);">
+          Festive Delicacies Pack — Standard Pack
+        </td>
+      </tr>
+    `;
+  } else {
+    items.forEach(item => {
+      const unitRupees = (item.unit_price_paise || 0) / 100;
+      const lineRupees = (item.line_total_paise || (item.unit_price_paise * item.quantity)) / 100;
+      itemsRows += `
+        <tr>
+          <td>
+            <strong>${escapeHTML(item.name)}</strong>
+            ${item.tamil_name ? `<div style="font-size: 0.75rem; color: var(--color-text-muted);">${escapeHTML(item.tamil_name)}</div>` : ''}
+          </td>
+          <td>${formatQuantityUnit(item.quantity, item.unit)}</td>
+          <td>${formatINR(unitRupees)}</td>
+          <td style="font-weight: 700;">${formatINR(lineRupees)}</td>
+        </tr>
+      `;
+    });
+  }
+
+  let timelineHtml = '';
+  (o.events || []).forEach(ev => {
+    const evTime = new Date(ev.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', timeStyle: 'short', dateStyle: 'short' });
+    timelineHtml += `
+      <li style="margin-bottom: 0.5rem; font-size: 0.8rem;">
+        <span style="font-weight: 700; color: var(--color-maroon-800);">${escapeHTML(ev.event_type || '')}</span>: 
+        ${ev.from_status ? `${escapeHTML(ev.from_status)} → ` : ''}<strong>${escapeHTML(ev.to_status || '')}</strong>
+        <span style="color: var(--color-text-muted);">(${evTime}${ev.actor_type ? ` by ${escapeHTML(ev.actor_type)}` : ''})</span>
+      </li>
+    `;
+  });
+
+  const isDelivery = o.fulfilment_method === 'DELIVERY';
+  const deliveryFeeRupees = (o.delivery_fee_paise || 0) / 100;
+  const deliveryAddrStr = o.delivery_address?.formatted || (typeof o.delivery_address === 'string' ? o.delivery_address : '') || (o.delivery_address ? `${o.delivery_address.street || ''}, ${o.delivery_address.area || ''}, ${o.delivery_address.city || 'Coimbatore'} - ${o.delivery_address.pincode || ''}` : '');
+
+  container.innerHTML = `
+    <div style="border-bottom: 2px solid var(--color-bg-surface-alt); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+      <span class="status-badge status-${o.order_status}" style="float: right;">${escapeHTML(o.order_status || 'AWAITING_PAYMENT')}</span>
+      <h2 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.5rem; margin: 0 0 0.25rem;">
+        Order #${escapeHTML(o.public_order_number || '')}
+      </h2>
+      <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0;">Placed on ${istTime}</p>
+    </div>
+
+    <!-- Customer Info & Payment Details -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; background: var(--color-bg-surface-alt); padding: 1rem; border-radius: var(--radius-md);">
+      <div>
+        <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-muted); display: block; margin-bottom: 0.35rem;">Customer Information:</strong>
+        <div style="font-weight: 700; font-size: 1rem;">${escapeHTML(o.customer_name || 'Customer')}</div>
+        <div style="font-family: var(--font-mono); color: var(--color-maroon-800); font-weight: 700;">+91 ${escapeHTML(o.customer_mobile || '')}</div>
+        ${o.customer_email ? `<div style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: 2px;">✉️ ${escapeHTML(o.customer_email)}</div>` : ''}
+        ${o.customer_notes ? `<div style="font-style: italic; margin-top: 0.5rem; font-size: 0.8rem; background: #FFF8E1; padding: 0.4rem 0.6rem; border-radius: 4px; border: 1px solid #FFE082;">📝 <strong>Packing Note:</strong> ${escapeHTML(o.customer_notes)}</div>` : ''}
+        <div style="margin-top: 0.65rem; font-size: 0.85rem;">
+          <strong style="color: var(--color-maroon-900);">${isDelivery ? '🚚 Scheduled Delivery:' : '🏬 Scheduled Pickup:'}</strong>
+          <div>📅 <strong>${escapeHTML(o.pickup_date || 'Today')}</strong></div>
+          <div style="color: var(--color-text-muted);">⏰ ${escapeHTML(o.pickup_time || 'Morning (08:00 AM - 12:00 PM)')}</div>
+        </div>
+      </div>
+
+      <div>
+        <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-muted); display: block; margin-bottom: 0.35rem;">Payment &amp; Fulfilment:</strong>
+        <div>Payment State: <span class="status-badge status-${o.payment_status}">${escapeHTML(o.payment_status || 'PENDING')}</span></div>
+        <div style="margin-top: 0.35rem;">
+          Fulfilment: 
+          ${isDelivery ? `
+            <span class="status-badge badge-fulfilment-delivery">🚚 Doorstep Delivery (Porter)</span>
+          ` : `
+            <span class="status-badge badge-fulfilment-pickup">🏬 Direct Store Pickup (Free)</span>
+          `}
+        </div>
+        ${isDelivery && deliveryAddrStr ? `
+          <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 0.65rem 0.85rem; border-radius: 6px; margin-top: 0.5rem;">
+            <strong style="font-size: 0.78rem; color: #BF360C; display: block;">📍 Delivery Destination:</strong>
+            <div style="font-size: 0.88rem; font-weight: 700; color: #333; margin-top: 0.2rem;">
+              ${escapeHTML(deliveryAddrStr)}
+            </div>
+            <button type="button" class="btn btn-outline btn-copy-address" style="margin-top: 0.45rem; padding: 0.25rem 0.6rem; font-size: 0.75rem;" data-address="${escapeHTML(deliveryAddrStr)}">
+              📋 Copy Address for Porter App
+            </button>
+          </div>
+        ` : ''}
+        ${o.razorpay_payment_id ? `<div style="font-size: 0.8rem; font-family: var(--font-mono); margin-top: 0.45rem;">Razorpay ID: <strong>${escapeHTML(o.razorpay_payment_id)}</strong></div>` : ''}
+        ${!isDelivery && (o.pickup_code_hash || o.pickup_code) ? `
+          <div style="margin-top: 0.5rem; background: #E8F5E9; border: 1.5px solid #A5D6A7; padding: 0.5rem 0.75rem; border-radius: 6px;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #1B5E20; text-transform: uppercase; display: block;">Official Store Pickup Code:</span>
+            <span style="font-family: var(--font-mono); font-weight: 900; font-size: 1.25rem; color: #1B5E20; letter-spacing: 2px;">
+              ${escapeHTML(o.pickup_code_hash || o.pickup_code)}
+            </span>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <h3 style="font-size: 1rem; color: var(--color-maroon-900); margin: 0 0 0.5rem; font-family: var(--font-heading);">
+      Ordered Delicacies &amp; Quantities
+    </h3>
+    <table class="admin-table" style="margin-bottom: 1.25rem;">
+      <thead>
+        <tr>
+          <th>Product Description</th>
+          <th>Quantity</th>
+          <th>Unit Rate</th>
+          <th>Line Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsRows}
+        ${isDelivery ? `
+          <tr>
+            <td>
+              <strong>Doorstep Delivery Fee (Porter / Partner)</strong>
+              <div style="font-size: 0.75rem; color: var(--color-text-muted);">Coimbatore City Doorstep Delivery</div>
+            </td>
+            <td>1 trip</td>
+            <td>${formatINR(deliveryFeeRupees || 80)}</td>
+            <td style="font-weight: 700;">${formatINR(deliveryFeeRupees || 80)}</td>
+          </tr>
+        ` : ''}
+        <tr>
+          <td colspan="3" style="text-align: right; font-weight: 800; font-size: 0.95rem;">Authoritative Total Amount:</td>
+          <td style="font-weight: 800; font-size: 1.2rem; color: var(--color-maroon-900);">${formatINR(totalRupees)}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Document Printing Actions -->
+    <div style="background: #FFF; border: 1.5px dashed var(--color-gold-400); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+      <strong style="display: block; font-size: 0.85rem; color: var(--color-maroon-900); margin-bottom: 0.5rem;">
+        🖨️ Document Printing Actions:
+      </strong>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary btn-modal-print-label" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
+          🏷️ Print Box Sticker (1 Page)
+        </button>
+        <button type="button" class="btn btn-outline btn-modal-print-slip" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
+          📋 Print Packing Slip
+        </button>
+        <button type="button" class="btn btn-outline btn-modal-print-receipt" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
+          🧾 Print Customer Receipt
+        </button>
+      </div>
+    </div>
+
+    <!-- Order Status Transition Controls -->
+    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; border-top: 1px solid var(--color-border); padding-top: 1rem;">
+      <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-right: auto;">Transition State:</span>
+      ${o.order_status === 'PAID' ? `
+        <button class="btn btn-secondary btn-action-transition" data-id="${o.id}" data-status="PREPARING">🍳 Start Kitchen Packing</button>
+        <button class="btn btn-outline btn-action-transition" data-id="${o.id}" data-status="CANCELLED" style="color: var(--color-error); border-color: var(--color-error);">Cancel Order</button>
+      ` : ''}
+      ${o.order_status === 'PREPARING' ? `
+        <button class="btn btn-primary btn-action-transition" data-id="${o.id}" data-status="READY_FOR_PICKUP">📦 Mark Ready for Pickup</button>
+      ` : ''}
+      ${o.order_status === 'READY_FOR_PICKUP' ? `
+        <button class="btn btn-primary btn-open-pickup-from-modal" data-id="${o.id}" data-ref="${o.public_order_number}">🔑 Verify Customer Pickup Code</button>
+      ` : ''}
+    </div>
+
+    <!-- Event Audit Trail -->
+    ${timelineHtml ? `
+      <div style="margin-top: 1.5rem; border-top: 1px dashed var(--color-border); padding-top: 1rem;">
+        <strong style="font-size: 0.8rem; text-transform: uppercase; color: var(--color-text-muted);">Event Audit History:</strong>
+        <ul style="list-style: none; padding-left: 0; margin-top: 0.5rem;">${timelineHtml}</ul>
+      </div>
+    ` : ''}
+  `;
+
+  // Attach print triggers inside modal
+  container.querySelector('.btn-modal-print-label')?.addEventListener('click', () => printSingleParcelLabel(o));
+  container.querySelector('.btn-modal-print-slip')?.addEventListener('click', () => printPackingSlip(o));
+  container.querySelector('.btn-modal-print-receipt')?.addEventListener('click', () => printCustomerReceipt(o));
+
+  // Copy address button
+  container.querySelector('.btn-copy-address')?.addEventListener('click', (e) => {
+    const addr = e.currentTarget.dataset.address;
+    if (addr && navigator.clipboard) {
+      navigator.clipboard.writeText(addr).then(() => {
+        e.currentTarget.textContent = '✓ Address Copied!';
+        setTimeout(() => { e.currentTarget.textContent = '📋 Copy Address for Porter App'; }, 2000);
+      });
+    }
+  });
+
+  // Attach transition handlers
+  container.querySelectorAll('.btn-action-transition').forEach(b => {
+    b.addEventListener('click', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      const newStatus = e.currentTarget.dataset.status;
+      await updateOrderStatus(id, newStatus);
+      modal.classList.add('hidden');
+    });
+  });
+
+  container.querySelector('.btn-open-pickup-from-modal')?.addEventListener('click', (e) => {
+    modal.classList.add('hidden');
+    openPickupVerifyModal(e.currentTarget.dataset.id, e.currentTarget.dataset.ref);
   });
 }
 
@@ -509,198 +779,47 @@ async function openOrderDetailsModal(orderId) {
   const container = document.getElementById('order-details-content');
   if (!modal || !container) return;
 
-  container.innerHTML = '<p style="text-align: center; padding: 2rem;">Loading full order details...</p>';
-  modal.classList.remove('hidden');
+  // 1. Check local cache first for instant end-to-end rendering
+  let cachedOrder = ordersCache.find(o => o.id === orderId || o.public_order_number === orderId);
+  if (cachedOrder) {
+    modal.classList.remove('hidden');
+    renderOrderDetailsModalContent(container, modal, cachedOrder);
+  } else {
+    container.innerHTML = '<p style="text-align: center; padding: 2rem;">Loading full order details...</p>';
+    modal.classList.remove('hidden');
+  }
 
+  // 2. Fetch fresh details / audit events from backend in parallel
   try {
-    const res = await fetch(`/api/admin/orders/${orderId}`, {
+    let res = await fetch(`/api/admin/orders?id=${encodeURIComponent(orderId)}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message);
-
-    const o = data.order;
-    const totalRupees = (o.total_paise || 0) / 100;
-    const istTime = new Date(o.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
-
-    let itemsRows = '';
-    (o.items || []).forEach(item => {
-      const unitRupees = (item.unit_price_paise || 0) / 100;
-      const lineRupees = (item.line_total_paise || (item.unit_price_paise * item.quantity)) / 100;
-      itemsRows += `
-        <tr>
-          <td><strong>${escapeHTML(item.name)}</strong></td>
-          <td>${formatQuantityUnit(item.quantity, item.unit)}</td>
-          <td>${formatINR(unitRupees)}</td>
-          <td style="font-weight: 700;">${formatINR(lineRupees)}</td>
-        </tr>
-      `;
-    });
-
-    let timelineHtml = '';
-    (o.events || []).forEach(ev => {
-      const evTime = new Date(ev.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', timeStyle: 'short', dateStyle: 'short' });
-      timelineHtml += `
-        <li style="margin-bottom: 0.5rem; font-size: 0.8rem;">
-          <span style="font-weight: 700; color: var(--color-maroon-800);">${ev.event_type}</span>: 
-          ${ev.from_status ? `${ev.from_status} → ` : ''}<strong>${ev.to_status || ''}</strong>
-          <span style="color: var(--color-text-muted);">(${evTime} by ${ev.actor_type})</span>
-        </li>
-      `;
-    });
-
-    const isDelivery = o.fulfilment_method === 'DELIVERY';
-    const deliveryFeeRupees = (o.delivery_fee_paise || 0) / 100;
-    const deliveryAddrStr = o.delivery_address?.formatted || (typeof o.delivery_address === 'string' ? o.delivery_address : '') || (o.delivery_address ? `${o.delivery_address.street || ''}, ${o.delivery_address.area || ''}, ${o.delivery_address.city || 'Coimbatore'} - ${o.delivery_address.pincode || ''}` : '');
-
-    container.innerHTML = `
-      <div style="border-bottom: 2px solid var(--color-bg-surface-alt); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <span class="status-badge status-${o.order_status}" style="float: right;">${o.order_status}</span>
-        <h2 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.5rem;">
-          Order #${escapeHTML(o.public_order_number)}
-        </h2>
-        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Placed on ${istTime}</p>
-      </div>
-
-      <!-- Customer Info & Payment Details -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; background: var(--color-bg-surface-alt); padding: 1rem; border-radius: var(--radius-md);">
-        <div>
-          <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-muted);">Customer Information:</strong>
-          <div style="font-weight: 700; font-size: 1rem;">${escapeHTML(o.customer_name)}</div>
-          <div style="font-family: var(--font-mono); color: var(--color-maroon-800);">${escapeHTML(o.customer_mobile)}</div>
-          ${o.customer_email ? `<div style="font-size: 0.85rem; color: var(--color-text-muted);">${escapeHTML(o.customer_email)}</div>` : ''}
-          ${o.customer_notes ? `<div style="font-style: italic; margin-top: 0.35rem; font-size: 0.8rem;">Notes: ${escapeHTML(o.customer_notes)}</div>` : ''}
-        </div>
-
-        <div>
-          <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-muted);">Payment &amp; Fulfilment:</strong>
-          <div>Payment: <span class="status-badge status-${o.payment_status}">${o.payment_status}</span></div>
-          <div style="margin-top: 0.35rem;">
-            Fulfilment: 
-            ${isDelivery ? `
-              <span class="status-badge badge-fulfilment-delivery">🚚 Doorstep Delivery (Porter)</span>
-            ` : `
-              <span class="status-badge badge-fulfilment-pickup">🏬 Store Pickup (Free)</span>
-            `}
-          </div>
-          ${isDelivery && deliveryAddrStr ? `
-            <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 0.65rem 0.85rem; border-radius: 6px; margin-top: 0.5rem;">
-              <strong style="font-size: 0.78rem; color: #BF360C; display: block;">📍 Delivery Destination:</strong>
-              <div style="font-size: 0.88rem; font-weight: 700; color: #333; margin-top: 0.2rem;">
-                ${escapeHTML(deliveryAddrStr)}
-              </div>
-              <button type="button" class="btn btn-outline btn-copy-address" style="margin-top: 0.45rem; padding: 0.25rem 0.6rem; font-size: 0.75rem;" data-address="${escapeHTML(deliveryAddrStr)}">
-                📋 Copy Address for Porter App
-              </button>
-            </div>
-          ` : ''}
-          ${o.razorpay_payment_id ? `<div style="font-size: 0.8rem; font-family: var(--font-mono); margin-top: 0.35rem;">Razorpay ID: ${o.razorpay_payment_id}</div>` : ''}
-          ${!isDelivery && o.pickup_code_hash ? `<div style="font-family: var(--font-mono); font-weight: 800; font-size: 1.15rem; color: #1B5E20; margin-top: 0.2rem;">Pickup Code: ${o.pickup_code_hash}</div>` : ''}
-        </div>
-      </div>
-
-      <!-- Items Table -->
-      <table class="admin-table" style="margin-bottom: 1.25rem;">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Unit Price</th>
-            <th>Line Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsRows}
-          ${isDelivery ? `
-            <tr>
-              <td><strong>Doorstep Delivery Fee (Porter / Partner)</strong></td>
-              <td>1 trip</td>
-              <td>${formatINR(deliveryFeeRupees || 80)}</td>
-              <td style="font-weight: 700;">${formatINR(deliveryFeeRupees || 80)}</td>
-            </tr>
-          ` : ''}
-          <tr>
-            <td colspan="3" style="text-align: right; font-weight: 800;">Authoritative Total:</td>
-            <td style="font-weight: 800; font-size: 1.15rem; color: var(--color-maroon-900);">${formatINR(totalRupees)}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Document Printing Actions -->
-      <div style="background: #FFF; border: 1.5px dashed var(--color-gold-400); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
-        <strong style="display: block; font-size: 0.85rem; color: var(--color-maroon-900); margin-bottom: 0.5rem;">
-          🖨️ Document Printing Actions:
-        </strong>
-        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-          <button type="button" class="btn btn-secondary btn-modal-print-label" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
-            🏷️ Print Box Sticker (1 Page)
-          </button>
-          <button type="button" class="btn btn-outline btn-modal-print-slip" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
-            📋 Print Packing Slip
-          </button>
-          <button type="button" class="btn btn-outline btn-modal-print-receipt" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
-            🧾 Print Customer Receipt
-          </button>
-        </div>
-      </div>
-
-      <!-- Order Status Transition Controls -->
-      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; border-top: 1px solid var(--color-border); padding-top: 1rem;">
-        <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-right: auto;">Transition State:</span>
-        ${o.order_status === 'PAID' ? `
-          <button class="btn btn-secondary btn-action-transition" data-id="${o.id}" data-status="PREPARING">Start Kitchen Packing</button>
-          <button class="btn btn-outline btn-action-transition" data-id="${o.id}" data-status="CANCELLED" style="color: var(--color-error); border-color: var(--color-error);">Cancel Order</button>
-        ` : ''}
-        ${o.order_status === 'PREPARING' ? `
-          <button class="btn btn-primary btn-action-transition" data-id="${o.id}" data-status="READY_FOR_PICKUP">Mark Ready for Pickup</button>
-        ` : ''}
-        ${o.order_status === 'READY_FOR_PICKUP' ? `
-          <button class="btn btn-primary btn-open-pickup-from-modal" data-id="${o.id}" data-ref="${o.public_order_number}">🔑 Verify Customer Pickup Code</button>
-        ` : ''}
-      </div>
-
-      <!-- Event Audit Trail -->
-      ${timelineHtml ? `
-        <div style="margin-top: 1.5rem; border-top: 1px dashed var(--color-border); padding-top: 1rem;">
-          <strong style="font-size: 0.8rem; text-transform: uppercase; color: var(--color-text-muted);">Event Audit History:</strong>
-          <ul style="list-style: none; padding-left: 0; margin-top: 0.5rem;">${timelineHtml}</ul>
-        </div>
-      ` : ''}
-    `;
-
-    // Attach print triggers inside modal
-    container.querySelector('.btn-modal-print-label')?.addEventListener('click', () => printSingleParcelLabel(o));
-    container.querySelector('.btn-modal-print-slip')?.addEventListener('click', () => printPackingSlip(o));
-    container.querySelector('.btn-modal-print-receipt')?.addEventListener('click', () => printCustomerReceipt(o));
-
-    // Copy address button
-    container.querySelector('.btn-copy-address')?.addEventListener('click', (e) => {
-      const addr = e.currentTarget.dataset.address;
-      if (addr && navigator.clipboard) {
-        navigator.clipboard.writeText(addr).then(() => {
-          e.currentTarget.textContent = '✓ Address Copied!';
-          setTimeout(() => { e.currentTarget.textContent = '📋 Copy Address for Porter App'; }, 2000);
-        });
-      }
-    });
-
-    // Attach transition handlers
-    container.querySelectorAll('.btn-action-transition').forEach(b => {
-      b.addEventListener('click', async (e) => {
-        const id = e.currentTarget.dataset.id;
-        const newStatus = e.currentTarget.dataset.status;
-        await updateOrderStatus(id, newStatus);
-        modal.classList.add('hidden');
+    if (!res.ok) {
+      res = await fetch(`/api/admin/orders/${orderId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-    });
+    }
 
-    container.querySelector('.btn-open-pickup-from-modal')?.addEventListener('click', (e) => {
-      modal.classList.add('hidden');
-      openPickupVerifyModal(e.currentTarget.dataset.id, e.currentTarget.dataset.ref);
-    });
-
+    if (res.ok) {
+      const data = await res.json();
+      const freshOrder = data.order || (data.orders && data.orders[0]);
+      if (freshOrder) {
+        const merged = normalizeOrder({ ...(cachedOrder || {}), ...freshOrder });
+        renderOrderDetailsModalContent(container, modal, merged);
+        return;
+      }
+    }
   } catch (e) {
-    container.innerHTML = `<div class="alert-box alert-warning">${e.message || 'Error loading order details.'}</div>`;
+    console.warn('Backend order details fetch note:', e.message);
+  }
+
+  // If both cache and fetch are absent, display informative error
+  if (!cachedOrder) {
+    container.innerHTML = `
+      <div class="alert-box alert-warning">
+        Unable to load order details for "${escapeHTML(orderId)}". Please try refreshing the orders list.
+      </div>
+    `;
   }
 }
 
@@ -837,7 +956,7 @@ function openPickupVerifyModal(orderId, publicOrderNumber) {
     payBadge.textContent = order.payment_status || 'PAID';
     payBadge.className = `status-badge status-${order.payment_status || 'PAID'}`;
   }
-  const summaryStr = (order.items || []).map(i => `${i.name} (${i.quantity} ${i.unit})`).join(', ') || 'Festive Sweets & Savouries';
+  const summaryStr = getOrderItems(order).map(i => `${i.name} (${i.quantity} ${i.unit})`).join(', ') || 'Festive Sweets & Savouries';
   if (itemsDisplay) itemsDisplay.textContent = summaryStr;
 
   if (confirmCb) confirmCb.checked = false;
@@ -864,7 +983,7 @@ async function loadPackingQueue() {
     if (!data.success) return;
 
     // Strict Rule: Only verified PAID or PREPARING orders. Never unpaid.
-    const packingOrders = (data.orders || []).filter(o => o.payment_status === 'PAID' && (o.order_status === 'PAID' || o.order_status === 'PREPARING'));
+    const packingOrders = (data.orders || []).map(normalizeOrder).filter(o => o.payment_status === 'PAID' && (o.order_status === 'PAID' || o.order_status === 'PREPARING'));
 
     if (packingOrders.length === 0) {
       container.innerHTML = `
@@ -879,7 +998,7 @@ async function loadPackingQueue() {
 
     let html = '';
     packingOrders.forEach(o => {
-      const itemsList = (o.items || []).map(i => `• <strong>${escapeHTML(i.name)}</strong>: <span style="font-size: 1.05rem; color: var(--color-maroon-800);">${i.quantity} ${i.unit}</span>`).join('<br>');
+      const itemsList = getOrderItems(o).map(i => `• <strong>${escapeHTML(i.name)}</strong>: <span style="font-size: 1.05rem; color: var(--color-maroon-800);">${i.quantity} ${i.unit}</span>`).join('<br>');
       const isPreparing = o.order_status === 'PREPARING';
 
       html += `
@@ -972,7 +1091,7 @@ async function loadPickupQueue() {
     const data = await res.json();
     if (!data.success) return;
 
-    const readyOrders = (data.orders || []).filter(o => o.order_status === 'READY_FOR_PICKUP');
+    const readyOrders = (data.orders || []).map(normalizeOrder).filter(o => o.order_status === 'READY_FOR_PICKUP');
 
     if (readyOrders.length === 0) {
       container.innerHTML = `
@@ -987,7 +1106,7 @@ async function loadPickupQueue() {
 
     let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;">';
     readyOrders.forEach(o => {
-      const itemsList = (o.items || []).map(i => `${escapeHTML(i.name)} (${i.quantity} ${i.unit})`).join(', ');
+      const itemsList = getOrderItems(o).map(i => `${escapeHTML(i.name)} (${i.quantity} ${i.unit})`).join(', ');
       const readyTime = o.ready_at ? new Date(o.ready_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'Ready';
 
       html += `
@@ -1198,15 +1317,25 @@ function generateParcelLabelHtml(order) {
     timeStyle: 'short'
   });
 
+  const items = getOrderItems(order);
   let itemsHtml = '';
-  (order.items || []).forEach(i => {
-    itemsHtml += `
+  if (items.length === 0) {
+    itemsHtml = `
       <tr>
-        <td><strong>${escapeHTML(i.name)}</strong> ${i.tamil_name ? `<span style="font-size: 0.75rem; color: #555;">(${escapeHTML(i.tamil_name)})</span>` : ''}</td>
-        <td style="text-align: right; font-weight: 700;">${i.quantity} ${i.unit}</td>
+        <td><strong>Festive Delicacy Pack</strong></td>
+        <td style="text-align: right; font-weight: 700;">1 box</td>
       </tr>
     `;
-  });
+  } else {
+    items.forEach(i => {
+      itemsHtml += `
+        <tr>
+          <td><strong>${escapeHTML(i.name)}</strong> ${i.tamil_name ? `<span style="font-size: 0.75rem; color: #555;">(${escapeHTML(i.tamil_name)})</span>` : ''}</td>
+          <td style="text-align: right; font-weight: 700;">${i.quantity} ${i.unit}</td>
+        </tr>
+      `;
+    });
+  }
 
   // Safe QR Code SVG linking strictly to public lookup page without secrets
   const qrSvg = `
@@ -1327,27 +1456,36 @@ function generatePackingSlipHtml(order) {
   const istDate = new Date(order.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
   const printTimestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'medium' });
 
+  const items = getOrderItems(order);
   let itemsHtml = '';
-  (order.items || []).forEach((i, idx) => {
-    const unitRupees = (i.unit_price_paise || 0) / 100;
-    itemsHtml += `
-      <div class="slip-checklist-item" style="display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid #DDD;">
-        <span class="slip-checkbox-box" style="width: 22px; height: 22px; border: 2px solid #000; display: inline-block; margin-right: 12px; border-radius: 3px;"></span>
-        <div style="width: 30px; font-weight: 700; color: #555;">#${idx + 1}</div>
-        <div style="flex: 1;">
-          <strong style="font-size: 0.95rem;">${escapeHTML(i.name)}</strong>
-          ${i.tamil_name ? `<span style="font-size: 0.8rem; color: #666; margin-left: 6px;">(${escapeHTML(i.tamil_name)})</span>` : ''}
-          <div style="font-size: 0.75rem; color: #777;">Unit Rate: ${formatINR(unitRupees)} per ${i.unit}</div>
-        </div>
-        <div style="font-size: 1.2rem; font-weight: 900; min-width: 100px; text-align: right; color: #78101C;">
-          ${i.quantity} ${i.unit}
-        </div>
-        <div style="width: 90px; text-align: center; border-left: 1px dashed #CCC; margin-left: 10px; font-size: 0.75rem; color: #555;">
-          Packed [ &nbsp; ]
-        </div>
+  if (items.length === 0) {
+    itemsHtml = `
+      <div style="padding: 12px; text-align: center; color: #666; font-style: italic;">
+        Festive Delicacies Pack — Standard Kitchen Pack
       </div>
     `;
-  });
+  } else {
+    items.forEach((i, idx) => {
+      const unitRupees = (i.unit_price_paise || 0) / 100;
+      itemsHtml += `
+        <div class="slip-checklist-item" style="display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid #DDD;">
+          <span class="slip-checkbox-box" style="width: 22px; height: 22px; border: 2px solid #000; display: inline-block; margin-right: 12px; border-radius: 3px;"></span>
+          <div style="width: 30px; font-weight: 700; color: #555;">#${idx + 1}</div>
+          <div style="flex: 1;">
+            <strong style="font-size: 0.95rem;">${escapeHTML(i.name)}</strong>
+            ${i.tamil_name ? `<span style="font-size: 0.8rem; color: #666; margin-left: 6px;">(${escapeHTML(i.tamil_name)})</span>` : ''}
+            <div style="font-size: 0.75rem; color: #777;">Unit Rate: ${formatINR(unitRupees)} per ${i.unit}</div>
+          </div>
+          <div style="font-size: 1.2rem; font-weight: 900; min-width: 100px; text-align: right; color: #78101C;">
+            ${i.quantity} ${i.unit}
+          </div>
+          <div style="width: 90px; text-align: center; border-left: 1px dashed #CCC; margin-left: 10px; font-size: 0.75rem; color: #555;">
+            Packed [ &nbsp; ]
+          </div>
+        </div>
+      `;
+    });
+  }
 
   return `
     <div class="packing-slip-card">
@@ -1459,24 +1597,35 @@ function generateCustomerReceiptHtml(order) {
   const receiptTimestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
   const deliveryAddrStr = order.delivery_address?.formatted || (typeof order.delivery_address === 'string' ? order.delivery_address : '') || (order.delivery_address ? `${order.delivery_address.street || ''}, ${order.delivery_address.area || ''}, ${order.delivery_address.city || 'Coimbatore'} - ${order.delivery_address.pincode || ''}` : '');
 
+  const items = getOrderItems(order);
   let itemsHtml = '';
-  (order.items || []).forEach((i, idx) => {
-    const unitRupees = (i.unit_price_paise || 0) / 100;
-    const lineRupees = (i.line_total_paise || (i.unit_price_paise * i.quantity)) / 100;
-    itemsHtml += `
+  if (items.length === 0) {
+    itemsHtml = `
       <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: center; color: #666;">${idx + 1}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #DDD;">
-          <strong>${escapeHTML(i.name)}</strong>
-          ${i.tamil_name ? `<div style="font-size: 0.8rem; color: #555;">${escapeHTML(i.tamil_name)}</div>` : ''}
+        <td colspan="6" style="padding: 12px; text-align: center; color: #666; font-style: italic;">
+          Festive Delicacies Pack (${formatINR(subtotalRupees)})
         </td>
-        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: center;">${i.unit}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: center; font-weight: 700;">${i.quantity}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: right;">${formatINR(unitRupees)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: right; font-weight: 800; color: #78101C;">${formatINR(lineRupees)}</td>
       </tr>
     `;
-  });
+  } else {
+    items.forEach((i, idx) => {
+      const unitRupees = (i.unit_price_paise || 0) / 100;
+      const lineRupees = (i.line_total_paise || (i.unit_price_paise * i.quantity)) / 100;
+      itemsHtml += `
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: center; color: #666;">${idx + 1}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #DDD;">
+            <strong>${escapeHTML(i.name)}</strong>
+            ${i.tamil_name ? `<div style="font-size: 0.8rem; color: #555;">${escapeHTML(i.tamil_name)}</div>` : ''}
+          </td>
+          <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: center;">${i.unit}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: center; font-weight: 700;">${i.quantity}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: right;">${formatINR(unitRupees)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #DDD; text-align: right; font-weight: 800; color: #78101C;">${formatINR(lineRupees)}</td>
+        </tr>
+      `;
+    });
+  }
 
   return `
     <div class="packing-slip-card" style="border: 2px solid #78101C; padding: 24px; border-radius: 8px;">
@@ -1658,7 +1807,7 @@ function batchPrintParcelLabels() {
   const stage = document.getElementById('print-document-stage');
   if (!stage) return;
 
-  const selectedOrders = ordersCache.filter(o => selectedOrderIds.has(o.id));
+  const selectedOrders = ordersCache.filter(o => selectedOrderIds.has(o.id)).map(normalizeOrder);
   if (selectedOrders.length === 0) return;
 
   let combinedHtml = '';

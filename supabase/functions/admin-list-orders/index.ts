@@ -64,10 +64,11 @@ serve(async (req: Request) => {
       });
     }
 
-    // Parse query params for filtering and pagination
+    // Parse query params for filtering, pagination, and single order lookup
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
     const search = url.searchParams.get("search");
+    const orderIdParam = url.searchParams.get("id") || url.searchParams.get("order_id");
     const limit = Math.min(parseInt(url.searchParams.get("limit") || "50", 10), 100);
     const offset = parseInt(url.searchParams.get("offset") || "0", 10);
 
@@ -81,9 +82,12 @@ serve(async (req: Request) => {
         customer_email,
         subtotal_paise,
         total_paise,
+        delivery_fee_paise,
+        delivery_address,
         payment_status,
         order_status,
         fulfilment_method,
+        pickup_code_hash,
         pickup_status,
         pickup_date,
         pickup_time,
@@ -99,23 +103,72 @@ serve(async (req: Request) => {
           unit_price_paise,
           quantity,
           line_total_paise
+        ),
+        order_events (
+          id,
+          event_type,
+          from_status,
+          to_status,
+          actor_type,
+          created_at
         )
       `, { count: "exact" })
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order("created_at", { ascending: false });
 
-    if (status && status !== "ALL") {
-      query = query.eq("order_status", status);
+    if (orderIdParam) {
+      query = query.or(`id.eq.${orderIdParam},public_order_number.eq.${orderIdParam}`);
+    } else {
+      query = query.range(offset, offset + limit - 1);
+
+      if (status && status !== "ALL") {
+        query = query.eq("order_status", status);
+      }
+
+      if (search) {
+        query = query.or(`public_order_number.ilike.%${search}%,customer_name.ilike.%${search}%,customer_mobile.ilike.%${search}%`);
+      }
     }
 
-    if (search) {
-      query = query.or(`public_order_number.ilike.%${search}%,customer_name.ilike.%${search}%,customer_mobile.ilike.%${search}%`);
-    }
-
-    const { data: orders, count, error: fetchError } = await query;
+    const { data: rawOrders, count, error: fetchError } = await query;
 
     if (fetchError) {
       throw fetchError;
+    }
+
+    // Standardize orders: map order_items into items with name, unit, price and total
+    const orders = (rawOrders || []).map((o: any) => ({
+      ...o,
+      events: o.order_events || [],
+      items: (o.order_items || []).map((i: any) => ({
+        id: i.id,
+        name: i.product_name_snapshot,
+        product_name_snapshot: i.product_name_snapshot,
+        unit: i.unit_snapshot,
+        unit_snapshot: i.unit_snapshot,
+        quantity: i.quantity,
+        unit_price_paise: i.unit_price_paise,
+        line_total_paise: i.line_total_paise,
+        price: (i.unit_price_paise || 0) / 100,
+        total: (i.line_total_paise || 0) / 100
+      }))
+    }));
+
+    if (orderIdParam) {
+      if (orders.length === 0) {
+        return new Response(
+          JSON.stringify({ success: false, message: "Order not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          success: true,
+          order: orders[0],
+          orders: orders,
+          total: 1
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(

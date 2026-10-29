@@ -42,8 +42,21 @@ export async function onRequest(context) {
 
   // Strip leading /api/
   const apiPath = url.pathname.replace(/^\/api\/?/, '').replace(/\/+$/, '');
-  const functionName = ROUTE_MAP[apiPath] || apiPath.replace(/\//g, '-');
-  const targetUrl = `${SUPABASE_BASE_URL}/${functionName}${url.search}`;
+  let functionName = ROUTE_MAP[apiPath];
+  let searchParams = url.search;
+
+  // Handle /api/admin/orders/:id -> proxy to admin-list-orders?id=:id
+  if (!functionName && apiPath.startsWith('admin/orders/')) {
+    const orderId = apiPath.substring('admin/orders/'.length);
+    functionName = 'admin-list-orders';
+    const params = new URLSearchParams(searchParams);
+    params.set('id', orderId);
+    searchParams = '?' + params.toString();
+  } else if (!functionName) {
+    functionName = apiPath.replace(/\//g, '-');
+  }
+
+  const targetUrl = `${SUPABASE_BASE_URL}/${functionName}${searchParams}`;
 
   const forwardHeaders = new Headers(request.headers);
   forwardHeaders.set('Host', `${SUPABASE_PROJECT_REF}.supabase.co`);
