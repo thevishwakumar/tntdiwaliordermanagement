@@ -1148,7 +1148,12 @@ const server = http.createServer(async (req, res) => {
       }
 
       const cleanCode = (pickupCode || '').trim().toUpperCase();
-      if (!order.pickup_code_hash || order.pickup_code_hash.toUpperCase() !== cleanCode) {
+      const expectedCode = (order.pickup_code_hash || '').trim().toUpperCase();
+      const codeMatches = (expectedCode === cleanCode) ||
+        (cleanCode.length === 4 && expectedCode === ('TNT-PK-' + cleanCode)) ||
+        (cleanCode.startsWith('TNT-PK-') && expectedCode === cleanCode.replace('TNT-PK-', ''));
+
+      if (!order.pickup_code_hash || !codeMatches) {
         DB.order_events.push({
           id: crypto.randomUUID(),
           order_id: order.id,

@@ -94,14 +94,34 @@ serve(async (req: Request) => {
     }
 
     // Call atomic stored procedure
-    const { data: rpcResult, error: rpcError } = await serviceClient.rpc("verify_order_pickup_atomic", {
+    let rpcResponse = await serviceClient.rpc("verify_order_pickup_atomic", {
       p_order_id: targetOrderId,
       p_pickup_code: pickupCode,
       p_staff_id: user.id || "admin_counter",
     });
 
-    if (rpcError) {
-      throw rpcError;
+    if (rpcResponse.error) {
+      throw rpcResponse.error;
+    }
+
+    let rpcResult = rpcResponse.data;
+
+    // Flexible retry: If rejected due to code mismatch, try alternate format (with/without TNT-PK-)
+    if (rpcResult && !rpcResult.success && rpcResult.code === "INVALID_PICKUP_CODE") {
+      const cleanInput = String(pickupCode).trim().toUpperCase();
+      const altCode = cleanInput.startsWith("TNT-PK-")
+        ? cleanInput.replace("TNT-PK-", "")
+        : `TNT-PK-${cleanInput}`;
+
+      const retryResponse = await serviceClient.rpc("verify_order_pickup_atomic", {
+        p_order_id: targetOrderId,
+        p_pickup_code: altCode,
+        p_staff_id: user.id || "admin_counter",
+      });
+
+      if (!retryResponse.error && retryResponse.data && retryResponse.data.success) {
+        rpcResult = retryResponse.data;
+      }
     }
 
     const status = rpcResult.success ? 200 : 400;

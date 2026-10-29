@@ -389,8 +389,8 @@ function renderOrderDetails(order) {
           `}
         </div>
 
-        <div style="text-align: center; font-size: 0.8rem; color: var(--color-text-muted); margin-top: 1rem; border-top: 1px solid var(--color-border); padding-top: 0.5rem;">
-          Thank you for celebrating Diwali with Shree Taste N Taste Catering! Wishing you a sweet &amp; prosperous festive season.
+        <div style="text-align: center; margin-top: 1.25rem; padding: 0.85rem; background: #FFF8E1; border: 1.5px dashed #D4AF37; border-radius: 6px; font-weight: 700; color: #78101C; font-size: 0.95rem;">
+          ✨ Thank you for shopping with us! Wishing you a sweet &amp; prosperous festive season. ✨
         </div>
       </article>
 

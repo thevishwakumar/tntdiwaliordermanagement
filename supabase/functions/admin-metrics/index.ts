@@ -109,7 +109,18 @@ serve(async (req: Request) => {
           upcomingPickups++;
         }
       }
+    const dailyMap: Record<string, { date: string; orderCount: number; revenuePaise: number }> = {};
+    for (const o of allOrders) {
+      if (o.payment_status === "PAID") {
+        const d = o.pickup_date || today;
+        if (!dailyMap[d]) {
+          dailyMap[d] = { date: d, orderCount: 0, revenuePaise: 0 };
+        }
+        dailyMap[d].orderCount++;
+        dailyMap[d].revenuePaise += (o.total_paise || 0);
+      }
     }
+    const dailySummary = Object.values(dailyMap).sort((a, b) => b.date.localeCompare(a.date));
 
     return new Response(
       JSON.stringify({
@@ -134,6 +145,8 @@ serve(async (req: Request) => {
           verified_revenue_paise: totalVerifiedRevenuePaise,
           totalVerifiedRevenueRupees: Math.floor(totalVerifiedRevenuePaise / 100),
           verified_revenue_rupees: Math.floor(totalVerifiedRevenuePaise / 100),
+          dailySummary,
+          lowStockProducts: [],
         },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

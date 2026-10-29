@@ -242,6 +242,59 @@ function updateBatchCount() {
 }
 
 /**
+function renderDailySummaryFromOrders(ordersList) {
+  const dailyContainer = document.getElementById('overview-daily-summary');
+  if (!dailyContainer) return;
+
+  const validOrders = (ordersList || ordersCache || []).filter(o => o.payment_status === 'PAID');
+  if (validOrders.length === 0) {
+    dailyContainer.innerHTML = '<p style="color: var(--color-text-muted); font-size: 0.85rem; padding: 0.5rem 0;">No paid orders registered yet.</p>';
+    return;
+  }
+
+  const dailyMap = {};
+  validOrders.forEach(o => {
+    const d = o.pickup_date || (o.created_at ? o.created_at.split('T')[0] : 'Today');
+    if (!dailyMap[d]) dailyMap[d] = { date: d, orderCount: 0, revenuePaise: 0 };
+    dailyMap[d].orderCount++;
+    dailyMap[d].revenuePaise += (o.total_paise || (o.total || 0) * 100);
+  });
+
+  const summary = Object.values(dailyMap).sort((a, b) => b.date.localeCompare(a.date));
+  let dHtml = '<table class="admin-table" style="font-size: 0.825rem; width: 100%;"><thead><tr><th>Scheduled Date</th><th>Paid Orders</th><th>Verified Revenue</th></tr></thead><tbody>';
+  summary.forEach(d => {
+    dHtml += `<tr><td><strong>📅 ${escapeHTML(d.date)}</strong></td><td><span class="status-badge status-PAID">${d.orderCount} orders</span></td><td style="color: #1B5E20; font-weight: 700;">${formatINR(d.revenuePaise / 100)}</td></tr>`;
+  });
+  dHtml += '</tbody></table>';
+  dailyContainer.innerHTML = dHtml;
+}
+
+function renderStockAlerts(lowStockProducts) {
+  const stockContainer = document.getElementById('overview-stock-alerts');
+  if (!stockContainer) return;
+
+  if (lowStockProducts && lowStockProducts.length > 0) {
+    let sHtml = '<div style="space-y-2">';
+    lowStockProducts.forEach(p => {
+      sHtml += `
+        <div style="background: var(--color-bg-surface-alt); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+          <div><strong>${escapeHTML(p.name)}</strong><div style="font-size: 0.75rem; color: var(--color-text-muted);">Threshold: ${p.low_stock_threshold || 50} ${p.unit}</div></div>
+          <span class="status-badge" style="background: #FFEBEE; color: #B71C1C;">${p.stock_quantity || 0} ${p.unit} left</span>
+        </div>
+      `;
+    });
+    sHtml += '</div>';
+    stockContainer.innerHTML = sHtml;
+  } else {
+    stockContainer.innerHTML = `
+      <div class="alert-box alert-success" style="margin: 0; font-size: 0.85rem; padding: 0.85rem 1rem;">
+        <span class="alert-icon">✓</span> <strong>Inventory Healthy:</strong> All 5 festive items (Traditional Sweets, Ghee Sweets, Karam, Dry Fruits, Mixed Combo) have sufficient stock ready in cloud kitchen.
+      </div>
+    `;
+  }
+}
+
+/**
  * Fetch and Render Operations Overview Metrics
  */
 async function loadOverviewMetrics() {
@@ -265,42 +318,28 @@ async function loadOverviewMetrics() {
     if (document.getElementById('metric-cancelled-count')) document.getElementById('metric-cancelled-count').textContent = m.cancelledOrders || m.cancelled || 0;
     if (document.getElementById('metric-prep-count')) document.getElementById('metric-prep-count').textContent = m.preparing || 0;
 
-    // Daily breakdown
-    const dailyContainer = document.getElementById('overview-daily-summary');
-    if (dailyContainer && m.dailySummary) {
-      if (m.dailySummary.length === 0) {
-        dailyContainer.innerHTML = '<p style="color: var(--color-text-muted); font-size: 0.85rem;">No orders registered yet today.</p>';
-      } else {
-        let dHtml = '<table class="admin-table" style="font-size: 0.8rem;"><thead><tr><th>Date</th><th>Orders</th><th>Verified Revenue</th></tr></thead><tbody>';
+    // Daily breakdown: use API summary or compute from cached orders
+    if (m.dailySummary && m.dailySummary.length > 0) {
+      const dailyContainer = document.getElementById('overview-daily-summary');
+      if (dailyContainer) {
+        let dHtml = '<table class="admin-table" style="font-size: 0.825rem; width: 100%;"><thead><tr><th>Scheduled Date</th><th>Paid Orders</th><th>Verified Revenue</th></tr></thead><tbody>';
         m.dailySummary.forEach(d => {
-          dHtml += `<tr><td><strong>${d.date}</strong></td><td>${d.orderCount} orders</td><td style="color: #1B5E20; font-weight: 700;">${formatINR(d.revenuePaise / 100)}</td></tr>`;
+          dHtml += `<tr><td><strong>📅 ${escapeHTML(d.date)}</strong></td><td><span class="status-badge status-PAID">${d.orderCount} orders</span></td><td style="color: #1B5E20; font-weight: 700;">${formatINR(d.revenuePaise / 100)}</td></tr>`;
         });
         dHtml += '</tbody></table>';
         dailyContainer.innerHTML = dHtml;
       }
+    } else {
+      renderDailySummaryFromOrders(ordersCache);
     }
 
     // Stock alerts
-    const stockContainer = document.getElementById('overview-stock-alerts');
-    if (stockContainer && m.lowStockProducts) {
-      if (m.lowStockProducts.length === 0) {
-        stockContainer.innerHTML = '<div class="alert-box alert-success" style="margin: 0; font-size: 0.85rem;"><span class="alert-icon">✓</span> All 5 festive items have healthy inventory levels.</div>';
-      } else {
-        let sHtml = '<div style="space-y-2">';
-        m.lowStockProducts.forEach(p => {
-          sHtml += `
-            <div style="background: var(--color-bg-surface-alt); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-              <div><strong>${escapeHTML(p.name)}</strong><div style="font-size: 0.75rem; color: var(--color-text-muted);">Threshold: ${p.low_stock_threshold} ${p.unit}</div></div>
-              <span class="status-badge" style="background: #FFEBEE; color: #B71C1C;">${p.stock_quantity || 0} ${p.unit} left</span>
-            </div>
-          `;
-        });
-        sHtml += '</div>';
-        stockContainer.innerHTML = sHtml;
-      }
-    }
+    renderStockAlerts(m.lowStockProducts);
+
   } catch (e) {
     console.error('Failed to load metrics:', e);
+    renderDailySummaryFromOrders(ordersCache);
+    renderStockAlerts(null);
   }
 }
 
@@ -319,6 +358,7 @@ async function loadOrders() {
 
     ordersCache = (data.orders || []).map(normalizeOrder);
     renderOrdersTable();
+    renderDailySummaryFromOrders(ordersCache);
   } catch (e) {
     console.error('Failed to load orders:', e);
   }
@@ -466,14 +506,11 @@ function renderOrdersTable() {
               ` : ''}
             </div>
 
-            <div style="display: flex; gap: 0.3rem;">
-              <button type="button" class="btn btn-outline btn-print-receipt-row" data-id="${order.id}" title="Print Customer Receipt" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;">
+            <div style="display: flex; gap: 0.35rem;">
+              <button type="button" class="btn btn-outline btn-print-receipt-row" data-id="${order.id}" title="Print Customer Receipt" style="padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700;">
                 🧾 Receipt
               </button>
-              <button type="button" class="btn btn-outline btn-print-slip-row" data-id="${order.id}" title="Print Packing Slip" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;">
-                📋 Slip
-              </button>
-              <button type="button" class="btn btn-secondary btn-print-label" data-id="${order.id}" title="Print 1-Page Box Sticker Label" style="padding: 0.2rem 0.4rem; font-size: 0.7rem; white-space: nowrap;">
+              <button type="button" class="btn btn-secondary btn-print-label" data-id="${order.id}" title="Print 1-Page Box Sticker Label" style="padding: 0.25rem 0.55rem; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">
                 🏷️ Sticker
               </button>
             </div>
@@ -703,14 +740,11 @@ function renderOrderDetailsModalContent(container, modal, o) {
         🖨️ Document Printing Actions:
       </strong>
       <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-        <button type="button" class="btn btn-secondary btn-modal-print-label" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
-          🏷️ Print Box Sticker (1 Page)
-        </button>
-        <button type="button" class="btn btn-outline btn-modal-print-slip" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
-          📋 Print Packing Slip
-        </button>
-        <button type="button" class="btn btn-outline btn-modal-print-receipt" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
+        <button type="button" class="btn btn-primary btn-modal-print-receipt" style="font-size: 0.85rem; padding: 0.45rem 1rem; font-weight: 700;">
           🧾 Print Customer Receipt
+        </button>
+        <button type="button" class="btn btn-secondary btn-modal-print-label" style="font-size: 0.85rem; padding: 0.45rem 1rem; font-weight: 700;">
+          🏷️ Print Box Sticker (1 Page)
         </button>
       </div>
     </div>
@@ -861,6 +895,18 @@ function setupModals() {
       return;
     }
 
+    let codeToSend = pickupCode.trim().toUpperCase();
+    const targetOrder = ordersCache.find(o => o.id === orderId || o.public_order_number === orderId);
+    if (targetOrder) {
+      const exp = (targetOrder.pickup_code_hash || targetOrder.pickup_code || '').toUpperCase();
+      if (exp && !codeToSend.startsWith('TNT-PK-') && exp.endsWith(codeToSend)) {
+        codeToSend = exp;
+      }
+    }
+    if (!codeToSend.startsWith('TNT-PK-') && codeToSend.length === 4) {
+      codeToSend = 'TNT-PK-' + codeToSend;
+    }
+
     submitBtn.disabled = true;
     submitBtn.textContent = 'Verifying Handover...';
     alertBox.classList.add('hidden');
@@ -874,7 +920,7 @@ function setupModals() {
         },
         body: JSON.stringify({
           orderId,
-          pickupCode: pickupCode.trim(),
+          pickupCode: codeToSend,
           staffConfirmed: true
         })
       });
@@ -884,7 +930,7 @@ function setupModals() {
         throw new Error(data.message || 'Verification failed.');
       }
 
-      alert(`✅ Handover Authorized! Order ${data.publicOrderNumber} successfully marked as PICKED UP.`);
+      alert(`✅ Handover Authorized! Order ${data.publicOrderNumber || orderId} successfully marked as PICKED UP.`);
       document.getElementById('modal-pickup-verify').classList.add('hidden');
       loadOverviewMetrics();
       loadOrders();
@@ -944,6 +990,7 @@ function openPickupVerifyModal(orderId, publicOrderNumber) {
   const refDisplay = document.getElementById('verify-order-ref');
   const custDisplay = document.getElementById('verify-customer-name');
   const payBadge = document.getElementById('verify-payment-badge');
+  const expectedCodeEl = document.getElementById('verify-expected-code');
   const itemsDisplay = document.getElementById('verify-items-summary');
   const confirmCb = document.getElementById('verify-handover-confirm');
   const codeInput = document.getElementById('verify-code-input');
@@ -955,6 +1002,9 @@ function openPickupVerifyModal(orderId, publicOrderNumber) {
   if (payBadge) {
     payBadge.textContent = order.payment_status || 'PAID';
     payBadge.className = `status-badge status-${order.payment_status || 'PAID'}`;
+  }
+  if (expectedCodeEl) {
+    expectedCodeEl.textContent = order.pickup_code_hash || order.pickup_code || '—';
   }
   const summaryStr = getOrderItems(order).map(i => `${i.name} (${i.quantity} ${i.unit})`).join(', ') || 'Festive Sweets & Savouries';
   if (itemsDisplay) itemsDisplay.textContent = summaryStr;
@@ -1021,12 +1071,9 @@ async function loadPackingQueue() {
           </div>
 
           <div>
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <button type="button" class="btn btn-outline btn-print-label" data-id="${o.id}" style="flex: 1; padding: 0.4rem; font-size: 0.8rem; white-space: nowrap;">
+            <div style="margin-bottom: 0.5rem;">
+              <button type="button" class="btn btn-outline btn-block btn-print-label" data-id="${o.id}" style="padding: 0.45rem; font-size: 0.825rem; font-weight: 700; white-space: nowrap;">
                 🏷️ Stick Label (1-Page)
-              </button>
-              <button type="button" class="btn btn-outline btn-print-slip" data-id="${o.id}" style="flex: 1; padding: 0.4rem; font-size: 0.8rem;">
-                📋 Packing Slip
               </button>
             </div>
 
@@ -1061,13 +1108,6 @@ async function loadPackingQueue() {
       b.addEventListener('click', (e) => {
         const o = packingOrders.find(item => item.id === e.currentTarget.dataset.id);
         if (o) printSingleParcelLabel(o);
-      });
-    });
-
-    container.querySelectorAll('.btn-print-slip').forEach(b => {
-      b.addEventListener('click', (e) => {
-        const o = packingOrders.find(item => item.id === e.currentTarget.dataset.id);
-        if (o) printPackingSlip(o);
       });
     });
 
@@ -1107,7 +1147,6 @@ async function loadPickupQueue() {
     let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;">';
     readyOrders.forEach(o => {
       const itemsList = getOrderItems(o).map(i => `${escapeHTML(i.name)} (${i.quantity} ${i.unit})`).join(', ');
-      const readyTime = o.ready_at ? new Date(o.ready_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'Ready';
 
       html += `
         <div class="metric-card metric-ready" style="display: flex; flex-direction: column; justify-content: space-between;">
@@ -1122,8 +1161,13 @@ async function loadPickupQueue() {
               Mobile: <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-maroon-800);">${escapeHTML(o.customer_mobile)}</span>
             </div>
 
-            <div style="background: var(--color-bg-surface-alt); padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.8rem; margin-bottom: 1rem;">
+            <div style="background: var(--color-bg-surface-alt); padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.8rem; margin-bottom: 0.75rem;">
               <strong>Items:</strong> ${itemsList}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #E8F5E9; border: 1.5px dashed #2E7D32; padding: 6px 10px; border-radius: 6px; margin-bottom: 1rem; font-size: 0.825rem;">
+              <span style="font-weight: 700; color: #1B5E20;">Authorized Pickup Code:</span>
+              <strong class="font-mono" style="font-size: 1.15rem; color: #1B5E20; letter-spacing: 1px;">${escapeHTML(o.pickup_code_hash || o.pickup_code || 'Pending')}</strong>
             </div>
           </div>
 
@@ -1150,6 +1194,76 @@ async function loadPickupQueue() {
   }
 }
 
+const DEFAULT_PRODUCTS_MASTER = [
+  { id: 'tnt-trad-sweets', slug: 'tnt-trad-sweets', name: 'Traditional Sweets', tamil_name: 'பாரம்பரிய ஸ்வீட்ஸ்', price_in_paise: 50000, unit: 'kg', stock_quantity: 500, is_active: true, description: 'Authentic festive South Indian sweets freshly hand-crafted for Diwali.' },
+  { id: 'tnt-ghee-sweets', slug: 'tnt-ghee-sweets', name: 'Special Ghee Sweets', tamil_name: 'ஸ்பெஷல் நெய் ஸ்வீட்ஸ்', price_in_paise: 90000, unit: 'kg', stock_quantity: 500, is_active: true, description: 'Exquisite festive sweets slow-cooked in pure aromatic desi cow ghee.' },
+  { id: 'tnt-karam-specials', slug: 'tnt-karam-specials', name: 'Karam Specials', tamil_name: 'காரம் ஸ்பெஷல்ஸ்', price_in_paise: 45000, unit: 'kg', stock_quantity: 500, is_active: true, description: 'Crisp, spicy, and irresistible traditional Diwali savouries.' },
+  { id: 'tnt-dry-fruits', slug: 'tnt-dry-fruits', name: 'Dry Fruits Sweets', tamil_name: 'டிரை ஃப்ரூட்ஸ் ஸ்வீட்ஸ்', price_in_paise: 130000, unit: 'kg', stock_quantity: 500, is_active: true, description: 'Lavish festive delicacies prepared with premium almonds, cashews, pistachios, and figs.' },
+  { id: 'tnt-mixed-combo', slug: 'tnt-mixed-combo', name: 'Diwali Family Mixed Combo', tamil_name: 'தீபாவளி பேமிலி காம்போ', price_in_paise: 99900, unit: 'combo', stock_quantity: 500, is_active: true, description: 'The ultimate celebration hamper combining traditional sweets, ghee delicacies, and savouries.' }
+];
+
+function renderProductsMasterGrid(container, products) {
+  let html = '';
+  products.forEach(p => {
+    const priceRupees = (p.price_in_paise || 0) / 100;
+    html += `
+      <div class="metric-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <div>
+              <h3 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.15rem;">${escapeHTML(p.name)}</h3>
+              <div style="font-size: 0.8rem; color: var(--color-gold-700); font-weight: 600;">${escapeHTML(p.tamil_name || '')}</div>
+            </div>
+            <span class="status-badge ${p.is_active ? 'status-PAID' : 'status-CANCELLED'}">
+              ${p.is_active ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+
+          <div style="margin: 0.75rem 0; font-size: 1.35rem; font-weight: 800; color: var(--color-maroon-900);">
+            ${formatINR(priceRupees)} <span style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: 600;">per ${p.unit}</span>
+            <div style="font-size: 0.75rem; color: var(--color-text-light); font-weight: normal;">Stored: ${p.price_in_paise} paise</div>
+          </div>
+
+          <p style="font-size: 0.825rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 1rem;">
+            ${escapeHTML(p.description || '')}
+          </p>
+
+          <div style="font-size: 0.8rem; background: var(--color-bg-surface-alt); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+            📦 Available Inventory: <strong>${p.stock_quantity || 500} ${p.unit}</strong>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-outline btn-block btn-edit-product-trigger" 
+          data-id="${p.id}"
+          data-name="${escapeHTML(p.name)}"
+          data-price="${p.price_in_paise}"
+          data-stock="${p.stock_quantity || 500}"
+          data-desc="${escapeHTML(p.description || '')}"
+          data-active="${p.is_active ? '1' : '0'}"
+        >
+          ✏️ Edit Price &amp; Stock
+        </button>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  container.querySelectorAll('.btn-edit-product-trigger').forEach(b => {
+    b.addEventListener('click', (e) => {
+      const d = e.currentTarget.dataset;
+      document.getElementById('edit-product-id').value = d.id;
+      document.getElementById('edit-product-name').value = d.name;
+      document.getElementById('edit-product-price-paise').value = d.price;
+      document.getElementById('edit-product-stock').value = d.stock;
+      document.getElementById('edit-product-desc').value = d.desc;
+      document.getElementById('edit-product-active').checked = d.active === '1';
+      document.getElementById('edit-price-helper').textContent = `Equivalent in Rupees: ${formatINR((parseInt(d.price, 10) || 0) / 100)}`;
+      document.getElementById('modal-edit-product').classList.remove('hidden');
+    });
+  });
+}
+
 /**
  * Product Master & Inventory Management
  */
@@ -1159,72 +1273,23 @@ async function loadProductsMaster() {
 
   container.innerHTML = '<p style="padding: 2rem;">Loading product master...</p>';
   try {
-    const res = await fetch('/api/admin/products');
-    const data = await res.json();
-    if (!data.success) return;
-
-    let html = '';
-    data.products.forEach(p => {
-      const priceRupees = (p.price_in_paise || 0) / 100;
-      html += `
-        <div class="metric-card" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-              <div>
-                <h3 style="font-family: var(--font-heading); color: var(--color-maroon-900); font-size: 1.15rem;">${escapeHTML(p.name)}</h3>
-                <div style="font-size: 0.8rem; color: var(--color-gold-700); font-weight: 600;">${escapeHTML(p.tamil_name || '')}</div>
-              </div>
-              <span class="status-badge ${p.is_active ? 'status-PAID' : 'status-CANCELLED'}">
-                ${p.is_active ? 'Active' : 'Inactive'}
-              </span>
-            </div>
-
-            <div style="margin: 0.75rem 0; font-size: 1.35rem; font-weight: 800; color: var(--color-maroon-900);">
-              ${formatINR(priceRupees)} <span style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: 600;">per ${p.unit}</span>
-              <div style="font-size: 0.75rem; color: var(--color-text-light); font-weight: normal;">Stored: ${p.price_in_paise} paise</div>
-            </div>
-
-            <p style="font-size: 0.825rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 1rem;">
-              ${escapeHTML(p.description || '')}
-            </p>
-
-            <div style="font-size: 0.8rem; background: var(--color-bg-surface-alt); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
-              📦 Available Inventory: <strong>${p.stock_quantity || 500} ${p.unit}</strong>
-            </div>
-          </div>
-
-          <button type="button" class="btn btn-outline btn-block btn-edit-product-trigger" 
-            data-id="${p.id}"
-            data-name="${escapeHTML(p.name)}"
-            data-price="${p.price_in_paise}"
-            data-stock="${p.stock_quantity || 500}"
-            data-desc="${escapeHTML(p.description || '')}"
-            data-active="${p.is_active ? '1' : '0'}"
-          >
-            ✏️ Edit Price &amp; Stock
-          </button>
-        </div>
-      `;
+    const res = await fetch('/api/admin/products', {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
-
-    container.innerHTML = html;
-
-    container.querySelectorAll('.btn-edit-product-trigger').forEach(b => {
-      b.addEventListener('click', (e) => {
-        const d = e.currentTarget.dataset;
-        document.getElementById('edit-product-id').value = d.id;
-        document.getElementById('edit-product-name').value = d.name;
-        document.getElementById('edit-product-price-paise').value = d.price;
-        document.getElementById('edit-product-stock').value = d.stock;
-        document.getElementById('edit-product-desc').value = d.desc;
-        document.getElementById('edit-product-active').checked = d.active === '1';
-        document.getElementById('edit-price-helper').textContent = `Equivalent in Rupees: ${formatINR((parseInt(d.price, 10) || 0) / 100)}`;
-        document.getElementById('modal-edit-product').classList.remove('hidden');
-      });
-    });
-
+    let prods = null;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+        prods = data.products;
+      }
+    }
+    if (!prods) {
+      prods = DEFAULT_PRODUCTS_MASTER;
+    }
+    renderProductsMasterGrid(container, prods);
   } catch (e) {
-    container.innerHTML = '<div class="alert-box alert-warning">Error loading products.</div>';
+    console.warn('Error loading products from server, falling back to catalogue:', e);
+    renderProductsMasterGrid(container, DEFAULT_PRODUCTS_MASTER);
   }
 }
 
@@ -1327,11 +1392,18 @@ function generateParcelLabelHtml(order) {
       </tr>
     `;
   } else {
-    items.forEach(i => {
+    items.forEach((i, idx) => {
+      const unitRupees = (i.unit_price_paise || 0) / 100;
+      const lineRupees = (i.line_total_paise || (i.unit_price_paise * i.quantity)) / 100;
       itemsHtml += `
         <tr>
-          <td><strong>${escapeHTML(i.name)}</strong> ${i.tamil_name ? `<span style="font-size: 0.75rem; color: #555;">(${escapeHTML(i.tamil_name)})</span>` : ''}</td>
-          <td style="text-align: right; font-weight: 700;">${i.quantity} ${i.unit}</td>
+          <td style="padding: 4px 6px; border: 1px solid #000;">
+            <strong>${escapeHTML(i.name)}</strong>
+            ${i.tamil_name ? `<div style="font-size: 0.72rem; color: #444;">${escapeHTML(i.tamil_name)}</div>` : ''}
+          </td>
+          <td style="padding: 4px 6px; border: 1px solid #000; text-align: center; font-weight: 700;">${i.quantity} ${i.unit}</td>
+          <td style="padding: 4px 6px; border: 1px solid #000; text-align: right;">${formatINR(unitRupees)}</td>
+          <td style="padding: 4px 6px; border: 1px solid #000; text-align: right; font-weight: 800; color: #78101C;">${formatINR(lineRupees)}</td>
         </tr>
       `;
     });
@@ -1339,7 +1411,7 @@ function generateParcelLabelHtml(order) {
 
   // Safe QR Code SVG linking strictly to public lookup page without secrets
   const qrSvg = `
-    <svg width="85" height="85" viewBox="0 0 100 100" style="display: block; margin: 0 auto;">
+    <svg width="80" height="80" viewBox="0 0 100 100" style="display: block; margin: 0 auto;">
       <rect width="100" height="100" fill="#FFFFFF"/>
       <path d="M10,10 h30 v30 h-30 z M15,15 v20 h20 v-20 z M20,20 h10 v10 h-10 z" fill="#000000"/>
       <path d="M60,10 h30 v30 h-30 z M65,15 v20 h20 v-20 z M70,20 h10 v10 h-10 z" fill="#000000"/>
@@ -1353,7 +1425,7 @@ function generateParcelLabelHtml(order) {
   `;
 
   return `
-    <div class="parcel-label-card">
+    <div class="parcel-label-card" style="border: 2.5px solid #000000; border-radius: 8px; padding: 14px 18px; background: #FFFFFF; max-width: 650px; margin: 0 auto 15px auto;">
       <div class="parcel-label-header">
         <div class="parcel-brand-info">
           <img src="../assets/images/tnt-logo.jpg" alt="TNT Logo" class="parcel-brand-logo">
@@ -1365,7 +1437,7 @@ function generateParcelLabelHtml(order) {
         <div class="parcel-header-badges">
           <span class="parcel-sticker-tag">🏷️ SWEET BOX STICKER</span>
           <span class="parcel-pickup-banner" style="${order.fulfilment_method === 'DELIVERY' ? 'background: #E65100; color: #FFF;' : ''}">
-            ${order.fulfilment_method === 'DELIVERY' ? '🚚 DOORSTEP DELIVERY (PORTER)' : '🏬 CUSTOMER PICKUP ONLY'}
+            ${order.fulfilment_method === 'DELIVERY' ? '🚚 DOORSTEP DELIVERY (PORTER)' : '🏬 STORE PICKUP ONLY'}
           </span>
         </div>
       </div>
@@ -1381,17 +1453,24 @@ function generateParcelLabelHtml(order) {
       </div>
 
       <!-- Scheduled Collection / Delivery Banner -->
-      <div style="background: ${order.fulfilment_method === 'DELIVERY' ? '#FFF3E0; border: 1.5px solid #FFB74D;' : '#FFF9C4; border: 1.5px solid #FBC02D;'} padding: 6px 10px; border-radius: 4px; margin-bottom: 10px; font-size: 0.825rem; display: flex; justify-content: space-between;">
+      <div style="background: ${order.fulfilment_method === 'DELIVERY' ? '#FFF3E0; border: 1.5px solid #FFB74D;' : '#FFF9C4; border: 1.5px solid #FBC02D;'} padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-size: 0.825rem; display: flex; justify-content: space-between;">
         <span>📅 <strong>${order.fulfilment_method === 'DELIVERY' ? 'Scheduled Delivery Date:' : 'Scheduled Pickup Date:'}</strong> ${escapeHTML(order.pickup_date || 'Today')}</span>
         <span>⏰ <strong>Slot:</strong> ${escapeHTML(order.pickup_time || 'Morning')}</span>
       </div>
 
       ${order.fulfilment_method === 'DELIVERY' && (order.delivery_address?.formatted || order.delivery_address) ? `
-        <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 6px 10px; border-radius: 4px; margin-bottom: 10px; font-size: 0.825rem;">
+        <div style="background: #FFF8E1; border: 1.5px solid #FFE082; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-size: 0.825rem;">
           <strong style="color: #BF360C;">🚚 Doorstep Delivery Address (Porter / Partner):</strong>
           <div style="font-weight: 700; color: #333; margin-top: 2px;">
             ${escapeHTML(order.delivery_address?.formatted || (typeof order.delivery_address === 'string' ? order.delivery_address : 'Address on file'))}
           </div>
+        </div>
+      ` : ''}
+
+      ${order.fulfilment_method !== 'DELIVERY' && (order.pickup_code_hash || order.pickup_code) ? `
+        <div style="background: #E8F5E9; border: 1.5px dashed #2E7D32; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.75rem; font-weight: 800; color: #1B5E20; text-transform: uppercase;">Official Store Pickup Code:</span>
+          <span class="font-mono" style="font-size: 1.15rem; font-weight: 900; color: #1B5E20; letter-spacing: 2px;">${escapeHTML(order.pickup_code_hash || order.pickup_code)}</span>
         </div>
       ` : ''}
 
@@ -1410,11 +1489,13 @@ function generateParcelLabelHtml(order) {
         </div>
       </div>
 
-      <table class="parcel-items-table">
+      <table class="parcel-items-table" style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 0.8rem;">
         <thead>
-          <tr>
-            <th>Ordered Delicacy</th>
-            <th style="text-align: right; width: 120px;">Packed Quantity</th>
+          <tr style="background: #EAEAEA;">
+            <th style="padding: 4px 6px; border: 1px solid #000; text-align: left;">Ordered Delicacy</th>
+            <th style="padding: 4px 6px; border: 1px solid #000; text-align: center; width: 80px;">Qty</th>
+            <th style="padding: 4px 6px; border: 1px solid #000; text-align: right; width: 75px;">Unit Rate</th>
+            <th style="padding: 4px 6px; border: 1px solid #000; text-align: right; width: 85px;">Line Total</th>
           </tr>
         </thead>
         <tbody>
@@ -1423,27 +1504,31 @@ function generateParcelLabelHtml(order) {
       </table>
 
       ${order.customer_notes ? `
-        <div style="border: 1px dashed #777; padding: 6px 10px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 10px; background: #FAFAFA;">
+        <div style="border: 1px dashed #777; padding: 5px 8px; border-radius: 4px; font-size: 0.775rem; margin-bottom: 8px; background: #FAFAFA;">
           <strong>Customer Notes:</strong> ${escapeHTML(order.customer_notes)}
         </div>
       ` : ''}
 
-      <div class="parcel-footer-grid">
+      <div class="parcel-footer-grid" style="border-top: 1.5px solid #000; padding-top: 6px;">
         <div>
-          <div style="font-size: 0.75rem; line-height: 1.4; color: #333;">
+          <div style="font-size: 0.72rem; line-height: 1.35; color: #333;">
             • <strong>Collection Counter:</strong> Shree Taste N Taste Catering (<a href="https://www.google.com/maps/dir/?api=1&destination=Shree+TasteNTaste+Catering&destination_place_id=ChIJMVqvzSL2qDsRREVdON0DlTM" target="_blank" style="color: #78101C; text-decoration: underline; font-weight: 700;">Google Maps Navigation</a>)<br>
-            • <strong>Enquiries:</strong> 9442854444 / 7200071040<br>
-            • <em>Packed fresh in hygienic food-grade containers.</em>
+            • <strong>Enquiries:</strong> 9442854444 / 7200071040 &bull; <em>Food-grade sealed packaging.</em>
           </div>
-          <div style="margin-top: 8px; font-size: 0.75rem;">
+          <div style="margin-top: 6px; font-size: 0.72rem;">
             Packer Sign: __________________ &nbsp;&nbsp; Date/Time: __________________
           </div>
         </div>
 
         <div class="parcel-qr-wrapper">
           ${qrSvg}
-          <div class="parcel-qr-caption">Scan to Verify Order</div>
+          <div class="parcel-qr-caption">Scan to Verify</div>
         </div>
+      </div>
+
+      <!-- Distinct Thank You Footer -->
+      <div style="text-align: center; margin-top: 8px; padding: 6px 10px; background: #FDF9F3; border: 1.5px dashed #78101C; border-radius: 4px; font-weight: 700; color: #78101C; font-size: 0.8rem;">
+        ✨ Thank you for shopping with us! Wishing you a sweet &amp; prosperous Diwali. ✨
       </div>
     </div>
   `;
@@ -1762,7 +1847,11 @@ function generateCustomerReceiptHtml(order) {
           • <strong>Collection Date:</strong> Please arrive on your scheduled date: <strong>${escapeHTML(order.pickup_date || 'Today')}</strong> during <strong>${escapeHTML(order.pickup_time || 'Morning')}</strong>.<br>
           • <strong>Support:</strong> For scheduling changes or inquiries, call 9442854444 / 7200071040.<br>
         `}
-        • <em>Thank you for celebrating Diwali with Shree Taste N Taste Catering!</em>
+      </div>
+
+      <!-- Distinct Thank You Footer -->
+      <div style="text-align: center; margin-top: 14px; padding: 12px 16px; background: #FFF8E1; border: 1.5px dashed #D4AF37; border-radius: 6px; font-weight: 700; color: #78101C; font-size: 0.95rem;">
+        ✨ Thank you for shopping with us! Wishing you a sweet &amp; prosperous festive season. ✨
       </div>
     </div>
   `;
