@@ -109,6 +109,8 @@ serve(async (req: Request) => {
           upcomingPickups++;
         }
       }
+    }
+
     const dailyMap: Record<string, { date: string; orderCount: number; revenuePaise: number }> = {};
     for (const o of allOrders) {
       if (o.payment_status === "PAID") {
