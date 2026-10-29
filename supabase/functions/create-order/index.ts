@@ -104,6 +104,24 @@ serve(async (req: Request) => {
         if (rzpRes.ok) {
           const rzpData = await rzpRes.json();
           razorpayOrderId = rzpData.id;
+
+          // Crucial: Store razorpay_order_id in orders record for verification and webhook binding
+          await supabase
+            .from("orders")
+            .update({ razorpay_order_id: razorpayOrderId })
+            .eq("id", data.order_id);
+
+          // Record pending payment entry
+          await supabase
+            .from("payments")
+            .upsert({
+              order_id: data.order_id,
+              provider: "RAZORPAY",
+              provider_order_id: razorpayOrderId,
+              amount_paise: data.total_paise,
+              currency: "INR",
+              status: "PENDING"
+            }, { onConflict: "provider_order_id" });
         } else {
           console.warn("Razorpay API returned non-OK status:", await rzpRes.text());
         }

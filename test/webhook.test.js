@@ -6,6 +6,31 @@
 import http from 'http';
 import crypto from 'crypto';
 import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env variables
+function loadEnv() {
+  const envPath = path.join(__dirname, '..', '.env');
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx > -1) {
+        const key = trimmed.substring(0, idx).trim();
+        const val = trimmed.substring(idx + 1).trim();
+        if (!process.env[key]) process.env[key] = val;
+      }
+    }
+  }
+}
+loadEnv();
 
 const BASE_URL = 'http://localhost:3000';
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'tnt_webhook_secret_2026';

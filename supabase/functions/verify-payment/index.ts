@@ -42,7 +42,47 @@ serve(async (req: Request) => {
       );
     }
 
-    // 1. Verify HMAC SHA256 Signature using Web Crypto API
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // 1. Order Existence & Razorpay Order ID Consistency Check
+    const { data: order, error: orderErr } = await supabase
+      .from("orders")
+      .select("id, public_order_number, total_paise, payment_status, order_status, razorpay_order_id, pickup_code_hash")
+      .eq("id", orderId)
+      .single();
+
+    if (orderErr || !order) {
+      return new Response(
+        JSON.stringify({ success: false, verified: false, message: "Order record not found." }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (order.razorpay_order_id && order.razorpay_order_id !== razorpayOrderId) {
+      console.warn(`[Security Alert] Razorpay order ID mismatch for order ${orderId}. Expected ${order.razorpay_order_id}, got ${razorpayOrderId}`);
+      return new Response(
+        JSON.stringify({ success: false, verified: false, message: "Payment verification failed: Razorpay order ID mismatch." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Idempotent: If already paid, return confirmed details safely
+    if (order.payment_status === "PAID") {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          verified: true,
+          orderId: order.id,
+          publicOrderNumber: order.public_order_number,
+          pickupCode: order.pickup_code_hash,
+          totalPaise: order.total_paise,
+          message: "Order already verified and paid."
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // 2. Verify HMAC SHA256 Signature using Web Crypto API
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       "raw",
@@ -65,7 +105,6 @@ serve(async (req: Request) => {
       console.error(`Invalid payment signature for orderId ${orderId}. Received ${razorpaySignature}`);
       
       // Update order to FAILED
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
       await supabase.from("orders").update({ payment_status: "FAILED" }).eq("id", orderId);
 
       return new Response(
@@ -74,9 +113,7 @@ serve(async (req: Request) => {
       );
     }
 
-    // 2. Signature is Genuine: Update order and issue secure Pickup Code
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
+    // 3. Signature is Genuine: Update order and issue secure Pickup Code
     // Generate cryptographic alphanumeric pickup code (TNT-PK-XXXX)
     const randomHex = Math.floor(1000 + Math.random() * 9000).toString();
     const pickupCode = `TNT-PK-${randomHex}`;

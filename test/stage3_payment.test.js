@@ -159,6 +159,45 @@ async function runTests() {
     assert.strictEqual(res.data.order.pickup_code, verifiedPickupCode, 'Must reveal authentic pickup code');
   });
 
+  // Test 5: Razorpay Order ID mismatch attack is strictly rejected
+  await test('Mismatched Razorpay Order ID is rejected (400)', async () => {
+    const fakeOrderId = 'order_mismatched_' + crypto.randomBytes(4).toString('hex');
+    const fakePaymentId = 'pay_' + crypto.randomBytes(6).toString('hex');
+    const signature = crypto.createHmac('sha256', RAZORPAY_KEY_SECRET)
+      .update(`${fakeOrderId}|${fakePaymentId}`)
+      .digest('hex');
+
+    const res = await post('/api/verify-payment', {
+      orderId: createdOrder.order_id,
+      razorpayPaymentId: fakePaymentId,
+      razorpayOrderId: fakeOrderId,
+      razorpaySignature: signature
+    });
+
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(res.data.verified, false);
+    assert.match(res.data.message, /mismatch/i);
+  });
+
+  // Test 6: Replay/duplicate payment verification is handled idempotently
+  await test('Replay of verified payment is safely handled idempotently', async () => {
+    const paymentId = 'pay_' + crypto.randomBytes(8).toString('hex');
+    const validSignature = crypto.createHmac('sha256', RAZORPAY_KEY_SECRET)
+      .update(`${createdOrder.razorpay_order_id}|${paymentId}`)
+      .digest('hex');
+
+    const res = await post('/api/verify-payment', {
+      orderId: createdOrder.order_id,
+      razorpayPaymentId: paymentId,
+      razorpayOrderId: createdOrder.razorpay_order_id,
+      razorpaySignature: validSignature
+    });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.data.verified, true);
+    assert.strictEqual(res.data.pickupCode, verifiedPickupCode, 'Must return same pickup code without re-generating');
+  });
+
   console.log(`\n--- STAGE 3 TEST SUMMARY: ${passed} PASSED, ${failed} FAILED ---`);
   if (failed > 0) process.exit(1);
 }

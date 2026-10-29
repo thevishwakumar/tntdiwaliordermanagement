@@ -550,7 +550,35 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      // 1. Verify HMAC SHA256 signature
+      // 1. Order Existence & Razorpay Order ID Consistency Check
+      const order = DB.orders.get(orderId);
+      if (!order) {
+        return sendJson(res, 404, { success: false, verified: false, message: 'Order record not found.' });
+      }
+
+      if (order.razorpay_order_id && order.razorpay_order_id !== razorpayOrderId) {
+        console.warn(`[Security Alert] Razorpay order ID mismatch for internal order ${orderId}. Expected ${order.razorpay_order_id}, got ${razorpayOrderId}`);
+        return sendJson(res, 400, {
+          success: false,
+          verified: false,
+          message: 'Payment verification failed: Razorpay order ID mismatch.'
+        });
+      }
+
+      // Idempotent: If already paid, return confirmed details safely without re-processing
+      if (order.payment_status === 'PAID') {
+        return sendJson(res, 200, {
+          success: true,
+          verified: true,
+          orderId: order.id,
+          publicOrderNumber: order.public_order_number,
+          pickupCode: order.pickup_code_hash,
+          totalPaise: order.total_paise,
+          message: 'Order already verified and paid.'
+        });
+      }
+
+      // 2. Verify HMAC SHA256 signature
       const expectedSignature = crypto
         .createHmac('sha256', RAZORPAY_KEY_SECRET)
         .update(`${razorpayOrderId}|${razorpayPaymentId}`)
@@ -570,8 +598,7 @@ const server = http.createServer(async (req, res) => {
 
       if (!isSignatureValid) {
         console.warn(`[Security Alert] Invalid payment signature for orderId ${orderId}.`);
-        const order = DB.orders.get(orderId);
-        if (order) order.payment_status = 'FAILED';
+        order.payment_status = 'FAILED';
 
         return sendJson(res, 400, {
           success: false,
@@ -580,12 +607,7 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      // 2. Signature Genuine: Issue secure Pickup Code
-      const order = DB.orders.get(orderId);
-      if (!order) {
-        return sendJson(res, 404, { success: false, verified: false, message: 'Order record not found.' });
-      }
-
+      // 3. Signature Genuine: Issue secure Pickup Code
       const pickupCode = generatePickupCode();
       const now = new Date().toISOString();
 
