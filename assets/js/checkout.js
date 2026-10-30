@@ -21,21 +21,41 @@ let statusPollingInterval = null;
 let sessionCountdownInterval = null;
 let selectedFulfilmentMethod = 'PICKUP';
 
-document.addEventListener('DOMContentLoaded', () => {
-  initCheckout();
-});
+/**
+ * Detect if visitor is on a mobile device or laptop/desktop
+ */
+export function isMobileDevice() {
+  if (typeof window === 'undefined') return false;
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera || '';
+  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i;
+  const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  const isSmallScreen = (window.innerWidth || document.documentElement.clientWidth || 1024) <= 820;
+  return mobileRegex.test(userAgent) || (isTouch && isSmallScreen);
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initCheckout();
+  });
+}
 
 function initCheckout() {
   loadRazorpaySdk();
   setupFulfilmentSelector();
   renderCartSummary();
   renderBackendStatusNotice();
+  updateDeviceSpecificUI();
   setupFormListeners();
   CartManager.initCartBadge();
 
   // Re-render when cart updates
   window.addEventListener('tnt:cart-updated', () => {
     renderCartSummary();
+  });
+
+  // Re-adapt UI if user resizes or rotates device
+  window.addEventListener('resize', () => {
+    updateDeviceSpecificUI();
   });
 }
 
@@ -366,11 +386,27 @@ function setupFormListeners() {
         expiresAt: Date.now() + 10 * 60 * 1000 // 10-minute session validity
       };
 
-      // Show Scan & Pay QR-First Session Modal
-      showQrPaymentModal(activePaymentSession);
+      // Initialize active payment session
+      activePaymentSession = {
+        orderId: response.orderId,
+        publicOrderNumber: response.publicOrderNumber,
+        totalPaise: response.totalPaise,
+        totalAmount: response.totalAmount || (response.totalPaise / 100),
+        customerMobile: validation.cleanData.mobile,
+        customerName: validation.cleanData.fullName,
+        customerEmail: validation.cleanData.email,
+        razorpayOrderId: rzpOrderId,
+        razorpayKeyId: rzpKeyId,
+        expiresAt: Date.now() + 10 * 60 * 1000 // 10-minute session validity
+      };
 
-      // Immediately launch Razorpay QR Checkout by default
-      openRazorpayCheckout('qr');
+      const isMobile = isMobileDevice();
+
+      // Show Adaptive Payment Session Modal (QR for Laptop/PC, UPI Apps for Mobile)
+      showPaymentSessionModal(activePaymentSession, isMobile);
+
+      // Immediately launch Razorpay with appropriate flow
+      openRazorpayCheckout(isMobile ? 'upi_apps' : 'qr');
 
     } catch (err) {
       console.error('Checkout error:', err);
@@ -381,9 +417,11 @@ function setupFormListeners() {
 }
 
 /**
- * Display the QR-First "Scan & Pay" Session Modal Overlay
+ * Display the Device-Adaptive Payment Session Modal Overlay
+ * On Laptops/Desktops: Shows QR-first Scan & Pay
+ * On Mobile Phones: Shows UPI-App direct launch (GPay, PhonePe, Paytm)
  */
-function showQrPaymentModal(session) {
+function showPaymentSessionModal(session, isMobile) {
   // Remove existing modal if any
   const existing = document.getElementById('qr-payment-modal');
   if (existing) existing.remove();
@@ -396,8 +434,10 @@ function showQrPaymentModal(session) {
         <!-- Header -->
         <div class="qr-modal-header">
           <h3 class="qr-modal-title" id="qr-heading">
-            <svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Scan &amp; Pay (UPI QR)
+            ${isMobile 
+              ? `<svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Pay via UPI Apps (GPay / PhonePe / Paytm)`
+              : `<svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Scan &amp; Pay (UPI QR)`
+            }
           </h3>
           <button type="button" class="qr-modal-close-btn" id="btn-qr-modal-close" aria-label="Close Payment Modal" title="Close">&times;</button>
         </div>
@@ -413,10 +453,14 @@ function showQrPaymentModal(session) {
             </div>
           </div>
 
-          <!-- QR Instruction Banner -->
+          <!-- Instruction Banner -->
           <div class="qr-scan-badge-banner">
-            <svg style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span>Scan using Google Pay, PhonePe, Paytm, BHIM, or any UPI App</span>
+            ${isMobile
+              ? `<svg style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                 <span>One-tap payment via Google Pay, PhonePe, Paytm, or any UPI App</span>`
+              : `<svg style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                 <span>Scan QR using Google Pay, PhonePe, Paytm, BHIM, or any UPI App</span>`
+            }
           </div>
 
           <!-- Live Payment Status -->
@@ -425,18 +469,26 @@ function showQrPaymentModal(session) {
             <span id="qr-status-text">Awaiting payment confirmation...</span>
           </div>
 
-          <!-- Primary Actions (QR Default, Other Methods Below) -->
+          <!-- Primary Actions (Adaptive to Device) -->
           <div class="qr-modal-actions">
-            <!-- 1. Primary QR Button -->
-            <button type="button" class="qr-btn-primary btn-shimmer" id="btn-open-qr-flow">
-              <svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              <span>Open Scan &amp; Pay (UPI QR Code)</span>
+            <!-- 1. Primary Action Button -->
+            <button type="button" class="qr-btn-primary btn-shimmer" id="btn-open-primary-flow">
+              ${isMobile
+                ? `<svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                   <span>Pay via UPI Apps (Google Pay, PhonePe, Paytm)</span>`
+                : `<svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                   <span>Open Scan &amp; Pay (UPI QR Code)</span>`
+              }
             </button>
 
             <!-- 2. Alternative Payment Methods -->
             <button type="button" class="qr-btn-secondary" id="btn-open-other-methods">
-              <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              <span>Other Payment Methods (UPI Apps, Cards, Netbanking)</span>
+              ${isMobile
+                ? `<svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                   <span>Show QR Code / Cards &amp; Netbanking</span>`
+                : `<svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                   <span>Other Payment Methods (UPI Apps, Cards, Netbanking)</span>`
+              }
             </button>
 
             <!-- 3. Safe Cancel Option -->
@@ -457,12 +509,12 @@ function showQrPaymentModal(session) {
   document.body.insertAdjacentHTML('beforeend', modalHtml);
 
   // Attach event handlers
-  document.getElementById('btn-open-qr-flow')?.addEventListener('click', () => {
-    openRazorpayCheckout('qr');
+  document.getElementById('btn-open-primary-flow')?.addEventListener('click', () => {
+    openRazorpayCheckout(isMobile ? 'upi_apps' : 'qr');
   });
 
   document.getElementById('btn-open-other-methods')?.addEventListener('click', () => {
-    openRazorpayCheckout('other');
+    openRazorpayCheckout(isMobile ? 'qr' : 'other');
   });
 
   document.getElementById('btn-qr-modal-close')?.addEventListener('click', () => {
@@ -480,10 +532,13 @@ function showQrPaymentModal(session) {
 
 /**
  * Open Razorpay Standard Checkout with custom display blocks
- * @param {'qr' | 'other'} flow - 'qr' displays QR Code first; 'other' displays UPI apps & cards first.
+ * @param {'qr' | 'upi_apps' | 'other'} flow - Priority ordering of instruments
  */
-async function openRazorpayCheckout(flow = 'qr') {
+async function openRazorpayCheckout(flow = null) {
   if (!activePaymentSession) return;
+
+  const isMobile = isMobileDevice();
+  const effectiveFlow = flow || (isMobile ? 'upi_apps' : 'qr');
 
   // Ensure Razorpay SDK is loaded
   if (!window.Razorpay) {
@@ -507,21 +562,21 @@ async function openRazorpayCheckout(flow = 'qr') {
 
   // Block definitions conforming to Razorpay Custom Checkout guidelines
   const blocks = {
-    qr_code: {
-      name: "Scan & Pay (UPI QR Code)",
-      instruments: [
-        {
-          method: "upi",
-          flows: ["qr"]
-        }
-      ]
-    },
     upi_apps: {
       name: "UPI Apps (Google Pay, PhonePe, Paytm)",
       instruments: [
         {
           method: "upi",
           flows: ["intent", "collect"]
+        }
+      ]
+    },
+    qr_code: {
+      name: "Scan & Pay (UPI QR Code)",
+      instruments: [
+        {
+          method: "upi",
+          flows: ["qr"]
         }
       ]
     },
@@ -546,10 +601,17 @@ async function openRazorpayCheckout(flow = 'qr') {
     }
   };
 
-  // Sequence: Default is QR Code first; 'other' shows alternative methods first
-  const sequence = (flow === 'other')
-    ? ["block.upi_apps", "block.cards", "block.other", "block.qr_code"]
-    : ["block.qr_code", "block.upi_apps", "block.cards", "block.other"];
+  // Adaptive Sequence:
+  // On Mobile: UPI Apps first -> triggers GPay/PhonePe/Paytm directly!
+  // On Desktop/Laptop: QR Code first -> user points phone camera at laptop screen!
+  let sequence;
+  if (effectiveFlow === 'upi_apps') {
+    sequence = ["block.upi_apps", "block.qr_code", "block.cards", "block.other"];
+  } else if (effectiveFlow === 'qr') {
+    sequence = ["block.qr_code", "block.upi_apps", "block.cards", "block.other"];
+  } else {
+    sequence = ["block.cards", "block.other", "block.upi_apps", "block.qr_code"];
+  }
 
   const options = {
     key: session.razorpayKeyId,
@@ -766,22 +828,71 @@ function clearFieldError(fieldName) {
   }
 }
 
+export function updateDeviceSpecificUI() {
+  const isMobile = isMobileDevice();
+  const btnText = document.getElementById('btn-submit-text');
+  const previewTitle = document.getElementById('payment-preview-title');
+  const previewSubtitle = document.getElementById('payment-preview-subtitle');
+  const previewIcon = document.getElementById('payment-preview-icon');
+  const badge1Title = document.getElementById('payment-badge-1-title');
+  const badge1Sub = document.getElementById('payment-badge-1-sub');
+  const badge2Title = document.getElementById('payment-badge-2-title');
+  const badge2Sub = document.getElementById('payment-badge-2-sub');
+
+  if (isMobile) {
+    if (previewTitle) previewTitle.textContent = 'Default: Pay via UPI Apps (Google Pay, PhonePe, Paytm)';
+    if (previewSubtitle) previewSubtitle.textContent = 'One-tap direct payment using Google Pay, PhonePe, Paytm, or any UPI App';
+    if (previewIcon) {
+      previewIcon.innerHTML = `<svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+    }
+    if (badge1Title) badge1Title.textContent = '1. UPI Apps';
+    if (badge1Sub) badge1Sub.textContent = 'GPay, PhonePe, Paytm (Primary)';
+    if (badge2Title) badge2Title.textContent = '2. Razorpay QR';
+    if (badge2Sub) badge2Sub.textContent = 'Scan & Pay Alternative';
+
+    if (btnText && !isSubmitting) {
+      btnText.innerHTML = `
+        <svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Proceed to Pay via UPI (GPay / PhonePe / Paytm)
+      `;
+    }
+  } else {
+    if (previewTitle) previewTitle.textContent = 'Default: Scan & Pay (UPI QR Code)';
+    if (previewSubtitle) previewSubtitle.textContent = 'Instant dynamic QR scan using Google Pay, PhonePe, Paytm, or BHIM';
+    if (previewIcon) {
+      previewIcon.innerHTML = `<svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`;
+    }
+    if (badge1Title) badge1Title.textContent = '1. Razorpay QR';
+    if (badge1Sub) badge1Sub.textContent = 'Default & Primary';
+    if (badge2Title) badge2Title.textContent = '2. UPI Apps';
+    if (badge2Sub) badge2Sub.textContent = 'GPay, PhonePe, Paytm';
+
+    if (btnText && !isSubmitting) {
+      btnText.innerHTML = `
+        <svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Proceed to Scan &amp; Pay (UPI QR Code)
+      `;
+    }
+  }
+}
+
 function setSubmittingState(submitting) {
   isSubmitting = submitting;
   const submitBtn = document.getElementById('btn-submit-order');
   const spinner = document.getElementById('checkout-spinner');
   const btnText = document.getElementById('btn-submit-text');
+  const isMobile = isMobileDevice();
 
   if (submitBtn) {
     submitBtn.disabled = submitting;
     if (submitting) {
       submitBtn.classList.add('btn-loading');
       if (spinner) spinner.classList.remove('hidden');
-      if (btnText) btnText.textContent = 'Generating Razorpay QR...';
+      if (btnText) btnText.textContent = isMobile ? 'Opening UPI Payment...' : 'Generating Razorpay QR...';
     } else {
       submitBtn.classList.remove('btn-loading');
       if (spinner) spinner.classList.add('hidden');
-      if (btnText) btnText.innerHTML = '<svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; display: inline-block; vertical-align: middle; margin-right: 0.4rem;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Proceed to Scan &amp; Pay (UPI QR Code)';
+      updateDeviceSpecificUI();
     }
   }
 }

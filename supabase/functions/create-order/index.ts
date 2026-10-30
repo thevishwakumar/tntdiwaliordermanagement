@@ -79,6 +79,29 @@ serve(async (req: Request) => {
       );
     }
 
+    // If this is an existing duplicate order, preserve and return its existing razorpay_order_id
+    if (data.is_duplicate) {
+      const { data: existingOrder } = await supabase
+        .from("orders")
+        .select("razorpay_order_id")
+        .eq("id", data.order_id)
+        .single();
+
+      if (existingOrder?.razorpay_order_id) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            ...data,
+            razorpayOrderId: existingOrder.razorpay_order_id,
+            razorpayKeyId: razorpayKeyId || null,
+            razorpay_order_id: existingOrder.razorpay_order_id,
+            razorpay_key_id: razorpayKeyId || null
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Generate genuine Razorpay order if keys are configured
     let razorpayOrderId = null;
     if (razorpayKeyId && razorpaySecret && data.total_paise > 0) {

@@ -338,16 +338,16 @@
           </div>
 
           <div style="margin-top: 2rem;">
-            <!-- QR-First Payment Method Selector Preview -->
+            <!-- QR-First / UPI Payment Method Selector Preview -->
             <div class="checkout-payment-preview-card" style="background: var(--color-bg-surface-alt); border: 1.5px solid var(--color-gold-400); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
                 <div style="display: flex; align-items: center; gap: 0.6rem;">
-                  <span style="display: inline-flex; width: 36px; height: 36px; border-radius: 8px; background: rgba(207, 157, 56, 0.2); align-items: center; justify-content: center; color: var(--color-maroon-800);">
+                  <span id="payment-preview-icon" style="display: inline-flex; width: 36px; height: 36px; border-radius: 8px; background: rgba(207, 157, 56, 0.2); align-items: center; justify-content: center; color: var(--color-maroon-800);">
                     <svg style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                   </span>
                   <div>
-                    <strong style="color: var(--color-maroon-900); font-size: 1rem;">Default: Scan &amp; Pay (UPI QR Code)</strong>
-                    <div style="font-size: 0.8rem; color: var(--color-text-muted);">Instant dynamic QR scan using Google Pay, PhonePe, Paytm, or BHIM</div>
+                    <strong id="payment-preview-title" style="color: var(--color-maroon-900); font-size: 1rem;">Default: Scan &amp; Pay (UPI QR Code)</strong>
+                    <div id="payment-preview-subtitle" style="font-size: 0.8rem; color: var(--color-text-muted);">Instant dynamic QR scan using Google Pay, PhonePe, Paytm, or BHIM</div>
                   </div>
                 </div>
                 <span class="status-badge" style="background: #E8F5E9; color: #1B5E20; font-weight: 800; font-size: 0.75rem;">PRIMARY</span>
@@ -358,15 +358,15 @@
                   <div style="width: 24px; height: 24px; margin: 0 auto 0.25rem; color: var(--color-maroon-800);">
                     <svg style="width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                   </div>
-                  <div style="font-weight: 700; color: var(--color-maroon-900);">1. Razorpay QR</div>
-                  <div style="color: var(--color-text-muted); font-size: 0.72rem;">Default &amp; Primary</div>
+                  <div id="payment-badge-1-title" style="font-weight: 700; color: var(--color-maroon-900);">1. Razorpay QR</div>
+                  <div id="payment-badge-1-sub" style="color: var(--color-text-muted); font-size: 0.72rem;">Default &amp; Primary</div>
                 </div>
                 <div>
                   <div style="width: 24px; height: 24px; margin: 0 auto 0.25rem; color: var(--color-gold-600);">
                     <svg style="width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                   </div>
-                  <div style="font-weight: 700; color: var(--color-maroon-900);">2. UPI Apps</div>
-                  <div style="color: var(--color-text-muted); font-size: 0.72rem;">GPay, PhonePe, Paytm</div>
+                  <div id="payment-badge-2-title" style="font-weight: 700; color: var(--color-maroon-900);">2. UPI Apps</div>
+                  <div id="payment-badge-2-sub" style="color: var(--color-text-muted); font-size: 0.72rem;">GPay, PhonePe, Paytm</div>
                 </div>
                 <div>
                   <div style="width: 24px; height: 24px; margin: 0 auto 0.25rem; color: var(--color-maroon-800);">
