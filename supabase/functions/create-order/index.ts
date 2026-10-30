@@ -49,12 +49,35 @@ serve(async (req: Request) => {
       idempotencyKey: bodyIdempotencyKey
     } = body;
 
-    const idempotencyKey = req.headers.get("idempotency-key") || bodyIdempotencyKey || null;
+    // Fast edge validation to drop invalid requests early under high concurrency
+    if (!customerName || typeof customerName !== 'string' || customerName.trim().length < 2 || customerName.length > 100) {
+      return new Response(
+        JSON.stringify({ success: false, message: "Customer name must be between 2 and 100 characters." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!customerMobile || typeof customerMobile !== 'string' || customerMobile.trim().length < 10 || customerMobile.length > 20) {
+      return new Response(
+        JSON.stringify({ success: false, message: "Customer mobile must be a valid 10-digit mobile number." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!Array.isArray(items) || items.length === 0 || items.length > 50) {
+      return new Response(
+        JSON.stringify({ success: false, message: "Items list must contain between 1 and 50 products." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const rawIdempotency = req.headers.get("idempotency-key") || bodyIdempotencyKey || null;
+    const idempotencyKey = rawIdempotency ? String(rawIdempotency).trim().slice(0, 128) : null;
 
     // Normalize items to ensure snake_case product_id
-    const normalizedItems = (items || []).map((it: any) => ({
-      product_id: it.product_id || it.productId || it.id,
-      quantity: Number(it.quantity)
+    const normalizedItems = items.map((it: any) => ({
+      product_id: String(it.product_id || it.productId || it.id || '').trim().slice(0, 64),
+      quantity: Math.max(1, Math.min(50, Math.floor(Number(it.quantity) || 1)))
     }));
 
     // Call atomic stored procedure

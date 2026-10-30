@@ -11,6 +11,20 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const lenA = a.length;
+  const lenB = b.length;
+  let mismatch = lenA ^ lenB;
+  const maxLen = Math.max(lenA, lenB);
+  for (let i = 0; i < maxLen; i++) {
+    const charA = i < lenA ? a.charCodeAt(i) : 0;
+    const charB = i < lenB ? b.charCodeAt(i) : 0;
+    mismatch |= charA ^ charB;
+  }
+  return mismatch === 0;
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -42,6 +56,13 @@ serve(async (req: Request) => {
 
     // Preserve raw text body for cryptographic signature calculation
     const rawBody = await req.text();
+    if (rawBody.length > 65536) {
+      return new Response(JSON.stringify({ success: false, message: "Payload too large." }), {
+        status: 413,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       "raw",
@@ -54,7 +75,7 @@ serve(async (req: Request) => {
     const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
       .map(b => b.toString(16).padStart(2, "0"))
       .join("");
-    const isSignatureValid = (expectedSignature === receivedSignature);
+    const isSignatureValid = timingSafeEqual(expectedSignature, receivedSignature);
 
     if (!isSignatureValid) {
       console.error("[Security Alert] Invalid Razorpay webhook signature rejected.");
